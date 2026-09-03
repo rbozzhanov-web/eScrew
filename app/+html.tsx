@@ -105,7 +105,7 @@ const AIMS_CLIPBOARD_BRIDGE = `
 `;
 
 const REGISTER_SW = `
-if('serviceWorker' in navigator){window.addEventListener('load',async()=>{const had=Boolean(navigator.serviceWorker.controller);let notified=false;try{const r=await navigator.serviceWorker.register('sw.js',{scope:'./',updateViaCache:'none'});const notify=()=>{if(had&&!notified){notified=true;window.alert('A new version of eScrew is available.')}};r.addEventListener('updatefound',()=>{const w=r.installing;if(w)w.addEventListener('statechange',()=>{if(w.state==='installed')notify()})});const check=()=>{if(navigator.onLine)r.update().catch(()=>{})};check();window.addEventListener('online',check);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')check()})}catch{}})};
+if('serviceWorker' in navigator){window.addEventListener('load',async()=>{try{const had=Boolean(navigator.serviceWorker.controller);let updateInstalled=false;let reloading=false;const r=await navigator.serviceWorker.register('sw.js',{scope:'./',updateViaCache:'none'});r.addEventListener('updatefound',()=>{const w=r.installing;if(w)w.addEventListener('statechange',()=>{if(had&&w.state==='installed')updateInstalled=true})});navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!had||!updateInstalled||reloading)return;reloading=true;window.location.reload()});if(navigator.onLine)r.update().catch(()=>{});window.addEventListener('online',()=>r.update().catch(()=>{}))}catch{}})};
 `;
 
 export default function Root({ children }: { children: ReactNode }) {
