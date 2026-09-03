@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "eScrew",
+    "slug": "escrew",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "escrew",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "name": "eScrew — Crew Schedule",
+      "shortName": "eScrew",
+      "themeColor": "#007F86",
+      "backgroundColor": "#F2F6F6",
+      "display": "standalone"
+    },
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true,
+      "baseUrl": "/eScrew"
+    }
+  }
+}
