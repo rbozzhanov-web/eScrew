@@ -118,7 +118,42 @@ const VISUAL_SKIN = `
 `;
 
 const AIMS_CLIPBOARD_BRIDGE = `
-(()=>{const AIMS='https://aims.airastana.com/';const ORIGIN='https://aims.airastana.com';const TYPE='escrew:aims-scheduler-events';const standalone=(typeof window.matchMedia==='function'&&window.matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;if(!standalone)return;const nativeOpen=window.open.bind(window);window.open=(url,target,features)=>{const href=typeof url==='string'?url:String(url??'');if(!href.startsWith(AIMS))return nativeOpen(url,target,features);const missing='No copied AIMS roster found. Open AIMS in normal Safari, run the eScrew AIMS bookmark, load the schedule, tap “Copy roster to eScrew”, then return here and tap AIMS.';if(!navigator.clipboard||typeof navigator.clipboard.readText!=='function'){window.alert(missing);return window;}navigator.clipboard.readText().then(text=>{let data;try{data=JSON.parse(text)}catch{}const payload=data&&data.payload;if(!data||data.type!==TYPE||!payload||typeof payload.PeriodStart!=='string'||typeof payload.PeriodEnd!=='string'||!Array.isArray(payload.SchedulerEvents)){window.alert(missing);return;}window.dispatchEvent(new MessageEvent('message',{origin:ORIGIN,data}));}).catch(()=>window.alert(missing));return window;};})();
+(()=>{
+  const AIMS='https://aims.airastana.com/';
+  const ORIGIN='https://aims.airastana.com';
+  const TYPE='escrew:aims-scheduler-events';
+  const MARKER='escrew:aims-safari-capture';
+  const MAX_AGE=2*60*60*1000;
+  const standalone=(typeof window.matchMedia==='function'&&window.matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
+  if(!standalone)return;
+  const nativeOpen=window.open.bind(window);
+  const isiOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  const readMarker=()=>{try{return Number(localStorage.getItem(MARKER)||0);}catch{return 0;}};
+  const writeMarker=()=>{try{localStorage.setItem(MARKER,String(Date.now()));}catch{}};
+  const clearMarker=()=>{try{localStorage.removeItem(MARKER);}catch{}};
+  const missing='No copied AIMS roster found yet. Return to Safari, run the eScrew AIMS capture, load My Schedule, tap “Copy roster to eScrew”, then return here and tap AIMS again.';
+  const openSafari=()=>{
+    writeMarker();
+    if(isiOS){window.location.href='x-safari-'+AIMS;return;}
+    nativeOpen(AIMS,'_blank','noopener,noreferrer');
+  };
+  window.open=(url,target,features)=>{
+    const href=typeof url==='string'?url:String(url??'');
+    if(!href.startsWith(AIMS))return nativeOpen(url,target,features);
+    const started=readMarker();
+    if(!started||Date.now()-started>MAX_AGE){openSafari();return window;}
+    if(!navigator.clipboard||typeof navigator.clipboard.readText!=='function'){window.alert(missing);return window;}
+    navigator.clipboard.readText().then(text=>{
+      let data;
+      try{data=JSON.parse(text);}catch{}
+      const payload=data&&data.payload;
+      if(!data||data.type!==TYPE||!payload||typeof payload.PeriodStart!=='string'||typeof payload.PeriodEnd!=='string'||!Array.isArray(payload.SchedulerEvents)){window.alert(missing);return;}
+      clearMarker();
+      window.dispatchEvent(new MessageEvent('message',{origin:ORIGIN,data}));
+    }).catch(()=>window.alert(missing));
+    return window;
+  };
+})();
 `;
 
 const REGISTER_SW = `
