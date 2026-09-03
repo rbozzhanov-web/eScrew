@@ -4,110 +4,69 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="color-scheme" content="light dark" />
-  <title>eScrew AIMS Connector</title>
+  <title>eScrew AIMS Capture</title>
   <style>
-    :root { font-family: -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,system-ui,sans-serif; color-scheme: light dark; }
+    :root { font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,system-ui,sans-serif; color-scheme:light dark; }
     body { margin:0; padding:24px; background:#F2F6F6; color:#102326; }
     main { max-width:620px; margin:0 auto; }
     h1 { font-size:28px; margin:10px 0 8px; letter-spacing:-.7px; }
     p,li { line-height:1.5; }
     .card { margin-top:16px; padding:18px; border-radius:22px; background:rgba(255,255,255,.84); box-shadow:0 14px 36px rgba(0,0,0,.08); }
-    button { width:100%; min-height:48px; border:0; border-radius:15px; font:inherit; font-weight:700; background:#007F86; color:white; }
-    .secondary { margin-top:10px; background:#DFF1F2; color:#007F86; }
-    code { display:block; margin-top:12px; padding:12px; border-radius:14px; overflow-wrap:anywhere; font-size:11px; background:rgba(0,0,0,.05); }
+    a.button,button { display:block; box-sizing:border-box; width:100%; min-height:48px; border:0; border-radius:15px; padding:14px 16px; font:inherit; font-weight:700; text-align:center; text-decoration:none; background:#007F86; color:white; }
+    .secondary { margin-top:10px; background:#DFF1F2!important; color:#007F86!important; }
     .muted { color:#60777A; font-size:13px; }
-    @media (prefers-color-scheme:dark) {
+    @media(prefers-color-scheme:dark){
       body { background:#081519; color:#F3FAFA; }
       .card { background:rgba(21,44,50,.9); }
       .muted { color:#A8BABC; }
-      code { background:rgba(255,255,255,.06); }
-      .secondary { background:rgba(53,184,192,.16); color:#35B8C0; }
+      .secondary { background:rgba(53,184,192,.16)!important; color:#35B8C0!important; }
     }
   </style>
 </head>
 <body>
 <main>
-  <h1>eScrew AIMS Connector</h1>
-  <p class="muted">One-time Safari setup. Arm the connector on the AIMS home page before opening My Schedule. It watches normal AIMS responses and copies only sanitized roster JSON for eScrew.</p>
+  <h1>eScrew AIMS Capture</h1>
+  <p class="muted">One-time Safari setup. After installation, Capture starts automatically whenever AIMS opens in Safari.</p>
+
   <div class="card">
-    <strong>iPhone / iPad</strong>
+    <strong>Install once</strong>
     <ol>
-      <li>Add this page to Safari bookmarks.</li>
-      <li>Edit that bookmark and replace its URL with the connector copied below.</li>
-      <li>Open AIMS in normal Safari and sign in.</li>
-      <li>While still on the AIMS home page, run the “eScrew AIMS” bookmark.</li>
-      <li>Open My Schedule normally.</li>
-      <li>When the status changes to “Copy roster to eScrew”, tap it, return to eScrew, then tap AIMS.</li>
+      <li>Use a Safari userscript extension/manager on iPhone or iPad and enable it for <strong>aims.airastana.com</strong>.</li>
+      <li>Open the eScrew Capture userscript below and install/enable it.</li>
+      <li>That is the only setup step. No Safari bookmarklet is needed afterwards.</li>
     </ol>
-    <button id="copy">Copy connector</button>
-    <button id="open" class="secondary">Open AIMS</button>
-    <code id="preview"></code>
+    <a class="button" href="./escrew-aims.user.js">Open eScrew Capture userscript</a>
+    <button id="copy" class="secondary">Copy userscript URL</button>
   </div>
+
+  <div class="card">
+    <strong>Normal use after setup</strong>
+    <ol>
+      <li>In eScrew tap AIMS.</li>
+      <li>Safari opens AIMS. Sign in if required.</li>
+      <li>Open My Schedule normally.</li>
+      <li>Capture runs automatically. When ready, tap <strong>Copy roster to eScrew</strong>.</li>
+      <li>Return to eScrew and tap AIMS again to paste/import.</li>
+    </ol>
+    <p class="muted">No Capture bookmark, Period change, Zoom change, or manual arming is required during normal use.</p>
+  </div>
+
   <div class="card">
     <strong>Privacy boundary</strong>
-    <p class="muted">The connector never asks for or reads your password. It does not serialize cookies, CSRF values, tokens, request bodies, credentials, or session data. Authentication stays inside Safari; only a response that structurally matches an AIMS roster is copied.</p>
+    <p class="muted">The connector only keeps a sanitized roster-shaped response for the clipboard handoff. Password entry remains in AIMS/Safari.</p>
   </div>
 </main>
 <script>
 (() => {
-  const source = String.raw`(()=>{
-    const AIMS='https://aims.airastana.com';
-    const TYPE='escrew:aims-scheduler-events';
-    if(location.origin!==AIMS){alert('Open this connector on aims.airastana.com');return;}
-    let captured=null;
-    let button=null;
-    const isRoster=(value)=>!!value&&typeof value==='object'&&typeof value.PeriodStart==='string'&&typeof value.PeriodEnd==='string'&&Array.isArray(value.SchedulerEvents);
-    const clean=(value)=>({PeriodStart:value.PeriodStart,PeriodEnd:value.PeriodEnd,RosterDateTime:value.RosterDateTime,SchedulerEvents:value.SchedulerEvents});
-    const ensureButton=(doc=document)=>{
-      let existing=doc.getElementById('__escrewAimsCopy');
-      if(existing)return existing;
-      const b=doc.createElement('button');
-      b.id='__escrewAimsCopy';b.type='button';
-      Object.assign(b.style,{position:'fixed',left:'16px',right:'16px',bottom:'calc(16px + env(safe-area-inset-bottom))',zIndex:'2147483647',minHeight:'52px',border:'0',borderRadius:'14px',padding:'12px 18px',background:'#60777A',color:'#fff',font:'700 15px -apple-system,BlinkMacSystemFont,system-ui,sans-serif',boxShadow:'0 8px 24px rgba(0,0,0,.25)'});
-      b.textContent='eScrew armed — waiting for roster response';
-      b.addEventListener('click',async()=>{
-        if(!captured){alert('Connector is still waiting for a roster-shaped AIMS response. Open My Schedule normally or change Zoom/Period to make AIMS refresh it.');return;}
-        const text=JSON.stringify(captured);
-        try{await navigator.clipboard.writeText(text);b.textContent='Copied — return to eScrew';b.style.background='#007F86';alert('Roster copied. Return to eScrew and tap AIMS to import it.');}
-        catch{prompt('Copy this roster JSON, then return to eScrew and tap AIMS:',text);}
-      });
-      doc.body.appendChild(b);
-      return b;
-    };
-    button=ensureButton();
-    const deliver=(value)=>{
-      if(!isRoster(value))return false;
-      captured={type:TYPE,payload:clean(value)};
-      button.textContent='Copy roster to eScrew';button.style.background='#007F86';
-      alert('Roster captured. Tap “Copy roster to eScrew” at the bottom of the page.');
-      return true;
-    };
-    const inspectText=(text)=>{try{return deliver(JSON.parse(text));}catch{return false;}};
-    const patch=(win)=>{
-      try{
-        if(win.location.origin!==AIMS)return;
-        if(!win.__escrewFetchPatched&&win.fetch){
-          win.__escrewFetchPatched=true;
-          const nativeFetch=win.fetch.bind(win);
-          win.fetch=async(...args)=>{const response=await nativeFetch(...args);try{response.clone().text().then(inspectText).catch(()=>{});}catch{}return response;};
-        }
-        if(!win.__escrewXhrPatched&&win.XMLHttpRequest){
-          win.__escrewXhrPatched=true;
-          const send=win.XMLHttpRequest.prototype.send;
-          win.XMLHttpRequest.prototype.send=function(...args){this.addEventListener('load',()=>{try{inspectText(this.responseText);}catch{}});return send.apply(this,args);};
-        }
-        try{for(const frame of win.document.querySelectorAll('iframe')){try{patch(frame.contentWindow);}catch{}}}catch{}
-      }catch{}
-    };
-    patch(window);
-    const observer=new MutationObserver(()=>{try{for(const frame of document.querySelectorAll('iframe')){try{patch(frame.contentWindow);}catch{}}}catch{}});
-    observer.observe(document.documentElement,{childList:true,subtree:true});
-    alert('eScrew connector is armed. Now open My Schedule normally.');
-  })()`;
-  const bookmarklet='javascript:'+source.replace(/\s+/g,' ');
-  document.getElementById('preview').textContent=bookmarklet;
-  document.getElementById('copy').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(bookmarklet);document.getElementById('copy').textContent='Copied';}catch{prompt('Copy this connector URL:',bookmarklet);}});
-  document.getElementById('open').addEventListener('click',()=>window.open('https://aims.airastana.com/','escrew-aims'));
+  const url = new URL('./escrew-aims.user.js', location.href).href;
+  document.getElementById('copy').addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+      document.getElementById('copy').textContent = 'Copied';
+    } catch {
+      prompt('Copy this userscript URL:', url);
+    }
+  });
 })();
 </script>
 </body>
