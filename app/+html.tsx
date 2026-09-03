@@ -133,6 +133,43 @@ const AIMS_CLIPBOARD_BRIDGE = `
   const writeMarker=()=>{try{localStorage.setItem(MARKER,String(Date.now()));}catch{}};
   const clearMarker=()=>{try{localStorage.removeItem(MARKER);}catch{}};
   const missing='No copied AIMS roster found yet. Return to Safari, run the eScrew AIMS capture, load My Schedule, tap “Copy roster to eScrew”, then return here and tap AIMS again.';
+  const deliverText=(text)=>{
+    let data;
+    try{data=JSON.parse(text);}catch{}
+    const payload=data&&data.payload;
+    if(!data||data.type!==TYPE||!payload||typeof payload.PeriodStart!=='string'||typeof payload.PeriodEnd!=='string'||!Array.isArray(payload.SchedulerEvents))return false;
+    clearMarker();
+    window.dispatchEvent(new MessageEvent('message',{origin:ORIGIN,data}));
+    return true;
+  };
+  const requestIOSPaste=()=>{
+    const area=document.createElement('textarea');
+    area.setAttribute('aria-hidden','true');
+    area.setAttribute('autocomplete','off');
+    area.setAttribute('autocapitalize','off');
+    area.setAttribute('spellcheck','false');
+    area.setAttribute('inputmode','none');
+    Object.assign(area.style,{position:'fixed',left:'50%',top:'50%',width:'1px',height:'1px',padding:'0',border:'0',opacity:'0',pointerEvents:'none',zIndex:'-1'});
+    let finished=false;
+    const cleanup=()=>{if(finished)return;finished=true;try{area.blur();}catch{}try{area.remove();}catch{}};
+    const accept=(text)=>{
+      if(finished)return;
+      if(deliverText(text)){cleanup();return;}
+      cleanup();
+      window.alert(missing);
+    };
+    area.addEventListener('paste',(event)=>{
+      const text=event.clipboardData&&event.clipboardData.getData('text/plain');
+      if(text){event.preventDefault();accept(text);return;}
+      setTimeout(()=>accept(area.value),0);
+    },{once:true});
+    area.addEventListener('input',()=>setTimeout(()=>accept(area.value),0),{once:true});
+    document.body.appendChild(area);
+    area.focus({preventScroll:true});
+    area.select();
+    try{document.execCommand('paste');}catch{cleanup();window.alert(missing);}
+    setTimeout(cleanup,30000);
+  };
   const openSafari=()=>{
     writeMarker();
     if(isiOS){window.location.href='x-safari-'+AIMS;return;}
@@ -143,15 +180,9 @@ const AIMS_CLIPBOARD_BRIDGE = `
     if(!href.startsWith(AIMS))return nativeOpen(url,target,features);
     const started=readMarker();
     if(!started||Date.now()-started>MAX_AGE){openSafari();return window;}
+    if(isiOS){requestIOSPaste();return window;}
     if(!navigator.clipboard||typeof navigator.clipboard.readText!=='function'){window.alert(missing);return window;}
-    navigator.clipboard.readText().then(text=>{
-      let data;
-      try{data=JSON.parse(text);}catch{}
-      const payload=data&&data.payload;
-      if(!data||data.type!==TYPE||!payload||typeof payload.PeriodStart!=='string'||typeof payload.PeriodEnd!=='string'||!Array.isArray(payload.SchedulerEvents)){window.alert(missing);return;}
-      clearMarker();
-      window.dispatchEvent(new MessageEvent('message',{origin:ORIGIN,data}));
-    }).catch(()=>window.alert(missing));
+    navigator.clipboard.readText().then(text=>{if(!deliverText(text))window.alert(missing);}).catch(()=>window.alert(missing));
     return window;
   };
 })();
