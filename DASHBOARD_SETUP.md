@@ -6,15 +6,27 @@ eScrew now supports importing schedules from the Airastana AIMS Dashboard endpoi
 
 ## Quick Start
 
+### Prerequisites
+
+✅ **You must be logged in to AIMS**
+- Visit: https://aims.airastana.com/ecrew
+- Sign in with your crew credentials
+- You should see your schedule or dashboard
+
 ### Option 1: Using the Extended Connector (Recommended)
 
-1. Visit: `public/aims-connector-extended.html`
-2. Choose your preferred endpoint:
+1. **Open eScrew** - Have the app ready
+2. **Visit connector**: `public/aims-connector-extended.html` (in new window/tab)
+3. **Choose endpoint**:
    - **SchedulerEvents** - Traditional, well-tested endpoint (default)
    - **Dashboard** - Alternative endpoint for schedule data
-3. Copy the bookmark code
-4. Create a Safari bookmark in your browser with the copied code
-5. Use the bookmark when you want to import your roster
+4. **Copy bookmark code** - Tap the button
+5. **Create Safari bookmark** with the copied code
+6. **Back in AIMS** - Already logged in at step 1
+7. **Run the bookmark** - Tap it when viewing your schedule
+8. **Wait for confirmation** - "✓ Roster ready" should appear
+9. **Send to eScrew** - Tap the button
+10. **Done!** - Roster appears in eScrew
 
 ### Option 2: Using Separate Connectors
 
@@ -27,15 +39,18 @@ eScrew now supports importing schedules from the Airastana AIMS Dashboard endpoi
 
 ## How It Works
 
-### Import Flow
+### Import Flow (Step by Step)
 
 ```
-1. Open AIMS in Safari
-2. Navigate to your schedule page
-3. Tap the eScrew bookmark
-4. Wait for "✓ Roster ready" message
-5. Tap "Send to eScrew"
-6. Your roster appears in eScrew
+1. Open AIMS (https://aims.airastana.com/ecrew) → Sign in
+2. Navigate to Schedule/Dashboard page in AIMS
+3. Open eScrew app in another window
+4. Copy AIMS bookmark from connector
+5. Create bookmark in Safari
+6. Run bookmark from AIMS page
+7. Wait for "✓ Roster ready" message
+8. Tap "Send to eScrew"
+9. Roster appears in eScrew ✓
 ```
 
 ### What Happens Behind the Scenes
