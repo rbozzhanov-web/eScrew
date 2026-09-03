@@ -4,6 +4,8 @@ import { extractDayColumns, type DayColumn } from './grid';
 import { parsePeriod, parseReportTotals, parseSubject, type ReportPeriod, type ReportSubject, type ReportTotals } from './header';
 import type { ExtractedPage } from './types';
 
+export type { RosterDuty, RosterSector } from './duties';
+
 export interface ParsedAirAstanaRoster {
   subject?: ReportSubject;
   period: ReportPeriod;
