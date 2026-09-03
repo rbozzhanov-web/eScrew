@@ -1,4 +1,5 @@
-import type { ParsedAirAstanaRoster, RosterAbsence, RosterDuty, RosterSector } from '@/src/import/parseAirAstanaRoster';
+import type { ParsedAirAstanaRoster } from '@/src/import/parseAirAstanaRoster';
+import type { RosterAbsence, RosterDuty, RosterSector } from '@/src/import/duties';
 
 export interface AimsSchedulerEvent {
   start?: string;
