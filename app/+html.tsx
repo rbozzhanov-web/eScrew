@@ -3,11 +3,12 @@ import type { ReactNode } from 'react';
 
 const APP_SHELL_CSS = `
 html,body,#root{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:none;touch-action:manipulation}
-html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",system-ui,sans-serif}
 #root{height:100dvh;min-height:100dvh;isolation:isolate}
 html *{scrollbar-width:none;-ms-overflow-style:none} html *::-webkit-scrollbar{display:none!important}
-body{background:#F2F6F6;-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
-@media(prefers-color-scheme:dark){body{background:#081519}}
+body{background:#F6F7FA;color:#0F172A;-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
+::selection{background:rgba(45,125,255,.18)}
+@media(prefers-color-scheme:dark){body{background:#0B1220;color:#F8FAFC}}
 `;
 
 const REGISTER_SW = `
@@ -20,8 +21,8 @@ export default function Root({ children }: { children: ReactNode }) {
     <meta charSet="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
     <meta name="color-scheme" content="light dark" />
-    <meta name="theme-color" media="(prefers-color-scheme:light)" content="#F2F6F6" />
-    <meta name="theme-color" media="(prefers-color-scheme:dark)" content="#081519" />
+    <meta name="theme-color" media="(prefers-color-scheme:light)" content="#F6F7FA" />
+    <meta name="theme-color" media="(prefers-color-scheme:dark)" content="#0B1220" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="eScrew" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
