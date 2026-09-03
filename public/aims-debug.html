@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>AIMS API Inspector</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 20px; font-family: monospace; background: #1e1e1e; color: #d4d4d4; }
+    main { max-width: 800px; margin: 0 auto; }
+    h1 { color: #4ec9b0; }
+    .log { background: #252526; padding: 12px; border-radius: 4px; margin: 10px 0; border-left: 3px solid #007acc; max-height: 300px; overflow-y: auto; font-size: 12px; white-space: pre-wrap; word-break: break-all; }
+    .log.found { border-left-color: #4ec9b0; }
+    .log.error { border-left-color: #f48771; }
+    button { padding: 10px 20px; background: #007acc; color: white; border: 0; border-radius: 4px; cursor: pointer; margin: 5px 0; }
+    button:active { opacity: 0.8; }
+    .status { padding: 10px; border-radius: 4px; margin: 10px 0; }
+    .status.waiting { background: #3c3c3c; }
+    .status.found { background: rgba(78, 201, 176, 0.2); color: #4ec9b0; }
+    .status.error { background: rgba(244, 135, 113, 0.2); color: #f48771; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>🔍 AIMS API Inspector</h1>
+  <p>This tool captures all API responses from AIMS to show what data is available.</p>
+
+  <div id="status" class="status waiting">Waiting for AIMS API calls...</div>
+
+  <div>
+    <button onclick="clearLogs()">Clear Logs</button>
+    <button onclick="downloadLogs()">Download Logs</button>
+    <button onclick="location.reload()">Reload Page</button>
+  </div>
+
+  <h2>API Responses</h2>
+  <div id="logs"></div>
+
+  <h2>Found Roster Data</h2>
+  <div id="roster-data" class="log"></div>
+</main>
+
+<script>
+const logs = [];
+const rosterData = [];
+const status = document.getElementById('status');
+const logsDiv = document.getElementById('logs');
+const rosterDiv = document.getElementById('roster-data');
+
+function log(type, data) {
+  const entry = { type, data, time: new Date().toISOString() };
+  logs.push(entry);
+
+  const logEl = document.createElement('div');
+  logEl.className = 'log ' + type;
+  logEl.textContent = `[${type.toUpperCase()}] ${typeof data === 'object' ? JSON.stringify(data, null, 2) : data}`;
+  logsDiv.appendChild(logEl);
+  logsDiv.scrollTop = logsDiv.scrollHeight;
+}
+
+function updateStatus() {
+  if (rosterData.length > 0) {
+    status.className = 'status found';
+    status.textContent = `✓ Found ${rosterData.length} roster(s) - Ready to use!`;
+  } else if (logs.length > 0) {
+    status.className = 'status waiting';
+    status.textContent = `Capturing... Found ${logs.length} API response(s)`;
+  }
+}
+
+// Patch fetch
+const origFetch = window.fetch;
+window.fetch = function(...args) {
+  return origFetch.apply(this, args).then(response => {
+    const clone = response.clone();
+    clone.text().then(text => {
+      try {
+        const data = JSON.parse(text);
+        log('fetch', { url: args[0], keys: Object.keys(data) });
+
+        // Check if it's roster data
+        if (data.PeriodStart && data.PeriodEnd && data.SchedulerEvents) {
+          rosterData.push(data);
+          const rosterEl = document.createElement('div');
+          rosterEl.className = 'log found';
+          rosterEl.textContent = `✓ ROSTER FOUND!\n${JSON.stringify(data, null, 2)}`;
+          rosterDiv.appendChild(rosterEl);
+          updateStatus();
+        }
+      } catch (e) {
+        log('fetch', { url: args[0], error: 'not json' });
+      }
+    }).catch(() => {});
+    return response;
+  }).catch(err => {
+    log('error', { fetch: String(err) });
+    throw err;
+  });
+};
+
+// Patch XMLHttpRequest
+const origOpen = XMLHttpRequest.prototype.open;
+XMLHttpRequest.prototype.open = function(method, url, ...args) {
+  this._xhrUrl = url;
+  return origOpen.apply(this, [method, url, ...args]);
+};
+
+const origSend = XMLHttpRequest.prototype.send;
+XMLHttpRequest.prototype.send = function(...args) {
+  this.addEventListener('load', () => {
+    try {
+      if (this.responseType === 'json' && this.response) {
+        const data = this.response;
+        log('xhr', { url: this._xhrUrl, keys: Object.keys(data) });
+
+        if (data.PeriodStart && data.PeriodEnd && data.SchedulerEvents) {
+          rosterData.push(data);
+          const rosterEl = document.createElement('div');
+          rosterEl.className = 'log found';
+          rosterEl.textContent = `✓ ROSTER FOUND!\n${JSON.stringify(data, null, 2)}`;
+          rosterDiv.appendChild(rosterEl);
+          updateStatus();
+        }
+      } else if (this.responseText) {
+        try {
+          const data = JSON.parse(this.responseText);
+          log('xhr', { url: this._xhrUrl, keys: Object.keys(data) });
+
+          if (data.PeriodStart && data.PeriodEnd && data.SchedulerEvents) {
+            rosterData.push(data);
+            const rosterEl = document.createElement('div');
+            rosterEl.className = 'log found';
+            rosterEl.textContent = `✓ ROSTER FOUND!\n${JSON.stringify(data, null, 2)}`;
+            rosterDiv.appendChild(rosterEl);
+            updateStatus();
+          }
+        } catch (e) {
+          log('xhr', { url: this._xhrUrl, error: 'not json' });
+        }
+      }
+    } catch (e) {
+      log('error', { xhr: String(e) });
+    }
+  });
+  return origSend.apply(this, args);
+};
+
+function clearLogs() {
+  logs.length = 0;
+  rosterData.length = 0;
+  logsDiv.innerHTML = '';
+  rosterDiv.innerHTML = '';
+  updateStatus();
+}
+
+function downloadLogs() {
+  const data = JSON.stringify({ logs, rosterData }, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `aims-api-${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+}
+
+console.log('AIMS API Inspector running. All API calls will be logged.');
+updateStatus();
+</script>
+</body>
+</html>
