@@ -1,0 +1,1 @@
+Crew is supported by the normalized/Core domain contract, but the current AIMS bridge adapter in PR #45 emits flights with no populated crew. The compatibility projection therefore leaves legacy `crewRecords` empty rather than reconstructing AIMS roles in UI/application code. Once the integration boundary supplies crew, MainScreen should consume `Sector.crew` from Core directly.

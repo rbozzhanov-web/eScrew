@@ -1,0 +1,1 @@
+Application/UI roster import accepts only `NormalizedRoster`. It does not accept AIMS HTML, DOM nodes, SchedulerEvents DTOs, leg identifiers, credentials, cookies, CSRF/session values or authorization headers.

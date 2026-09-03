@@ -1,0 +1,1 @@
+Scope is limited to reconciling current AIMS normalized output with the existing roster UI/storage projection while preserving current main UI. No parser, engine, protocol, bridge-origin, PDF-parser or deployment redesign is included.
