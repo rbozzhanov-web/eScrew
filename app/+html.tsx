@@ -11,6 +11,10 @@ body{background:#F6F7FA;color:#0F172A;-webkit-tap-highlight-color:transparent;-w
 ::selection{background:rgba(45,125,255,.18)}
 
 /* eScrew concept skin. Visual overrides only: no layout, DOM or behavior changes. */
+/* Header refinement from the approved mockup: larger wordmark, no subtitle. */
+#root [style*="font-size: 27px"][style*="letter-spacing: -0.8px"]:not([style*="line-height: 31px"]){font-size:30px!important;letter-spacing:-.9px!important}
+#root [style*="font-size: 10px"][style*="letter-spacing: 1.2px"]{display:none!important}
+
 #root [style*="background-color: rgba(255, 255, 255, 0.88)"],
 #root [style*="background-color:rgba(255,255,255,.88)"],
 #root [style*="background-color: rgba(255, 255, 255, 0.78)"],
