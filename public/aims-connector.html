@@ -46,20 +46,26 @@
 <script>
 (()=>{
 const source=String.raw`(()=>{
-const A='https://aims.airastana.com',T='escrew:aims-scheduler-events',B='__escrewAimsCopy';
+const A='https://aims.airastana.com',T='escrew:aims-scheduler-events',B='__escrewAimsCopy',ACTIVE='__escrewCaptureActive';
 if(location.origin!==A){alert('Open AIMS in Safari first, then run eScrew Capture.');return;}
+if(window[ACTIVE]){alert('eScrew Capture is already active.');return;}
+window[ACTIVE]=true;
 let c=null,b=null;
 const r=v=>!!v&&typeof v==='object'&&typeof v.PeriodStart==='string'&&typeof v.PeriodEnd==='string'&&Array.isArray(v.SchedulerEvents);
 const clean=v=>({PeriodStart:v.PeriodStart,PeriodEnd:v.PeriodEnd,RosterDateTime:v.RosterDateTime,SchedulerEvents:v.SchedulerEvents});
 const btn=()=>{if(!document.body)return null;let x=document.getElementById(B);if(x)return x;x=document.createElement('button');x.id=B;x.type='button';Object.assign(x.style,{position:'fixed',left:'16px',right:'16px',bottom:'calc(16px + env(safe-area-inset-bottom))',zIndex:'2147483647',minHeight:'52px',border:'0',borderRadius:'14px',padding:'12px 18px',background:'#60777A',color:'#fff',font:'700 15px -apple-system,BlinkMacSystemFont,system-ui,sans-serif',boxShadow:'0 8px 24px rgba(0,0,0,.25)'});x.addEventListener('click',async()=>{if(!c){alert('Capture is active and waiting for the roster response.');return;}const s=JSON.stringify(c);try{await navigator.clipboard.writeText(s);x.textContent='Copied — return to eScrew';x.style.background='#007F86';alert('Roster copied. Return to eScrew and tap AIMS to import it.');}catch{prompt('Copy this roster JSON, then return to eScrew and tap AIMS:',s);}});document.body.appendChild(x);return x;};
-const refresh=()=>{b=btn();if(!b)return;b.textContent=c?'Copy roster to eScrew':'eScrew Capture — waiting for roster';b.style.background=c?'#007F86':'#60777A';};
+const refresh=()=>{b=btn();if(!b)return;const text=c?'Copy roster to eScrew':'eScrew Capture — waiting for roster',bg=c?'#007F86':'#60777A';if(b.textContent!==text)b.textContent=text;if(b.style.background!==bg)b.style.background=bg;};
 const deliver=v=>{if(!r(v))return false;c={type:T,payload:clean(v)};refresh();return true;};
 const inspect=s=>{try{return deliver(JSON.parse(s));}catch{return false;}};
-const patch=w=>{try{if(!w||w.location.origin!==A)return;if(!w.__escrewFetchPatched&&w.fetch){w.__escrewFetchPatched=true;const f=w.fetch.bind(w);w.fetch=async(...a)=>{const q=await f(...a);try{q.clone().text().then(inspect).catch(()=>{});}catch{}return q;};}if(!w.__escrewXhrPatched&&w.XMLHttpRequest){w.__escrewXhrPatched=true;const s=w.XMLHttpRequest.prototype.send;w.XMLHttpRequest.prototype.send=function(...a){this.addEventListener('load',()=>{try{inspect(this.responseText);}catch{}});return s.apply(this,a);};}try{for(const fr of w.document.querySelectorAll('iframe')){try{patch(fr.contentWindow);if(!fr.__escrewLoadHook){fr.__escrewLoadHook=true;fr.addEventListener('load',()=>{try{patch(fr.contentWindow);}catch{}});}}catch{}}}catch{}}catch{}};
+const patch=w=>{try{if(!w||w.location.origin!==A)return;if(!w.__escrewFetchPatched&&w.fetch){w.__escrewFetchPatched=true;const f=w.fetch.bind(w);w.fetch=async(...a)=>{const q=await f(...a);try{q.clone().text().then(inspect).catch(()=>{});}catch{}return q;};}if(!w.__escrewXhrPatched&&w.XMLHttpRequest){w.__escrewXhrPatched=true;const s=w.XMLHttpRequest.prototype.send;w.XMLHttpRequest.prototype.send=function(...a){this.addEventListener('load',()=>{try{inspect(this.responseText);}catch{}});return s.apply(this,a);};}}catch{}};
+const hookFrame=fr=>{try{if(fr.__escrewLoadHook)return;fr.__escrewLoadHook=true;const apply=()=>{try{patch(fr.contentWindow);}catch{}};apply();fr.addEventListener('load',apply);}catch{}};
+const scan=node=>{try{if(node instanceof HTMLIFrameElement)hookFrame(node);if(node&&node.querySelectorAll)for(const fr of node.querySelectorAll('iframe'))hookFrame(fr);}catch{}};
 const tx=e=>(e.textContent||'').replace(/\\s+/g,' ').trim().toLowerCase(),hr=e=>{try{return String(e.href||e.getAttribute&&e.getAttribute('href')||'');}catch{return '';}};
 const find=doc=>{const n=[...doc.querySelectorAll('a,button,[role="button"],[onclick]')];return n.find(e=>/\/eCrew\/CrewSchedule/i.test(hr(e)))||n.find(e=>tx(e)==='my schedule')||n.find(e=>tx(e).includes('my schedule'))||n.find(e=>tx(e).includes('crew schedule'));};
 const open=()=>{let x=find(document);if(x){try{x.click();return true;}catch{}}try{for(const fr of document.querySelectorAll('iframe')){const d=fr.contentDocument;if(!d)continue;x=find(d);if(x){x.click();return true;}}}catch{}return false;};
-refresh();patch(window);new MutationObserver(()=>{patch(window);refresh();}).observe(document.documentElement,{childList:true,subtree:true});setTimeout(()=>{if(!open())alert('eScrew Capture is active. Tap My Schedule once; capture will continue automatically.');},120);
+refresh();patch(window);scan(document);
+new MutationObserver(ms=>{for(const m of ms)for(const n of m.addedNodes)scan(n);}).observe(document.documentElement,{childList:true,subtree:true});
+setTimeout(()=>{if(!open())alert('eScrew Capture is active. Tap My Schedule once; capture will continue automatically.');},120);
 })()`;
 const bm='javascript:'+source.replace(/\s+/g,' '),copy=document.getElementById('copy');
 copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(bm);copy.textContent='Copied';}catch{prompt('Copy this Capture URL:',bm);}});
