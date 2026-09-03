@@ -1,0 +1,10 @@
+{
+  "name": "eScrew — Crew Schedule",
+  "short_name": "eScrew",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F2F6F6",
+  "theme_color": "#007F86",
+  "description": "Personal flight crew schedule companion."
+}
