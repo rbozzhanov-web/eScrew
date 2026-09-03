@@ -9,70 +9,95 @@ html *{scrollbar-width:none;-ms-overflow-style:none} html *::-webkit-scrollbar{d
 body{background:#F6F7FA;color:#0F172A;-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
 #root *{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",system-ui,sans-serif!important}
 ::selection{background:rgba(45,125,255,.18)}
+@media(prefers-color-scheme:dark){body{background:#0B1220;color:#F8FAFC}}
+`;
 
-/* eScrew concept skin. Visual overrides only: no layout, DOM or behavior changes. */
-/* Header refinement from the approved mockup: larger wordmark, no subtitle. */
-#root [style*="font-size: 27px"][style*="letter-spacing: -0.8px"]:not([style*="line-height: 31px"]){font-size:30px!important;letter-spacing:-.9px!important}
-#root [style*="font-size: 10px"][style*="letter-spacing: 1.2px"]{display:none!important}
+const VISUAL_SKIN = `
+(()=>{
+  const root=()=>document.getElementById('root');
+  const set=(el,name,value)=>{
+    if(el.style.getPropertyValue(name)===value&&el.style.getPropertyPriority(name)==='important')return;
+    el.style.setProperty(name,value,'important');
+  };
+  const eq=(value,...candidates)=>candidates.includes(value.replace(/\\s+/g,''));
+  const normalized=(value)=>value.replace(/\\s+/g,'');
 
-#root [style*="background-color: rgba(255, 255, 255, 0.88)"],
-#root [style*="background-color:rgba(255,255,255,.88)"],
-#root [style*="background-color: rgba(255, 255, 255, 0.78)"],
-#root [style*="background-color:rgba(255,255,255,.78)"]{
-  background-color:rgba(255,255,255,.92)!important;
-  border-color:#E9EDF2!important;
-  box-shadow:0 12px 30px rgba(15,23,42,.055),0 2px 8px rgba(15,23,42,.035)!important;
-}
-#root [style*="background-color: rgb(242, 246, 246)"],
-#root [style*="background-color:#F2F6F6"]{background-color:#F6F7FA!important}
-#root [style*="color: rgb(16, 35, 38)"],
-#root [style*="color:#102326"]{color:#0F172A!important}
-#root [style*="color: rgb(96, 119, 122)"],
-#root [style*="color:#60777A"]{color:#6B7280!important}
-#root [style*="color: rgb(0, 127, 134)"],
-#root [style*="color:#007F86"]{color:#2D7DFF!important}
-#root [style*="background-color: rgb(223, 241, 242)"],
-#root [style*="background-color:#DFF1F2"]{background-color:rgba(45,125,255,.11)!important}
-#root [style*="border-color: rgba(16, 74, 79, 0.11)"],
-#root [style*="border-color:rgba(16,74,79,.11)"]{border-color:#E9EDF2!important}
-#root [style*="color: rgb(166, 122, 36)"],
-#root [style*="color:#A67A24"]{color:#A58B4F!important}
-#root [style*="background-color: rgb(0, 127, 134)"],
-#root [style*="background-color:#007F86"]{background-color:#2D7DFF!important}
-#root [style*="border-color: rgb(0, 127, 134)"],
-#root [style*="border-color:#007F86"]{border-color:#2D7DFF!important}
+  const skinElement=(el)=>{
+    if(!(el instanceof HTMLElement))return;
+    const cs=getComputedStyle(el);
+    const color=normalized(cs.color);
+    const bg=normalized(cs.backgroundColor);
+    const border=normalized(cs.borderColor);
 
-/* Glass bars and floating controls get the soft iOS material from the concept. */
-#root [style*="backdrop-filter"]{
-  backdrop-filter:blur(30px) saturate(1.35)!important;
-  -webkit-backdrop-filter:blur(30px) saturate(1.35)!important;
-}
+    if(color==='rgb(16,35,38)')set(el,'color','#0F172A');
+    else if(color==='rgb(96,119,122)')set(el,'color','#6B7280');
+    else if(color==='rgb(0,127,134)')set(el,'color','#2D7DFF');
+    else if(color==='rgb(166,122,36)')set(el,'color','#A58B4F');
+    else if(color==='rgb(243,250,250)')set(el,'color','#F8FAFC');
+    else if(color==='rgb(168,186,188)')set(el,'color','#98A2B3');
+    else if(color==='rgb(53,184,192)')set(el,'color','#67A5FF');
+    else if(color==='rgb(212,174,98)')set(el,'color','#C2A664');
 
-@media(prefers-color-scheme:dark){
-  body{background:#0B1220;color:#F8FAFC}
-  #root [style*="background-color: rgb(8, 21, 25)"],
-  #root [style*="background-color:#081519"]{background-color:#0B1220!important}
-  #root [style*="background-color: rgba(21, 44, 50, 0.88)"],
-  #root [style*="background-color:rgba(21,44,50,.88)"],
-  #root [style*="background-color: rgba(15, 34, 39, 0.78)"],
-  #root [style*="background-color:rgba(15,34,39,.78)"]{
-    background-color:rgba(22,30,45,.9)!important;
-    border-color:rgba(148,163,184,.15)!important;
-    box-shadow:0 14px 34px rgba(0,0,0,.2)!important;
-  }
-  #root [style*="color: rgb(243, 250, 250)"],
-  #root [style*="color:#F3FAFA"]{color:#F8FAFC!important}
-  #root [style*="color: rgb(168, 186, 188)"],
-  #root [style*="color:#A8BABC"]{color:#98A2B3!important}
-  #root [style*="color: rgb(53, 184, 192)"],
-  #root [style*="color:#35B8C0"]{color:#67A5FF!important}
-  #root [style*="background-color: rgba(53, 184, 192, 0.16)"],
-  #root [style*="background-color:rgba(53,184,192,.16)"]{background-color:rgba(45,125,255,.17)!important}
-  #root [style*="border-color: rgba(174, 214, 216, 0.14)"],
-  #root [style*="border-color:rgba(174,214,216,.14)"]{border-color:rgba(148,163,184,.15)!important}
-  #root [style*="color: rgb(212, 174, 98)"],
-  #root [style*="color:#D4AE62"]{color:#C2A664!important}
-}
+    if(bg==='rgb(242,246,246)')set(el,'background-color','#F6F7FA');
+    else if(eq(bg,'rgba(255,255,255,0.78)','rgba(255,255,255,.78)','rgba(255,255,255,0.88)','rgba(255,255,255,.88)')){
+      set(el,'background-color','rgba(255,255,255,.94)');
+      if(parseFloat(cs.borderRadius)>=14){
+        set(el,'border-color','#E9EDF2');
+        set(el,'box-shadow','0 12px 30px rgba(15,23,42,.055),0 2px 8px rgba(15,23,42,.035)');
+      }
+    }
+    else if(bg==='rgb(223,241,242)')set(el,'background-color','rgba(45,125,255,.11)');
+    else if(bg==='rgb(0,127,134)')set(el,'background-color','#2D7DFF');
+    else if(bg==='rgb(8,21,25)')set(el,'background-color','#0B1220');
+    else if(eq(bg,'rgba(15,34,39,0.78)','rgba(15,34,39,.78)','rgba(21,44,50,0.88)','rgba(21,44,50,.88)')){
+      set(el,'background-color','rgba(22,30,45,.92)');
+      if(parseFloat(cs.borderRadius)>=14){
+        set(el,'border-color','rgba(148,163,184,.15)');
+        set(el,'box-shadow','0 14px 34px rgba(0,0,0,.20)');
+      }
+    }
+    else if(eq(bg,'rgba(53,184,192,0.16)','rgba(53,184,192,.16)'))set(el,'background-color','rgba(45,125,255,.17)');
+
+    if(eq(border,'rgba(16,74,79,0.11)','rgba(16,74,79,.11)'))set(el,'border-color','#E9EDF2');
+    else if(border==='rgb(0,127,134)')set(el,'border-color','#2D7DFF');
+    else if(eq(border,'rgba(174,214,216,0.14)','rgba(174,214,216,.14)'))set(el,'border-color','rgba(148,163,184,.15)');
+
+    if(el.textContent==='CREW SCHEDULE')set(el,'display','none');
+    if(el.textContent==='eScrew'){
+      set(el,'font-size','30px');
+      set(el,'line-height','34px');
+      set(el,'font-weight','700');
+      set(el,'letter-spacing','-0.9px');
+    }
+
+    if(cs.backdropFilter&&cs.backdropFilter!=='none'){
+      set(el,'backdrop-filter','blur(30px) saturate(1.35)');
+      set(el,'-webkit-backdrop-filter','blur(30px) saturate(1.35)');
+    }
+  };
+
+  const apply=()=>{
+    const r=root();if(!r)return;
+    skinElement(r);
+    r.querySelectorAll('*').forEach(skinElement);
+  };
+
+  const start=()=>{
+    apply();
+    const r=root();if(!r){requestAnimationFrame(start);return;}
+    let queued=false;
+    const observer=new MutationObserver(()=>{
+      if(queued)return;queued=true;
+      requestAnimationFrame(()=>{queued=false;apply();});
+    });
+    observer.observe(r,{subtree:true,childList:true,attributes:true,attributeFilter:['style','class']});
+    if(window.matchMedia){
+      const mq=window.matchMedia('(prefers-color-scheme: dark)');
+      mq.addEventListener?.('change',apply);
+    }
+  };
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+})();
 `;
 
 const OPEN_AIMS_EXTERNALLY = `
@@ -99,5 +124,5 @@ export default function Root({ children }: { children: ReactNode }) {
     <style dangerouslySetInnerHTML={{__html:APP_SHELL_CSS}} />
     <script dangerouslySetInnerHTML={{__html:OPEN_AIMS_EXTERNALLY}} />
     <ScrollViewStyleReset />{headNodes}
-  </head><body {...bodyAttributes}>{children}{bodyNodes}<script dangerouslySetInnerHTML={{__html:REGISTER_SW}} /></body></html>;
+  </head><body {...bodyAttributes}>{children}{bodyNodes}<script dangerouslySetInnerHTML={{__html:VISUAL_SKIN}} /><script dangerouslySetInnerHTML={{__html:REGISTER_SW}} /></body></html>;
 }
