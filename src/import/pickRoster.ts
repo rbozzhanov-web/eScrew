@@ -19,7 +19,7 @@ export async function pickAndParseRoster():Promise<ParsedAirAstanaRoster|undefin
   const isWebArchive=header.startsWith('bplist00')||/\.webarchive$/i.test(asset.name??'');
   throw new Error(isWebArchive
     ? 'This Safari Web Archive does not contain a loaded AIMS Crew Schedule. Open Crew Schedule in AIMS, wait until it finishes loading, then save it again as Web Archive.'
-    : 'Unsupported roster file. On iPhone, open AIMS Crew Schedule in Safari, Share → Options → Web Archive → Save to Files, then choose that file here.');
+    : 'Unsupported roster file. On iPhone: AIMS Crew Schedule → Share → Options → Web Archive → Done → Save to Files. Then return to eScrew and choose that .webarchive file.');
 }
 
 /**
