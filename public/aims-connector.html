@@ -34,12 +34,10 @@
 <main>
   <h1>eScrew AIMS</h1>
   <p class="info">Easy roster import</p>
-
   <div class="tabs">
     <button class="tab-btn active" data-tab="bookmark">Safari Bookmark</button>
     <button class="tab-btn" data-tab="manual">Manual Paste</button>
   </div>
-
   <div id="bookmark" class="tab active">
     <div class="card">
       <h2>One-time setup</h2>
@@ -53,14 +51,12 @@
         <li>In eScrew: Tap the <strong>A</strong> button (opens AIMS)</li>
         <li>In AIMS: Sign in and go to <strong>My Schedule</strong></li>
         <li>In AIMS: Tap the <strong>"eScrew AIMS"</strong> bookmark</li>
-        <li>If needed, change the displayed schedule once so AIMS loads roster data</li>
-        <li>Wait for "✓ Roster ready"</li>
-        <li>Tap <strong>"Send to eScrew"</strong></li>
+        <li>Wait while eScrew reads the current roster from your authenticated AIMS session</li>
+        <li>When "✓ Roster ready" appears, tap <strong>"Send to eScrew"</strong></li>
         <li>Back in eScrew: Roster appears ✓</li>
       </ol>
     </div>
   </div>
-
   <div id="manual" class="tab">
     <div class="card">
       <h2>Manual JSON validation</h2>
@@ -70,10 +66,8 @@
       <p id="parse-status" style="margin-top:10px;"></p>
     </div>
   </div>
-
   <div class="card"><p class="info">✓ No passwords • ✓ No login in eScrew • ✓ Roster stays private</p></div>
 </main>
-
 <script>
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -84,9 +78,10 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
   });
 });
 
-// This code runs inside the authenticated AIMS page. The message therefore has
-// event.origin === AIMS_ORIGIN, while targetOrigin must be the eScrew app origin.
-const bookmarkletCode = `javascript:(function(){const AIMS_ORIGIN='https://aims.airastana.com',ESCREW_ORIGIN='https://rbozzhanov-web.github.io',MSG_TYPE='escrew:aims-roster',RUNNING='__escrewAimsRunning';if(location.origin!==AIMS_ORIGIN){alert('Run this bookmark inside AIMS');return;}if(window[RUNNING]){alert('AIMS bookmark already running');return;}window[RUNNING]=true;let rosterData=null;const ui=document.createElement('div');Object.assign(ui.style,{position:'fixed',bottom:'20px',right:'20px',width:'300px',padding:'16px',borderRadius:'14px',background:'rgba(21,44,50,0.95)',color:'#F3FAFA',font:'14px system-ui',zIndex:'2147483647',boxShadow:'0 20px 60px rgba(0,0,0,0.3)',backdropFilter:'blur(12px)',textAlign:'center'});const status=document.createElement('div');status.textContent='🔍 Waiting for roster data…';Object.assign(status.style,{fontSize:'13px',color:'#A8BABC',marginBottom:'12px'});const btn=document.createElement('button');Object.assign(btn.style,{padding:'10px 12px',borderRadius:'10px',border:'0',background:'#60777A',color:'#F3FAFA',font:'600 13px system-ui',cursor:'pointer',width:'100%'});btn.textContent='Waiting…';btn.disabled=true;ui.appendChild(status);ui.appendChild(btn);document.body.appendChild(ui);const capture=d=>{if(!d||typeof d!=='object')return;if(typeof d.PeriodStart==='string'&&typeof d.PeriodEnd==='string'&&Array.isArray(d.SchedulerEvents)){rosterData={type:MSG_TYPE,payload:d};status.textContent='✓ Roster ready';status.style.color='#35B8C0';btn.textContent='Send to eScrew';btn.disabled=false;btn.style.background='#35B8C0';btn.onclick=()=>{if(!window.opener){status.textContent='Open AIMS from eScrew first';status.style.color='#E08383';return;}try{window.opener.postMessage(rosterData,ESCREW_ORIGIN);btn.textContent='✓ Sent to eScrew';btn.disabled=true;setTimeout(()=>window.close(),900);}catch(e){status.textContent='Could not send roster';status.style.color='#E08383';}};}};const origFetch=window.fetch;window.fetch=function(...args){return origFetch.apply(this,args).then(r=>{const c=r.clone();if(c.headers.get('content-type')?.includes('json'))c.json().then(capture).catch(()=>{});return r;});};const origSend=XMLHttpRequest.prototype.send;XMLHttpRequest.prototype.send=function(...args){this.addEventListener('load',()=>{try{this.responseType==='json'?capture(this.response):capture(JSON.parse(this.responseText));}catch(e){}});return origSend.apply(this,args);};})()`;
+// Runs inside the already-authenticated AIMS page. Like the reference AIMS
+// extractor, it actively requests roster data through the existing browser
+// session instead of waiting for the page to happen to make another request.
+const bookmarkletCode = `javascript:(async function(){const AIMS_ORIGIN='https://aims.airastana.com',ESCREW_ORIGIN='https://rbozzhanov-web.github.io',ROSTER_PATH='/eCrew/CrewSchedule/SchedulerEvents',MSG_TYPE='escrew:aims-roster',RUNNING='__escrewAimsRunning';if(location.origin!==AIMS_ORIGIN){alert('Run this bookmark inside AIMS');return;}if(window[RUNNING]){alert('AIMS bookmark already running');return;}window[RUNNING]=true;const ui=document.createElement('div');Object.assign(ui.style,{position:'fixed',bottom:'20px',right:'20px',width:'300px',padding:'16px',borderRadius:'14px',background:'rgba(21,44,50,0.95)',color:'#F3FAFA',font:'14px system-ui',zIndex:'2147483647',boxShadow:'0 20px 60px rgba(0,0,0,0.3)',backdropFilter:'blur(12px)',textAlign:'center'});const status=document.createElement('div');status.textContent='↻ Reading current roster…';Object.assign(status.style,{fontSize:'13px',color:'#A8BABC',marginBottom:'12px'});const btn=document.createElement('button');Object.assign(btn.style,{padding:'10px 12px',borderRadius:'10px',border:'0',background:'#60777A',color:'#F3FAFA',font:'600 13px system-ui',cursor:'pointer',width:'100%'});btn.textContent='Reading…';btn.disabled=true;ui.appendChild(status);ui.appendChild(btn);document.body.appendChild(ui);try{const response=await fetch(ROSTER_PATH,{method:'GET',credentials:'same-origin',headers:{Accept:'application/json'}});if(!response.ok)throw new Error('Roster request failed ('+response.status+')');const d=await response.json();if(!d||typeof d!=='object'||typeof d.PeriodStart!=='string'||typeof d.PeriodEnd!=='string'||!Array.isArray(d.SchedulerEvents))throw new Error('Unsupported roster response');const rosterData={type:MSG_TYPE,payload:d};status.textContent='✓ Roster ready';status.style.color='#35B8C0';btn.textContent='Send to eScrew';btn.disabled=false;btn.style.background='#35B8C0';btn.onclick=()=>{if(!window.opener){status.textContent='Open AIMS from eScrew first';status.style.color='#E08383';return;}try{window.opener.postMessage(rosterData,ESCREW_ORIGIN);btn.textContent='✓ Sent to eScrew';btn.disabled=true;setTimeout(()=>window.close(),900);}catch(e){status.textContent='Could not send roster';status.style.color='#E08383';}};}catch(e){status.textContent='Could not read roster: '+(e&&e.message?e.message:'Unknown error');status.style.color='#E08383';btn.textContent='Close';btn.disabled=false;btn.onclick=()=>{ui.remove();window[RUNNING]=false;};}})()`;
 
 document.getElementById('copy-btn').addEventListener('click', async () => {
   try {
@@ -96,31 +91,15 @@ document.getElementById('copy-btn').addEventListener('click', async () => {
     btn.style.background = '#35B8C0';
     setTimeout(() => { btn.textContent = 'Copy AIMS Bookmark'; btn.style.background = '#007F86'; }, 2000);
   } catch (error) {
-    const ta = document.createElement('textarea');
-    ta.value = bookmarkletCode;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-    alert('Bookmark copied');
+    const ta = document.createElement('textarea'); ta.value = bookmarkletCode; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); alert('Bookmark copied');
   }
 });
 
 document.getElementById('parse-btn').addEventListener('click', () => {
-  const input = document.getElementById('json-input').value.trim();
-  const status = document.getElementById('parse-status');
+  const input = document.getElementById('json-input').value.trim(); const status = document.getElementById('parse-status');
   if (!input) { status.textContent = '❌ Paste JSON first'; status.style.color = '#E08383'; return; }
-  try {
-    const data = JSON.parse(input);
-    if (typeof data.PeriodStart !== 'string' || typeof data.PeriodEnd !== 'string' || !Array.isArray(data.SchedulerEvents)) {
-      status.textContent = '❌ Invalid SchedulerEvents roster format'; status.style.color = '#E08383'; return;
-    }
-    status.textContent = '✓ Valid roster JSON. For secure import, send it from the AIMS bookmark.';
-    status.style.color = '#35B8C0';
-  } catch (e) {
-    status.textContent = '❌ Invalid JSON: ' + e.message;
-    status.style.color = '#E08383';
-  }
+  try { const data = JSON.parse(input); if (typeof data.PeriodStart !== 'string' || typeof data.PeriodEnd !== 'string' || !Array.isArray(data.SchedulerEvents)) { status.textContent = '❌ Invalid SchedulerEvents roster format'; status.style.color = '#E08383'; return; } status.textContent = '✓ Valid roster JSON. For secure import, send it from the AIMS bookmark.'; status.style.color = '#35B8C0'; }
+  catch (e) { status.textContent = '❌ Invalid JSON: ' + e.message; status.style.color = '#E08383'; }
 });
 </script>
 </body>
