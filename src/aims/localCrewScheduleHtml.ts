@@ -7,10 +7,10 @@ type JsonRecord = Record<string, unknown>;
 const FLIGHT_DECK_CODES = new Set(['CP', 'FO', 'LI']);
 const SECTOR_RE = /(\d{1,5})\s*-\s*([A-Z]{3,4})\s*\(([A]?)(\d{4})(⁺¹)?\)\s*-\s*([A-Z]{3,4})\s*\(([A]?)(\d{4})(⁺¹)?\)/g;
 
-/** Parse a locally saved AIMS CrewSchedule HTML file. No network/session state is required. */
+/** Parse a locally saved AIMS CrewSchedule HTML or Safari Web Archive. No network/session state is required. */
 export function parseAimsCrewScheduleHtml(html: string): ProjectedRoster {
   if (!/\/eCrew\/CrewSchedule|CrewSchedule/i.test(html) || !/initialResult/.test(html)) {
-    throw new Error('Unsupported AIMS file. Save the Crew Schedule page as HTML and import that file.');
+    throw new Error('Unsupported AIMS file. Save the fully loaded Crew Schedule page locally and import that file.');
   }
 
   const initialResult = parseAssignedJsonObject(html, /var\s+initialResult\s*=/);
@@ -152,7 +152,7 @@ function parseCrewGroup(value: string): { date: string; flightNumber: string; or
 
 function parseAssignedJsonObject(source: string, marker: RegExp): JsonRecord {
   const match = marker.exec(source);
-  if (!match) throw new Error('Could not find AIMS CrewSchedule data in the saved HTML file.');
+  if (!match) throw new Error('Could not find AIMS CrewSchedule data in the saved local file.');
   const start = source.indexOf('{', match.index + match[0].length);
   if (start < 0) throw new Error('Could not read AIMS CrewSchedule data.');
   const json = balancedJson(source, start, '{', '}');
