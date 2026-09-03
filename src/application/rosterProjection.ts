@@ -1,8 +1,10 @@
 import type { NormalizedRoster } from '@/src/core/rosterContract';
 import type { ParsedAirAstanaRoster } from '@/src/import/parseAirAstanaRoster';
 
+export type ProjectedRoster = ParsedAirAstanaRoster & { normalized?: NormalizedRoster };
+
 /** Temporary UI projection. Remove when MainScreen consumes Core roster state directly. */
-export function projectNormalizedRoster(roster: NormalizedRoster): ParsedAirAstanaRoster {
+export function projectNormalizedRoster(roster: NormalizedRoster): ProjectedRoster {
   const sectors: ParsedAirAstanaRoster['sectors'] = [];
   const duties: ParsedAirAstanaRoster['duties'] = [];
   for (const duty of roster.duties) {
@@ -17,5 +19,14 @@ export function projectNormalizedRoster(roster: NormalizedRoster): ParsedAirAsta
       dutyIndex, dutySectorIndex: index + 1,
     }));
   }
-  return { period: roster.period, totals: {}, sectors, duties, absences: roster.absences ?? [], crewRecords: [], unreadCells: [] };
+  return {
+    period: roster.period,
+    totals: {},
+    sectors,
+    duties,
+    absences: roster.absences ?? [],
+    crewRecords: [],
+    unreadCells: [],
+    normalized: roster,
+  };
 }
