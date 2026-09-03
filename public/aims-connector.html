@@ -28,24 +28,30 @@
 <body>
 <main>
   <h1>eScrew AIMS Connector</h1>
-  <p class="muted">One-time Safari setup. Arm the connector on the AIMS home page before opening My Schedule. It watches normal AIMS responses and copies only sanitized roster JSON for eScrew.</p>
+  <p class="muted">Recommended setup: install the persistent connector once in a Safari userscript extension. After that it starts automatically on aims.airastana.com, including after page reloads and navigation.</p>
+
   <div class="card">
-    <strong>iPhone / iPad</strong>
+    <strong>Persistent setup — recommended</strong>
     <ol>
-      <li>Add this page to Safari bookmarks.</li>
-      <li>Edit that bookmark and replace its URL with the connector copied below.</li>
-      <li>Open AIMS in normal Safari and sign in.</li>
-      <li>While still on the AIMS home page, run the “eScrew AIMS” bookmark.</li>
-      <li>Open My Schedule normally.</li>
-      <li>When the status changes to “Copy roster to eScrew”, tap it, return to eScrew, then tap AIMS.</li>
+      <li>Enable a Safari userscript extension on your iPhone/iPad and allow it on aims.airastana.com.</li>
+      <li>Open the eScrew persistent connector below and install it in that extension once.</li>
+      <li>After installation, use AIMS normally: sign in and open My Schedule. eScrew capture starts automatically.</li>
+      <li>When “Copy roster to eScrew” appears, tap it, return to eScrew, then tap AIMS to import.</li>
     </ol>
-    <button id="copy">Copy connector</button>
+    <button id="install">Open persistent connector</button>
     <button id="open" class="secondary">Open AIMS</button>
+  </div>
+
+  <div class="card">
+    <strong>Bookmark fallback</strong>
+    <p class="muted">Use this only if a Safari userscript extension is not available. The bookmark connector must be started manually for each new Safari page/session.</p>
+    <button id="copy">Copy bookmark connector</button>
     <code id="preview"></code>
   </div>
+
   <div class="card">
     <strong>Privacy boundary</strong>
-    <p class="muted">The connector never asks for or reads your password. It does not serialize cookies, CSRF values, tokens, request bodies, credentials, or session data. Authentication stays inside Safari; only a response that structurally matches an AIMS roster is copied.</p>
+    <p class="muted">Both connector modes only inspect normal AIMS response bodies for roster-shaped JSON. They do not read or copy passwords, cookies, CSRF values, tokens, request bodies, credentials, or session data.</p>
   </div>
 </main>
 <script>
@@ -106,6 +112,7 @@
   })()`;
   const bookmarklet='javascript:'+source.replace(/\s+/g,' ');
   document.getElementById('preview').textContent=bookmarklet;
+  document.getElementById('install').addEventListener('click',()=>window.open('/eScrew/escrew-aims.user.js','_blank'));
   document.getElementById('copy').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(bookmarklet);document.getElementById('copy').textContent='Copied';}catch{prompt('Copy this connector URL:',bookmarklet);}});
   document.getElementById('open').addEventListener('click',()=>window.open('https://aims.airastana.com/','escrew-aims'));
 })();
