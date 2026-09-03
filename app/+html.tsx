@@ -75,8 +75,8 @@ body{background:#F6F7FA;color:#0F172A;-webkit-tap-highlight-color:transparent;-w
 }
 `;
 
-const OPEN_AIMS_EXTERNALLY = `
-(()=>{const AIMS='https://aims.airastana.com/';const standalone=(typeof window.matchMedia==='function'&&window.matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;if(!standalone)return;const nativeOpen=window.open.bind(window);window.open=(url,target,features)=>{const href=typeof url==='string'?url:String(url??'');if(href.startsWith(AIMS)){window.location.assign(href);return window;}return nativeOpen(url,target,features);};})();
+const AIMS_CLIPBOARD_BRIDGE = `
+(()=>{const AIMS='https://aims.airastana.com/';const ORIGIN='https://aims.airastana.com';const TYPE='escrew:aims-scheduler-events';const standalone=(typeof window.matchMedia==='function'&&window.matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;if(!standalone)return;const nativeOpen=window.open.bind(window);window.open=(url,target,features)=>{const href=typeof url==='string'?url:String(url??'');if(!href.startsWith(AIMS))return nativeOpen(url,target,features);const missing='No copied AIMS roster found. Open AIMS in normal Safari, run the eScrew AIMS bookmark, load the schedule, tap “Copy roster to eScrew”, then return here and tap AIMS.';if(!navigator.clipboard||typeof navigator.clipboard.readText!=='function'){window.alert(missing);return window;}navigator.clipboard.readText().then(text=>{let data;try{data=JSON.parse(text)}catch{}const payload=data&&data.payload;if(!data||data.type!==TYPE||!payload||typeof payload.PeriodStart!=='string'||typeof payload.PeriodEnd!=='string'||!Array.isArray(payload.SchedulerEvents)){window.alert(missing);return;}window.dispatchEvent(new MessageEvent('message',{origin:ORIGIN,data}));}).catch(()=>window.alert(missing));return window;};})();
 `;
 
 const REGISTER_SW = `
@@ -97,7 +97,7 @@ export default function Root({ children }: { children: ReactNode }) {
     <meta name="description" content="Personal flight crew schedule companion." />
     <link rel="manifest" href="manifest.webmanifest" />
     <style dangerouslySetInnerHTML={{__html:APP_SHELL_CSS}} />
-    <script dangerouslySetInnerHTML={{__html:OPEN_AIMS_EXTERNALLY}} />
+    <script dangerouslySetInnerHTML={{__html:AIMS_CLIPBOARD_BRIDGE}} />
     <ScrollViewStyleReset />{headNodes}
   </head><body {...bodyAttributes}>{children}{bodyNodes}<script dangerouslySetInnerHTML={{__html:REGISTER_SW}} /></body></html>;
 }
