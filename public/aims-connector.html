@@ -40,24 +40,30 @@
       <li>When ready, tap <strong>Copy roster to eScrew</strong>.</li>
       <li>Return to eScrew and tap AIMS again to paste/import.</li>
     </ol>
-    <p class="muted">No manual My Schedule navigation, Period change, Zoom change, userscript manager, or Safari extension is required.</p>
+    <p class="muted">For parser diagnostics, the Capture also exposes a separate schema-only button in AIMS. It copies field names, types and counts only — never field values.</p>
   </div>
 </main>
 <script>
 (()=>{
 const source=String.raw`(()=>{
-const A='https://aims.airastana.com',T='escrew:aims-scheduler-events',B='__escrewAimsCopy',ACTIVE='__escrewCaptureActive';
+const A='https://aims.airastana.com',T='escrew:aims-scheduler-events',B='__escrewAimsCopy',DB='__escrewAimsDiag',ACTIVE='__escrewCaptureActive',STORE='__escrewDiagStore';
 if(location.origin!==A){alert('Open AIMS in Safari first, then run eScrew Capture.');return;}
 if(window[ACTIVE]){alert('eScrew Capture is already active.');return;}
 window[ACTIVE]=true;
 let c=null,b=null;
+const diag=window[STORE]||{version:1,schemas:[]};window[STORE]=diag;
 const r=v=>!!v&&typeof v==='object'&&typeof v.PeriodStart==='string'&&typeof v.PeriodEnd==='string'&&Array.isArray(v.SchedulerEvents);
 const clean=v=>({PeriodStart:v.PeriodStart,PeriodEnd:v.PeriodEnd,RosterDateTime:v.RosterDateTime,SchedulerEvents:v.SchedulerEvents});
+const shape=(v,d=0)=>{if(v===null)return'null';if(Array.isArray(v)){const out={type:'array',count:v.length};if(d<3){const first=v.find(x=>x!==null&&x!==undefined);if(first!==undefined)out.item=shape(first,d+1);}return out;}const t=typeof v;if(t!=='object')return t;if(d>=3)return{type:'object',keys:Object.keys(v).sort()};const fields={};for(const k of Object.keys(v).sort())fields[k]=shape(v[k],d+1);return{type:'object',fields};};
+const record=v=>{try{if(v===undefined)return;const s=shape(v),key=JSON.stringify(s),hit=diag.schemas.find(x=>x.key===key);if(hit)hit.seen+=1;else if(diag.schemas.length<40)diag.schemas.push({key,seen:1,roster:r(v),shape:s});diagButton();}catch{}};
+const diagText=()=>JSON.stringify({version:diag.version,note:'Schema only: field names, types and counts. No field values, credentials, cookies, tokens, request bodies or session data.',responses:diag.schemas.map(({seen,roster,shape})=>({seen,roster,shape}))},null,2);
+const diagButton=()=>{if(!document.body||!diag.schemas.length)return null;let x=document.getElementById(DB);if(x)return x;x=document.createElement('button');x.id=DB;x.type='button';Object.assign(x.style,{position:'fixed',left:'16px',right:'16px',bottom:'calc(78px + env(safe-area-inset-bottom))',zIndex:'2147483647',minHeight:'44px',border:'0',borderRadius:'12px',padding:'9px 14px',background:'#394B4E',color:'#fff',font:'600 13px -apple-system,BlinkMacSystemFont,system-ui,sans-serif',boxShadow:'0 6px 18px rgba(0,0,0,.2)'});x.textContent='Copy parser diagnostic';x.addEventListener('click',async()=>{const s=diagText();try{await navigator.clipboard.writeText(s);x.textContent='Diagnostic copied';alert('Schema-only diagnostic copied. It contains field names, types and counts only.');}catch{prompt('Copy this schema-only diagnostic:',s);}});document.body.appendChild(x);return x;};
 const btn=()=>{if(!document.body)return null;let x=document.getElementById(B);if(x)return x;x=document.createElement('button');x.id=B;x.type='button';Object.assign(x.style,{position:'fixed',left:'16px',right:'16px',bottom:'calc(16px + env(safe-area-inset-bottom))',zIndex:'2147483647',minHeight:'52px',border:'0',borderRadius:'14px',padding:'12px 18px',background:'#60777A',color:'#fff',font:'700 15px -apple-system,BlinkMacSystemFont,system-ui,sans-serif',boxShadow:'0 8px 24px rgba(0,0,0,.25)'});x.addEventListener('click',async()=>{if(!c){alert('Capture is active and waiting for the roster response.');return;}const s=JSON.stringify(c);try{await navigator.clipboard.writeText(s);x.textContent='Copied — return to eScrew';x.style.background='#007F86';alert('Roster copied. Return to eScrew and tap AIMS to import it.');}catch{prompt('Copy this roster JSON, then return to eScrew and tap AIMS:',s);}});document.body.appendChild(x);return x;};
 const refresh=()=>{b=btn();if(!b)return;const text=c?'Copy roster to eScrew':'eScrew Capture — waiting for roster',bg=c?'#007F86':'#60777A';if(b.textContent!==text)b.textContent=text;if(b.style.background!==bg)b.style.background=bg;};
-const deliver=v=>{if(!r(v))return false;c={type:T,payload:clean(v)};refresh();return true;};
+const deliver=v=>{record(v);if(!r(v))return false;c={type:T,payload:clean(v)};refresh();return true;};
 const inspect=s=>{try{return deliver(JSON.parse(s));}catch{return false;}};
-const patch=w=>{try{if(!w||w.location.origin!==A)return;if(!w.__escrewFetchPatched&&w.fetch){w.__escrewFetchPatched=true;const f=w.fetch.bind(w);w.fetch=async(...a)=>{const q=await f(...a);try{q.clone().text().then(inspect).catch(()=>{});}catch{}return q;};}if(!w.__escrewXhrPatched&&w.XMLHttpRequest){w.__escrewXhrPatched=true;const s=w.XMLHttpRequest.prototype.send;w.XMLHttpRequest.prototype.send=function(...a){this.addEventListener('load',()=>{try{inspect(this.responseText);}catch{}});return s.apply(this,a);};}}catch{}};
+const inspectValue=v=>{try{return deliver(v);}catch{return false;}};
+const patch=w=>{try{if(!w||w.location.origin!==A)return;if(!w.__escrewFetchPatched&&w.fetch){w.__escrewFetchPatched=true;const f=w.fetch.bind(w);w.fetch=async(...a)=>{const q=await f(...a);try{q.clone().json().then(inspectValue).catch(()=>{});}catch{}return q;};}if(!w.__escrewXhrPatched&&w.XMLHttpRequest){w.__escrewXhrPatched=true;const s=w.XMLHttpRequest.prototype.send;w.XMLHttpRequest.prototype.send=function(...a){this.addEventListener('load',()=>{try{if(this.responseType==='json'&&this.response!==null)inspectValue(this.response);else inspect(this.responseText);}catch{}});return s.apply(this,a);};}}catch{}};
 const hookFrame=fr=>{try{if(fr.__escrewLoadHook)return;fr.__escrewLoadHook=true;const apply=()=>{try{patch(fr.contentWindow);}catch{}};apply();fr.addEventListener('load',apply);}catch{}};
 const scan=node=>{try{if(node instanceof HTMLIFrameElement)hookFrame(node);if(node&&node.querySelectorAll)for(const fr of node.querySelectorAll('iframe'))hookFrame(fr);}catch{}};
 const tx=e=>(e.textContent||'').replace(/\\s+/g,' ').trim().toLowerCase(),hr=e=>{try{return String(e.href||e.getAttribute&&e.getAttribute('href')||'');}catch{return '';}};
