@@ -205,6 +205,7 @@ export default function Root({ children }: { children: ReactNode }) {
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="description" content="Personal flight crew schedule companion." />
     <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
     <style dangerouslySetInnerHTML={{__html:APP_SHELL_CSS}} />
     <script dangerouslySetInnerHTML={{__html:AIMS_CLIPBOARD_BRIDGE}} />
     <ScrollViewStyleReset />{headNodes}
