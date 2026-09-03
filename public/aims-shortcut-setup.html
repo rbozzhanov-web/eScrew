@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#081519" />
+  <title>eScrew Capture Shortcut</title>
+  <style>
+    :root{color-scheme:light dark;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;background:#081519;color:#f3fafa}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:linear-gradient(180deg,#081519,#0d2025);padding:calc(24px + env(safe-area-inset-top)) 18px calc(28px + env(safe-area-inset-bottom))}.wrap{max-width:620px;margin:0 auto}.eyebrow{font-size:11px;letter-spacing:1.25px;font-weight:800;color:#7dcbd0}.title{font-size:34px;line-height:1.04;letter-spacing:-1.2px;margin:8px 0 10px}.lead{font-size:16px;line-height:1.45;color:#b7c8ca;margin:0 0 18px}.card{background:rgba(21,44,50,.88);border:1px solid rgba(174,214,216,.14);border-radius:24px;padding:18px;margin:12px 0;box-shadow:0 16px 40px rgba(0,0,0,.18)}.card h2{font-size:17px;margin:0 0 10px}.step{display:flex;gap:12px;margin:12px 0;align-items:flex-start}.n{width:26px;height:26px;flex:0 0 26px;border-radius:13px;background:rgba(53,184,192,.16);color:#7ee0e6;font-size:12px;font-weight:800;display:grid;place-items:center}.step p{margin:2px 0 0;color:#d8e4e5;font-size:14px;line-height:1.4}.button{width:100%;border:0;border-radius:16px;padding:14px 16px;font-size:15px;font-weight:800;background:#35b8c0;color:#062326;margin-top:10px}.secondary{background:rgba(53,184,192,.16);color:#8de5ea}.status{font-size:13px;color:#9db3b5;text-align:center;min-height:18px;margin-top:8px}.code{width:100%;min-height:190px;resize:vertical;border-radius:16px;border:1px solid rgba(174,214,216,.14);background:#061114;color:#dff7f8;padding:12px;font:11px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace}.flow{font-size:15px;font-weight:750;line-height:1.5;color:#f3fafa}.muted{color:#9db3b5;font-size:13px;line-height:1.45}.ok{color:#7ee0e6;font-weight:800}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="eyebrow">eSCREW · iPHONE</div>
+    <h1 class="title">eScrew Capture</h1>
+    <p class="lead">Одноразовая настройка. После неё обычный путь будет коротким и всегда начинается из eScrew.</p>
+
+    <section class="card">
+      <h2>Ежедневный сценарий</h2>
+      <div class="flow">eScrew → AIMS → Поделиться → <span class="ok">eScrew Capture</span> → eScrew</div>
+      <p class="muted">Без Web Archive, Save to Files и повторного выбора файла. Данные возвращаются в eScrew через URL fragment и не отправляются на GitHub Pages сервер.</p>
+    </section>
+
+    <section class="card">
+      <h2>Настройка Shortcut</h2>
+      <div class="step"><div class="n">1</div><p>Создай новую быструю команду и назови её <b>eScrew Capture</b>.</p></div>
+      <div class="step"><div class="n">2</div><p>В деталях включи <b>Показывать на странице экспорта / Show in Share Sheet</b> и оставь входной тип <b>Safari webpages</b>.</p></div>
+      <div class="step"><div class="n">3</div><p>Добавь действие <b>Run JavaScript on Web Page / Выполнить JavaScript на веб‑странице</b> и вставь код ниже.</p></div>
+      <div class="step"><div class="n">4</div><p>Добавь следом действие <b>Open URLs / Открыть URL</b>. В качестве URL выбери результат предыдущего JavaScript‑действия.</p></div>
+      <div class="step"><div class="n">5</div><p>Готово. В eScrew нажимаешь AIMS, ждёшь Crew Schedule, затем <b>Поделиться → eScrew Capture</b>.</p></div>
+      <a href="shortcuts://create-shortcut"><button class="button" type="button">Открыть создание Shortcut</button></a>
+      <button class="button secondary" id="copy" type="button">Скопировать JavaScript</button>
+      <div class="status" id="status"></div>
+    </section>
+
+    <section class="card">
+      <h2>JavaScript для Shortcut</h2>
+      <textarea class="code" id="code" readonly></textarea>
+      <p class="muted">Скрипт берёт только ростер, crew/member tree, hotel и hours. Cookies, session, auth headers, CSRF, passwords, request Data и токены он не читает.</p>
+    </section>
+  </main>
+<script>
+const shortcutScript = String.raw`(() => {
+  const root = (typeof initialResult !== 'undefined' && initialResult && typeof initialResult === 'object') ? initialResult : window.initialResult;
+  if (!root || typeof root !== 'object') throw new Error('Open AIMS Crew Schedule and wait until it fully loads.');
+
+  const findById = (value, id) => {
+    if (Array.isArray(value)) {
+      for (const item of value) { const found = findById(item, id); if (found) return found; }
+      return undefined;
+    }
+    if (!value || typeof value !== 'object') return undefined;
+    if (value.id === id) return value;
+    for (const item of Object.values(value)) { const found = findById(item, id); if (found) return found; }
+    return undefined;
+  };
+
+  const eventKeys = [
+    'start','end','report','debrief','type','text','details','location','IsDeadhead',
+    'HotelInfo','HotelNo','Memo','Notification','RequiredRest','NoContact','ReplaceGDO',
+    'WillingToFly','barHidden','calendar','charterer','color','date_sort','delay','id',
+    'invert_times','legs','open','resource','sort','ver','aircraftType','AircraftType',
+    'aircraft','Aircraft','acType','ACType'
+  ];
+  const events = (Array.isArray(root.SchedulerEvents) ? root.SchedulerEvents : []).map((event) => {
+    const out = {};
+    if (!event || typeof event !== 'object') return out;
+    for (const key of eventKeys) if (Object.prototype.hasOwnProperty.call(event, key)) out[key] = event[key];
+    return out;
+  });
+
+  const membersElement = findById(root.elementList, 'members');
+  const memberGroups = (membersElement && Array.isArray(membersElement.data) ? membersElement.data : []).map((group) => [
+    typeof group.value === 'string' ? group.value : '',
+    (Array.isArray(group.data) ? group.data : []).map((member) => [
+      typeof member.value2 === 'string' ? member.value2 : '',
+      (typeof member.value3 === 'string' || typeof member.value3 === 'number') ? member.value3 : '',
+      typeof member.value4 === 'string' ? member.value4 : '',
+      typeof member.value5 === 'string' ? member.value5 : ''
+    ])
+  ]);
+
+  const hotelsElement = findById(root.elementList, 'hotels');
+  const hotels = (hotelsElement && Array.isArray(hotelsElement.data) ? hotelsElement.data : []).map((row) => [
+    typeof row.port === 'string' ? row.port : '',
+    typeof row.phones === 'string' ? row.phones : '',
+    typeof row.addresses === 'string' ? row.addresses : '',
+    typeof row.locators === 'string' ? row.locators : ''
+  ]);
+
+  const hoursElement = findById(root.elementList, 'hours');
+  const totals = (hoursElement && Array.isArray(hoursElement.data) ? hoursElement.data : []).map((row) => [
+    typeof row.desc === 'string' ? row.desc : '',
+    typeof row.hours === 'string' ? row.hours : ''
+  ]);
+
+  const periodStart = localStorage.getItem('PeriodStart') || '';
+  const periodEnd = localStorage.getItem('PeriodEnd') || '';
+  if (!periodStart || !periodEnd) throw new Error('AIMS roster period is not ready yet.');
+  if (!events.length) throw new Error('AIMS SchedulerEvents are not ready yet.');
+
+  const payload = { v: 1, p: [periodStart, periodEnd], e: events, m: memberGroups, h: hotels, t: totals };
+  const encoded = encodeURIComponent(JSON.stringify(payload));
+  if (encoded.length > 90000) throw new Error('Roster capture is unexpectedly large. Use the existing Web Archive import once.');
+  completion('https://rbozzhanov-web.github.io/eScrew/#aims-shortcut=' + encoded);
+})();`;
+const code = document.getElementById('code');
+code.value = shortcutScript;
+document.getElementById('copy').addEventListener('click', async () => {
+  const status = document.getElementById('status');
+  try {
+    await navigator.clipboard.writeText(shortcutScript);
+    status.textContent = 'JavaScript скопирован.';
+  } catch {
+    code.focus(); code.select(); document.execCommand('copy');
+    status.textContent = 'JavaScript скопирован.';
+  }
+});
+</script>
+</body>
+</html>
