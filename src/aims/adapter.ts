@@ -1,5 +1,6 @@
 import type { ParsedAirAstanaRoster } from '@/src/import/parseAirAstanaRoster';
 import type { RosterAbsence, RosterDuty, RosterSector } from '@/src/import/duties';
+import type { CrewRecord, RosterCrewMember } from '@/src/import/crew';
 
 export interface AimsHotelInfo {
   HotelName?: string;
@@ -60,11 +61,18 @@ export interface AimsSchedulerEvent {
   HotelNo?: number;
 }
 
+export interface AimsCrewList {
+  [date: string]: {
+    [flightNumber: string]: AimsCrewMember[];
+  };
+}
+
 export interface AimsSchedulerResponse {
   SchedulerEvents?: AimsSchedulerEvent[];
   PeriodStart?: string;
   PeriodEnd?: string;
   RosterDateTime?: string;
+  crewList?: AimsCrewList;
 }
 
 const ABSENCE_CODES = new Set<RosterAbsence['code']>(['SICK', 'UFF', 'VAC', 'CHLD']);
@@ -86,6 +94,7 @@ export function parseAimsSchedulerResponse(payload: AimsSchedulerResponse): Pars
   const duties: RosterDuty[] = [];
   const absences: RosterAbsence[] = [];
   const unreadCells: string[] = [];
+  const crewRecords: CrewRecord[] = [];
 
   for (const event of payload.SchedulerEvents ?? []) {
     const eventDate = isoDatePart(event.start);
@@ -115,13 +124,28 @@ export function parseAimsSchedulerResponse(payload: AimsSchedulerResponse): Pars
     sectors.push(...parsedSectors);
   }
 
+  // Parse crew records from AIMS crew list
+  if (payload.crewList) {
+    for (const [date, flightCrewMap] of Object.entries(payload.crewList)) {
+      for (const [flightNumber, crew] of Object.entries(flightCrewMap)) {
+        if (crew.length > 0) {
+          crewRecords.push({
+            date,
+            flightNumber,
+            members: crewToRosterMembers(crew),
+          });
+        }
+      }
+    }
+  }
+
   return {
     period: { start, end },
     totals: {},
     sectors,
     duties,
     absences,
-    crewRecords: [],
+    crewRecords,
     unreadCells,
   };
 }
@@ -266,4 +290,39 @@ export function extractCrewFromEvent(event: AimsSchedulerEvent): AimsCrewMember[
   // For now, this is a placeholder that can be enhanced when crew data is available
 
   return crew;
+}
+
+function crewToRosterMembers(aimsCrewList: AimsCrewMember[]): RosterCrewMember[] {
+  return aimsCrewList.map(member => ({
+    rank: member.position,
+    id: member.crewId,
+    name: member.name,
+    deadhead: member.isPIC === false,
+  }));
+}
+
+/**
+ * Builds a crew list from AIMS data. Each crew member should have:
+ * - name: Full name
+ * - crewId: Staff ID number
+ * - position: Rank (CP, FO, IS, PU, FJ, FY, LI)
+ * - isPIC: Whether crew member is Pilot in Command (true = regular crew, false = deadhead)
+ */
+export function buildAimsCrewList(
+  crewByFlight: Array<{
+    date: string;
+    flightNumber: string;
+    crew: AimsCrewMember[];
+  }>
+): AimsCrewList {
+  const crewList: AimsCrewList = {};
+
+  for (const { date, flightNumber, crew } of crewByFlight) {
+    if (!crewList[date]) {
+      crewList[date] = {};
+    }
+    crewList[date][flightNumber] = crew;
+  }
+
+  return crewList;
 }
