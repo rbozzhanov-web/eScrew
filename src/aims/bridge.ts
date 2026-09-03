@@ -2,73 +2,78 @@ import { parseAimsSchedulerResponse, type AimsSchedulerResponse } from './adapte
 import type { ParsedAirAstanaRoster } from '@/src/import/parseAirAstanaRoster';
 
 export const AIMS_ORIGIN = 'https://aims.airastana.com';
-export const ESCREW_ORIGIN = 'https://rbozzhanov-web.github.io';
-export const AIMS_MESSAGE_TYPE = 'escrew:aims-scheduler-events';
-export const AIMS_READY_MESSAGE_TYPE = 'escrew:aims-ready';
+export const AIMS_MESSAGE_TYPE = 'escrew:aims-roster';
 
-export interface AimsBridgeEnvelope {
+export interface AimsBridgeMessage {
   type: typeof AIMS_MESSAGE_TYPE;
   payload: AimsSchedulerResponse;
 }
 
 /**
- * Validates a postMessage event coming from an AIMS-origin bridge.
- *
- * The bridge transfers roster JSON only. It must never transfer cookies,
- * passwords, antiforgery tokens, Retrieve keys or other session material.
+ * Validates that a value is a properly-formed AIMS bridge message.
+ * The message must contain only roster JSON data - never cookies, tokens, or credentials.
  */
-export function rosterFromAimsMessage(event: Pick<MessageEvent, 'origin' | 'data'>): ParsedAirAstanaRoster | undefined {
-  if (event.origin !== AIMS_ORIGIN) return undefined;
-  if (!isBridgeEnvelope(event.data)) return undefined;
-  return parseAimsSchedulerResponse(event.data.payload);
-}
-
-export function isBridgeEnvelope(value: unknown): value is AimsBridgeEnvelope {
+export function isAimsBridgeMessage(value: unknown): value is AimsBridgeMessage {
   if (!value || typeof value !== 'object') return false;
-  const record = value as Record<string, unknown>;
-  if (record.type !== AIMS_MESSAGE_TYPE) return false;
-  const payload = record.payload;
-  if (!payload || typeof payload !== 'object') return false;
-  const roster = payload as Record<string, unknown>;
-  return typeof roster.PeriodStart === 'string'
-    && typeof roster.PeriodEnd === 'string'
-    && Array.isArray(roster.SchedulerEvents);
+  const msg = value as Record<string, unknown>;
+  if (msg.type !== AIMS_MESSAGE_TYPE) return false;
+  if (!msg.payload || typeof msg.payload !== 'object') return false;
+  const payload = msg.payload as Record<string, unknown>;
+  return (
+    typeof payload.PeriodStart === 'string' &&
+    typeof payload.PeriodEnd === 'string' &&
+    Array.isArray(payload.SchedulerEvents)
+  );
 }
 
 /**
- * Tells an AIMS-side sender that the eScrew receiver is loaded.
- *
- * This is intentionally one-way and contains no local roster data or session
- * material. The target origin is pinned to AIMS.
+ * Extracts and parses a roster from an AIMS postMessage event.
+ * Origin must be aims.airastana.com to prevent XSS attacks.
+ * Returns undefined if the message is invalid or from wrong origin.
  */
-function announceReceiverReady(): void {
-  if (typeof window === 'undefined') return;
+export function parseAimsMessage(event: Pick<MessageEvent, 'origin' | 'data'>): ParsedAirAstanaRoster | undefined {
+  // Strict origin check - postMessage is only valid from AIMS domain
+  if (event.origin !== AIMS_ORIGIN) {
+    console.warn('Rejected AIMS message from unexpected origin:', event.origin);
+    return undefined;
+  }
+
+  if (!isAimsBridgeMessage(event.data)) {
+    return undefined;
+  }
+
   try {
-    if (window.opener && !window.opener.closed) {
-      window.opener.postMessage({ type: AIMS_READY_MESSAGE_TYPE }, AIMS_ORIGIN);
-    }
-  } catch {
-    // The sender also retries delivery, so readiness is best-effort only.
+    return parseAimsSchedulerResponse(event.data.payload);
+  } catch (error) {
+    console.error('Failed to parse AIMS roster:', error);
+    throw error;
   }
 }
 
 /**
- * Registers the receiving side of the web-only AIMS bridge.
- * Returns a cleanup function suitable for a React effect.
+ * Sets up a listener for AIMS roster data via postMessage.
+ * The AIMS popup sends roster JSON when the user confirms the import.
+ *
+ * Returns a cleanup function to stop listening (typically for React cleanup).
  */
-export function listenForAimsRoster(onRoster: (roster: ParsedAirAstanaRoster) => void, onError?: (error: Error) => void): () => void {
+export function listenForAimsRoster(
+  onRoster: (roster: ParsedAirAstanaRoster) => void,
+  onError?: (error: Error) => void
+): () => void {
   if (typeof window === 'undefined') return () => {};
 
-  const listener = (event: MessageEvent) => {
+  const handleMessage = (event: MessageEvent) => {
     try {
-      const roster = rosterFromAimsMessage(event);
-      if (roster) onRoster(roster);
+      const roster = parseAimsMessage(event);
+      if (roster) {
+        onRoster(roster);
+      }
     } catch (error) {
-      onError?.(error instanceof Error ? error : new Error(String(error)));
+      const err = error instanceof Error ? error : new Error(String(error));
+      onError?.(err);
     }
   };
 
-  window.addEventListener('message', listener);
-  announceReceiverReady();
-  return () => window.removeEventListener('message', listener);
+  window.addEventListener('message', handleMessage);
+  return () => window.removeEventListener('message', handleMessage);
 }

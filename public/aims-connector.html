@@ -4,84 +4,93 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="color-scheme" content="light dark" />
-  <title>eScrew AIMS Capture</title>
+  <title>eScrew AIMS Connector</title>
   <style>
-    :root { font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,system-ui,sans-serif; color-scheme:light dark; }
-    body { margin:0; padding:24px; background:#F2F6F6; color:#102326; }
-    main { max-width:620px; margin:0 auto; }
-    h1 { font-size:28px; margin:10px 0 8px; letter-spacing:-.7px; }
-    p,li { line-height:1.5; }
-    .card { margin-top:16px; padding:18px; border-radius:22px; background:rgba(255,255,255,.84); box-shadow:0 14px 36px rgba(0,0,0,.08); }
-    button { display:block; box-sizing:border-box; width:100%; min-height:48px; border:0; border-radius:15px; padding:14px 16px; font:inherit; font-weight:700; text-align:center; background:#007F86; color:white; }
-    .muted { color:#60777A; font-size:13px; }
-    @media(prefers-color-scheme:dark){body{background:#081519;color:#F3FAFA}.card{background:rgba(21,44,50,.9)}.muted{color:#A8BABC}}
+    * { box-sizing: border-box; }
+    :root { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; color-scheme: light dark; }
+    body { margin: 0; padding: 24px; background: #F2F6F6; color: #102326; }
+    main { max-width: 600px; margin: 0 auto; }
+    h1 { font-size: 32px; font-weight: 700; margin: 0 0 8px; letter-spacing: -0.8px; }
+    h2 { font-size: 18px; font-weight: 600; margin: 24px 0 12px; }
+    p, li { font-size: 15px; line-height: 1.5; margin: 8px 0; }
+    ol { margin: 12px 0; padding-left: 20px; }
+    li { margin: 8px 0; }
+    .card { margin-top: 16px; padding: 18px; border-radius: 18px; background: rgba(255,255,255,.84); border: 1px solid rgba(0,0,0,.08); }
+    button { display: block; width: 100%; padding: 14px 16px; border: 0; border-radius: 12px; font: 600 16px inherit; font-weight: 700; background: #007F86; color: white; cursor: pointer; }
+    button:active { opacity: 0.8; }
+    .info { color: #60777A; font-size: 14px; margin-top: 8px; }
+    .step { display: flex; gap: 12px; margin-bottom: 12px; }
+    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: #007F86; color: white; display: flex; align-items: center; justify-content: center; font: 600 14px sans-serif; }
+    .step-text { flex: 1; }
+    @media(prefers-color-scheme:dark){body{background:#081519;color:#F3FAFA}.card{background:rgba(21,44,50,.88);border-color:rgba(255,255,255,.1)}}
   </style>
 </head>
 <body>
 <main>
-  <h1>eScrew AIMS Capture</h1>
-  <p class="muted">PWA-only setup. No extra app or Safari extension is required.</p>
+  <h1>eScrew AIMS</h1>
+  <p class="info">Easy roster import for Safari</p>
+
   <div class="card">
-    <strong>Set up once</strong>
-    <ol>
-      <li>Tap <strong>Copy AIMS Capture</strong>.</li>
-      <li>In Safari create a bookmark named <strong>eScrew Capture</strong>.</li>
-      <li>Edit that bookmark and replace its URL with the copied Capture code.</li>
-    </ol>
-    <button id="copy">Copy AIMS Capture</button>
+    <h2>One-time setup</h2>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text">
+        <strong>Copy this bookmark</strong>
+        <p class="info">Tap the button below</p>
+      </div>
+    </div>
+    <button id="copy-btn">Copy AIMS Bookmark</button>
+
+    <div class="step" style="margin-top: 16px;">
+      <div class="step-num">2</div>
+      <div class="step-text">
+        <strong>Create Safari bookmark</strong>
+        <p class="info">In Safari: Tap Share → Add Bookmark → Name it "eScrew AIMS" → Edit URL and paste what you copied</p>
+      </div>
+    </div>
   </div>
+
   <div class="card">
-    <strong>Normal use</strong>
+    <h2>Each time you use it</h2>
     <ol>
-      <li>In eScrew tap AIMS.</li>
-      <li>Safari opens AIMS. Sign in if needed.</li>
-      <li>Run the <strong>eScrew Capture</strong> bookmark once.</li>
-      <li>Capture arms itself and opens <strong>My Schedule</strong> automatically.</li>
-      <li>When ready, tap <strong>Copy roster to eScrew</strong>.</li>
-      <li>Return to eScrew and tap AIMS again to paste/import.</li>
+      <li>In eScrew: Tap the <strong>A</strong> button (opens AIMS)</li>
+      <li>In AIMS: Sign in and go to <strong>My Schedule</strong></li>
+      <li>In AIMS: Tap the <strong>"eScrew AIMS"</strong> bookmark</li>
+      <li>A popup appears with your roster ready</li>
+      <li>Tap <strong>"Send to eScrew"</strong></li>
+      <li>Back in eScrew: Your roster appears automatically ✓</li>
     </ol>
-    <p class="muted">For parser diagnostics, the Capture also exposes a separate schema-only button in AIMS. It copies only field names, types, counts and pattern-match counts — never field values.</p>
+  </div>
+
+  <div class="card">
+    <p class="info">✓ No passwords shared • ✓ No login needed in eScrew • ✓ No server uploads • ✓ Roster stays private</p>
   </div>
 </main>
+
 <script>
-(()=>{
-const source=String.raw`(()=>{
-const A='https://aims.airastana.com',T='escrew:aims-scheduler-events',B='__escrewAimsCopy',DB='__escrewAimsDiag',ACTIVE='__escrewCaptureActive',STORE='__escrewDiagStore';
-if(location.origin!==A){alert('Open AIMS in Safari first, then run eScrew Capture.');return;}
-if(window[ACTIVE]){alert('eScrew Capture is already active.');return;}
-window[ACTIVE]=true;
-let c=null,b=null;
-const diag=window[STORE]||{version:3,schemas:[],rosters:[],texts:[]};window[STORE]=diag;if(!Array.isArray(diag.texts))diag.texts=[];diag.version=3;
-const r=v=>!!v&&typeof v==='object'&&typeof v.PeriodStart==='string'&&typeof v.PeriodEnd==='string'&&Array.isArray(v.SchedulerEvents);
-const clean=v=>({PeriodStart:v.PeriodStart,PeriodEnd:v.PeriodEnd,RosterDateTime:v.RosterDateTime,SchedulerEvents:v.SchedulerEvents});
-const shape=(v,d=0)=>{if(v===null)return'null';if(Array.isArray(v)){const out={type:'array',count:v.length};if(d<3){const first=v.find(x=>x!==null&&x!==undefined);if(first!==undefined)out.item=shape(first,d+1);}return out;}const t=typeof v;if(t!=='object')return t;if(d>=3)return{type:'object',keys:Object.keys(v).sort()};const fields={};for(const k of Object.keys(v).sort())fields[k]=shape(v[k],d+1);return{type:'object',fields};};
-const plain=s=>String(s||'').replace(/<[^>]*>/g,' ').replace(/&(?:nbsp|#160);/gi,' ').replace(/\s+/g,' ').trim();
-const signals=s=>{const raw=String(s||''),text=plain(raw);return{nonEmpty:text.length>0,multiline:/[\r\n]/.test(raw),htmlLike:/<\/?[a-z][^>]*>/i.test(raw),crewPattern:/\b[A-Z]{2,3}\s*-\s*(?:DHC\s*-\s*)?\d{1,6}\s*-/i.test(text),crewKeyword:/\b(?:crew|captain|first officer|purser|cabin crew|flight deck|cabin attendant)\b/i.test(text),rankIdPattern:/\b(?:CP|FO|PU|IS|FJ|FY|PS|LI)\b[\s:|\-]{0,12}\d{1,6}\b/i.test(text),sectorPattern:/\b\d{1,5}\s*-\s*[A-Z]{3,4}\s*\(/.test(text),aircraftPattern:/\b(?:B|A|E)\d{3}[A-Z0-9]?\b/i.test(text),hotelPattern:/\b(?:hotel|layover|accommodation)\b/i.test(text),totalsPattern:/\b(?:block|night|duty|credit)\b/i.test(text)};};
-const addSignal=(a,s)=>{for(const k of ['nonEmpty','multiline','htmlLike','crewPattern','crewKeyword','rankIdPattern','sectorPattern','aircraftPattern','hotelPattern','totalsPattern'])a[k]=(a[k]||0)+(s[k]?1:0);};
-const objectSummary=(x,d=0)=>{const out={fieldCount:Object.keys(x).length,fields:{}};for(const k of Object.keys(x).sort()){const v=x[k],ty=v===null?'null':Array.isArray(v)?'array':typeof v;const entry={type:ty};if(Array.isArray(v))entry.count=v.length;else if(v&&typeof v==='object'&&d<1)entry.object=objectSummary(v,d+1);out.fields[k]=entry;}return out;};
-const analyzeRoster=v=>{const events=Array.isArray(v.SchedulerEvents)?v.SchedulerEvents:[],fields={};for(const e of events){if(!e||typeof e!=='object')continue;for(const k of Object.keys(e)){const x=e[k];let s=fields[k];if(!s)s=fields[k]={present:0,types:[]};s.present+=1;const ty=x===null?'null':Array.isArray(x)?'array':typeof x;if(!s.types.includes(ty))s.types.push(ty);if(typeof x==='string'){if(!s.string)s.string={nonEmpty:0,multiline:0,htmlLike:0,crewPattern:0,crewKeyword:0,rankIdPattern:0,sectorPattern:0,aircraftPattern:0,hotelPattern:0,totalsPattern:0};addSignal(s.string,signals(x));}else if(Array.isArray(x)){if(!s.array)s.array={nonEmpty:0,maxCount:0,itemFields:[]};if(x.length)s.array.nonEmpty+=1;if(x.length>s.array.maxCount)s.array.maxCount=x.length;for(const item of x){if(item&&typeof item==='object'&&!Array.isArray(item))for(const ik of Object.keys(item))if(!s.array.itemFields.includes(ik))s.array.itemFields.push(ik);}}else if(x&&typeof x==='object'){if(!s.object)s.object={variants:[]};const summary=objectSummary(x),key=JSON.stringify(summary);if(!s.object.variants.some(v=>v.key===key)&&s.object.variants.length<8)s.object.variants.push({key,summary});}else if(typeof x==='number'){if(!s.number)s.number={nonZero:0};if(x!==0)s.number.nonZero+=1;}else if(typeof x==='boolean'){if(!s.boolean)s.boolean={trueCount:0};if(x)s.boolean.trueCount+=1;}}}for(const k of Object.keys(fields)){fields[k].types.sort();if(fields[k].array)fields[k].array.itemFields.sort();if(fields[k].object)fields[k].object.variants=fields[k].object.variants.map(({summary})=>summary);}const top={};for(const k of ['LineInfo','BlockDutyTimes','LayoverCredits','Memos','Indicators','IndicatorsDesc','PublicHolidays']){const x=v[k],ty=x===null?'null':Array.isArray(x)?'array':typeof x;const entry={type:ty};if(typeof x==='string')entry.string=signals(x);else if(Array.isArray(x))entry.array={count:x.length};else if(x&&typeof x==='object')entry.object={fieldCount:Object.keys(x).length};top[k]=entry;}return{schedulerEventCount:events.length,eventFields:fields,topLevelSignals:top};};
-const recordText=s=>{try{const sig=signals(s);if(!sig.nonEmpty)return;const relevant=sig.crewPattern||sig.crewKeyword||sig.rankIdPattern||sig.sectorPattern||sig.aircraftPattern||sig.hotelPattern||sig.totalsPattern;if(!relevant)return;const key=JSON.stringify(sig),hit=diag.texts.find(x=>x.key===key);if(hit)hit.seen+=1;else if(diag.texts.length<30)diag.texts.push({key,seen:1,signals:sig});diagButton();}catch{}};
-const record=v=>{try{if(v===undefined)return;const s=shape(v),key=JSON.stringify(s),hit=diag.schemas.find(x=>x.key===key);if(hit)hit.seen+=1;else if(diag.schemas.length<40)diag.schemas.push({key,seen:1,roster:r(v),shape:s});if(r(v)){const a=analyzeRoster(v),ak=JSON.stringify(a);if(!diag.rosters.some(x=>x.key===ak)&&diag.rosters.length<10)diag.rosters.push({key:ak,analysis:a});}diagButton();}catch{}};
-const inspectText=s=>{try{const v=JSON.parse(s);record(v);return true;}catch{recordText(s);return false;}};
-const inspectValue=v=>{try{record(v);return r(v);}catch{return false;}};
-const diagText=()=>JSON.stringify({version:diag.version,note:'Schema/pattern diagnostics only: no raw field values, credentials, cookies, tokens, request bodies, URLs or session data.',responses:diag.schemas.map(({seen,roster,shape})=>({seen,roster,shape})),rosterAnalyses:diag.rosters.map(({analysis})=>analysis),nonJsonSignals:diag.texts.map(({seen,signals})=>({seen,signals}))},null,2);
-const diagButton=()=>{if(!document.body||(!diag.schemas.length&&!diag.rosters.length&&!diag.texts.length))return null;let x=document.getElementById(DB);if(x)return x;x=document.createElement('button');x.id=DB;x.type='button';Object.assign(x.style,{position:'fixed',left:'16px',right:'16px',bottom:'calc(78px + env(safe-area-inset-bottom))',zIndex:'2147483647',minHeight:'44px',border:'0',borderRadius:'12px',padding:'9px 14px',background:'#394B4E',color:'#fff',font:'600 13px -apple-system,BlinkMacSystemFont,system-ui,sans-serif',boxShadow:'0 6px 18px rgba(0,0,0,.2)'});x.textContent='Copy parser diagnostic';x.addEventListener('click',async()=>{const s=diagText();try{await navigator.clipboard.writeText(s);x.textContent='Diagnostic copied';alert('Parser diagnostic copied. It contains no raw AIMS field values.');}catch{prompt('Copy this parser diagnostic:',s);}});document.body.appendChild(x);return x;};
-const btn=()=>{if(!document.body)return null;let x=document.getElementById(B);if(x)return x;x=document.createElement('button');x.id=B;x.type='button';Object.assign(x.style,{position:'fixed',left:'16px',right:'16px',bottom:'calc(16px + env(safe-area-inset-bottom))',zIndex:'2147483647',minHeight:'52px',border:'0',borderRadius:'14px',padding:'12px 18px',background:'#60777A',color:'#fff',font:'700 15px -apple-system,BlinkMacSystemFont,system-ui,sans-serif',boxShadow:'0 8px 24px rgba(0,0,0,.25)'});x.addEventListener('click',async()=>{if(!c){alert('Capture is active and waiting for the roster response.');return;}const s=JSON.stringify(c);try{await navigator.clipboard.writeText(s);x.textContent='Copied — return to eScrew';x.style.background='#007F86';alert('Roster copied. Return to eScrew and tap AIMS to import it.');}catch{prompt('Copy this roster JSON, then return to eScrew and tap AIMS:',s);}});document.body.appendChild(x);return x;};
-const refresh=()=>{b=btn();if(!b)return;const text=c?'Copy roster to eScrew':'eScrew Capture — waiting for roster',bg=c?'#007F86':'#60777A';if(b.textContent!==text)b.textContent=text;if(b.style.background!==bg)b.style.background=bg;};
-const deliver=v=>{record(v);if(!r(v))return false;c={type:T,payload:clean(v)};refresh();return true;};
-const patch=w=>{try{if(!w||w.location.origin!==A)return;if(!w.__escrewFetchPatched&&w.fetch){w.__escrewFetchPatched=true;const f=w.fetch.bind(w);w.fetch=async(...a)=>{const q=await f(...a);try{q.clone().text().then(t=>{try{const v=JSON.parse(t);deliver(v);}catch{recordText(t);}}).catch(()=>{});}catch{}return q;};}if(!w.__escrewXhrPatched&&w.XMLHttpRequest){w.__escrewXhrPatched=true;const s=w.XMLHttpRequest.prototype.send;w.XMLHttpRequest.prototype.send=function(...a){this.addEventListener('load',()=>{try{if(this.responseType==='json'&&this.response!==null)deliver(this.response);else inspectText(this.responseText);}catch{}});return s.apply(this,a);};}}catch{}};
-const hookFrame=fr=>{try{if(fr.__escrewLoadHook)return;fr.__escrewLoadHook=true;const apply=()=>{try{patch(fr.contentWindow);}catch{}};apply();fr.addEventListener('load',apply);}catch{}};
-const scan=node=>{try{if(node instanceof HTMLIFrameElement)hookFrame(node);if(node&&node.querySelectorAll)for(const fr of node.querySelectorAll('iframe'))hookFrame(fr);}catch{}};
-const tx=e=>(e.textContent||'').replace(/\\s+/g,' ').trim().toLowerCase(),hr=e=>{try{return String(e.href||e.getAttribute&&e.getAttribute('href')||'');}catch{return '';}};
-const find=doc=>{const n=[...doc.querySelectorAll('a,button,[role="button"],[onclick]')];return n.find(e=>/\/eCrew\/CrewSchedule/i.test(hr(e)))||n.find(e=>tx(e)==='my schedule')||n.find(e=>tx(e).includes('my schedule'))||n.find(e=>tx(e).includes('crew schedule'));};
-const open=()=>{let x=find(document);if(x){try{x.click();return true;}catch{}}try{for(const fr of document.querySelectorAll('iframe')){const d=fr.contentDocument;if(!d)continue;x=find(d);if(x){x.click();return true;}}}catch{}return false;};
-refresh();patch(window);scan(document);
-new MutationObserver(ms=>{for(const m of ms)for(const n of m.addedNodes)scan(n);}).observe(document.documentElement,{childList:true,subtree:true});
-setTimeout(()=>{if(!open())alert('eScrew Capture is active. Tap My Schedule once; capture will continue automatically.');},120);
-})()`;
-const bm='javascript:'+source.replace(/\s+/g,' '),copy=document.getElementById('copy');
-copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(bm);copy.textContent='Copied';}catch{prompt('Copy this Capture URL:',bm);}});
-})();
+const bookmarkletCode = `javascript:(function(){const AIMS_ORIGIN='https://aims.airastana.com',MSG_TYPE='escrew:aims-roster',RUNNING='__escrewAimsRunning';if(location.origin!==AIMS_ORIGIN){alert('Run this bookmark inside AIMS');return;}if(window[RUNNING]){alert('AIMS bookmark already running');return;}window[RUNNING]=true;let rosterData=null;const ui=document.createElement('div');Object.assign(ui.style,{position:'fixed',bottom:'20px',right:'20px',width:'280px',padding:'16px',borderRadius:'14px',background:'rgba(21,44,50,0.95)',color:'#F3FAFA',font:'14px system-ui',zIndex:'2147483647',boxShadow:'0 20px 60px rgba(0,0,0,0.3)',backdropFilter:'blur(12px)',textAlign:'center'});const status=document.createElement('div');status.textContent='Looking for roster data…';Object.assign(status.style,{fontSize:'13px',color:'#A8BABC',marginBottom:'12px'});const btn=document.createElement('button');Object.assign(btn.style,{padding:'10px 12px',borderRadius:'10px',border:'0',background:'#60777A',color:'#F3FAFA',font:'600 13px system-ui',cursor:'pointer',width:'100%'});btn.textContent='Waiting…';btn.disabled=true;ui.appendChild(status);ui.appendChild(btn);document.body.appendChild(ui);const capture=d=>{if(!d||typeof d!=='object')return;if(d.PeriodStart&&d.PeriodEnd&&Array.isArray(d.SchedulerEvents)){rosterData={type:MSG_TYPE,payload:d};status.textContent='✓ Roster ready';status.style.color='#35B8C0';btn.textContent='Send to eScrew';btn.disabled=false;btn.style.background='#35B8C0';btn.onclick=()=>{if(window.opener){try{window.opener.postMessage(rosterData,AIMS_ORIGIN);btn.textContent='✓ Sent!';btn.style.background='#60777A';btn.disabled=true;}catch(e){status.textContent='Error';status.style.color='#E08383';}}else{alert('Parent window not found');}}}};const originalFetch=window.fetch;window.fetch=function(...args){return originalFetch.apply(this,args).then(r=>{const c=r.clone();if(c.headers.get('content-type')?.includes('json'))c.json().then(capture).catch(()=>{});return r;}).catch(e=>{throw e;});};const origSend=XMLHttpRequest.prototype.send;XMLHttpRequest.prototype.send=function(...args){this.addEventListener('load',()=>{try{this.responseType==='json'?capture(this.response):capture(JSON.parse(this.responseText));}catch(e){}});return origSend.apply(this,args);};})()`;
+
+document.getElementById('copy-btn').addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(bookmarkletCode);
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copied ✓';
+    btn.style.background = '#35B8C0';
+    setTimeout(() => {
+      btn.textContent = 'Copy AIMS Bookmark';
+      btn.style.background = '#007F86';
+    }, 2000);
+  } catch (error) {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = bookmarkletCode;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    alert('Bookmark copied');
+  }
+});
 </script>
 </body>
 </html>
