@@ -1,6 +1,8 @@
 import { ScrollViewStyleReset, useServerDocumentContext } from 'expo-router/html';
 import type { ReactNode } from 'react';
 
+const APP_VERSION = process.env.EXPO_PUBLIC_ESCREW_VERSION ?? '';
+
 const APP_SHELL_CSS = `
 html,body,#root{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:none;touch-action:manipulation}
 html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",system-ui,sans-serif}
@@ -14,6 +16,7 @@ body{background:#F6F7FA;color:#0F172A;-webkit-tap-highlight-color:transparent;-w
 
 const VISUAL_SKIN = `
 (()=>{
+  const appVersion=${JSON.stringify(APP_VERSION)};
   const root=()=>document.getElementById('root');
   const set=(el,name,value)=>{
     if(el.style.getPropertyValue(name)===value&&el.style.getPropertyPriority(name)==='important')return;
@@ -76,10 +79,24 @@ const VISUAL_SKIN = `
     }
   };
 
+  const applyVersion=()=>{
+    const r=root();if(!r||!appVersion||appVersion==='unknown')return;
+    if(r.querySelector('[data-escrew-version]'))return;
+    const privacy=[...r.querySelectorAll('*')].find(el=>el instanceof HTMLElement&&el.textContent==='Privacy');
+    const card=privacy&&privacy.parentElement;
+    if(!card)return;
+    const marker=document.createElement('div');
+    marker.setAttribute('data-escrew-version','');
+    marker.textContent='PR '+appVersion;
+    Object.assign(marker.style,{fontSize:'9px',lineHeight:'11px',fontWeight:'600',opacity:'.32',textAlign:'right',marginTop:'2px',letterSpacing:'.2px'});
+    card.appendChild(marker);
+  };
+
   const apply=()=>{
     const r=root();if(!r)return;
     skinElement(r);
     r.querySelectorAll('*').forEach(skinElement);
+    applyVersion();
   };
 
   const start=()=>{
