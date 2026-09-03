@@ -1,4 +1,5 @@
 import type { NormalizedAbsence, NormalizedDuty, NormalizedFlight, NormalizedRoster } from '@/src/core/rosterContract';
+import type { DashboardScheduleEvent } from './dashboardParser';
 
 export interface AimsSchedulerEvent {
   start?: string;
@@ -54,6 +55,40 @@ export function decodeAimsSchedulerText(text: string): NormalizedRoster {
   catch { throw new Error('AIMS SchedulerEvents response is not valid JSON'); }
   if (!value || typeof value !== 'object') throw new Error('AIMS SchedulerEvents response has an invalid shape');
   return adaptAimsSchedulerResponse(value as AimsSchedulerResponse);
+}
+
+export function adaptDashboardResponse(events: DashboardScheduleEvent[], periodStart?: string, periodEnd?: string): NormalizedRoster {
+  const start = parseIsoDate(periodStart);
+  const end = parseIsoDate(periodEnd);
+  if (!start || !end) throw new Error('Dashboard response does not contain a valid roster period');
+
+  const duties: NormalizedDuty[] = [];
+
+  for (const event of events) {
+    const eventDate = event.date;
+    if (!eventDate || !parseIsoDate(eventDate)) continue;
+
+    const flight: NormalizedFlight = {
+      flightNumber: event.flightNumber ?? '',
+      date: eventDate,
+      origin: event.origin ?? '',
+      destination: event.destination ?? '',
+      departure: event.departure ?? '',
+      arrival: event.arrival ?? '',
+    };
+
+    if (event.aircraftType) flight.aircraftType = event.aircraftType;
+    if (event.report) flight.arrivalDate = event.report;
+
+    const existingDuty = duties.find(d => d.date === eventDate);
+    if (existingDuty) {
+      existingDuty.flights.push(flight);
+    } else {
+      duties.push({ date: eventDate, flights: [flight] });
+    }
+  }
+
+  return { period: { start, end }, duties, absences: [] };
 }
 
 function parseFlightSectors(event: AimsSchedulerEvent): NormalizedFlight[] {
