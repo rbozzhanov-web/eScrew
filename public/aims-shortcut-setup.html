@@ -41,8 +41,29 @@
   </main>
 <script>
 const shortcutScript = String.raw`(() => {
-  const root = (typeof initialResult !== 'undefined' && initialResult && typeof initialResult === 'object') ? initialResult : window.initialResult;
-  if (!root || typeof root !== 'object') throw new Error('Open AIMS Crew Schedule and wait until it fully loads.');
+  const findCrewScheduleWindow = (start) => {
+    const seen = new Set();
+    const visit = (win) => {
+      if (!win || seen.has(win)) return undefined;
+      seen.add(win);
+      try {
+        const root = win.initialResult;
+        if (win.location.pathname === '/eCrew/CrewSchedule' && root && typeof root === 'object') return win;
+      } catch {}
+      try {
+        for (let i = 0; i < win.frames.length; i += 1) {
+          const found = visit(win.frames[i]);
+          if (found) return found;
+        }
+      } catch {}
+      return undefined;
+    };
+    return visit(start);
+  };
+
+  const sourceWindow = findCrewScheduleWindow(window);
+  const root = sourceWindow?.initialResult;
+  if (!root || typeof root !== 'object') throw new Error('Crew Schedule data is not ready. Keep Crew Schedule visible, wait a moment, then run eScrew Capture again.');
 
   const findById = (value, id) => {
     if (Array.isArray(value)) {
@@ -94,8 +115,12 @@ const shortcutScript = String.raw`(() => {
     typeof row.hours === 'string' ? row.hours : ''
   ]);
 
-  const periodStart = localStorage.getItem('PeriodStart') || '';
-  const periodEnd = localStorage.getItem('PeriodEnd') || '';
+  let periodStart = '';
+  let periodEnd = '';
+  try {
+    periodStart = sourceWindow.localStorage.getItem('PeriodStart') || '';
+    periodEnd = sourceWindow.localStorage.getItem('PeriodEnd') || '';
+  } catch {}
   if (!periodStart || !periodEnd) throw new Error('AIMS roster period is not ready yet.');
   if (!events.length) throw new Error('AIMS SchedulerEvents are not ready yet.');
 
