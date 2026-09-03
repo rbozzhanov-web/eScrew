@@ -64,10 +64,11 @@ const VISUAL_SKIN = `
 
     if(el.textContent==='CREW SCHEDULE')set(el,'display','none');
     if(el.textContent==='eScrew'){
-      set(el,'font-size','30px');
-      set(el,'line-height','34px');
+      set(el,'font-size','33px');
+      set(el,'line-height','37px');
       set(el,'font-weight','700');
-      set(el,'letter-spacing','-0.9px');
+      set(el,'letter-spacing','-1px');
+      set(el,'transform','translateY(1.13px)');
     }
 
     if(cs.backdropFilter&&cs.backdropFilter!=='none'){
