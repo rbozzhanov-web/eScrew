@@ -1,6 +1,7 @@
-import { extractSchedulerResponse } from './extraction';
+import { extractSchedulerResponse, extractObservedResponse } from './extraction';
 import { normalizeAimsRoster } from './normalize';
-import { AIMS_SCHEDULER_EVENTS_PATH, type AimsExtractedCrewMember, type AimsExtractedRoster } from './types';
+import { parseDashboardResponse } from './dashboardParser';
+import { AIMS_SCHEDULER_EVENTS_PATH, AIMS_DASHBOARD_PATH, type AimsExtractedCrewMember, type AimsExtractedRoster } from './types';
 
 /** Runs only inside an already-authenticated AIMS page. */
 export class AimsExtractionEngine {
@@ -12,6 +13,15 @@ export class AimsExtractionEngine {
     if (!extracted) throw new Error('AIMS roster response shape is unsupported');
     const roster = normalizeAimsRoster(extracted);
     if (!roster) throw new Error('AIMS roster could not be normalized');
+    return roster;
+  }
+
+  async readDashboard(): Promise<AimsExtractedRoster> {
+    const response = await fetch(AIMS_DASHBOARD_PATH, { method: 'GET', credentials: 'same-origin', headers: { Accept: 'application/json' } });
+    if (!response.ok) throw new Error(`AIMS dashboard request failed (${response.status})`);
+    const data: unknown = await response.json();
+    const roster = parseDashboardResponse(data);
+    if (!roster) throw new Error('AIMS dashboard response shape is unsupported');
     return roster;
   }
 

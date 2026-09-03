@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>AIMS Dashboard Diagnostic</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+      background: #1e1e1e;
+      color: #d4d4d4;
+    }
+    main { max-width: 1000px; margin: 0 auto; }
+    h1 { color: #4ec9b0; margin-top: 0; }
+    h2 { color: #569cd6; margin-top: 30px; border-bottom: 1px solid #3e3e42; padding-bottom: 10px; }
+    .log {
+      background: #252526;
+      padding: 12px;
+      border-radius: 4px;
+      margin: 10px 0;
+      border-left: 3px solid #007acc;
+      max-height: 400px;
+      overflow-y: auto;
+      font-size: 12px;
+      white-space: pre-wrap;
+      word-break: break-all;
+      font-family: "Courier New", monospace;
+    }
+    .log.found { border-left-color: #4ec9b0; }
+    .log.error { border-left-color: #f48771; }
+    .log.info { border-left-color: #569cd6; }
+    button {
+      padding: 10px 20px;
+      background: #007acc;
+      color: white;
+      border: 0;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px 5px 5px 0;
+      font-size: 14px;
+    }
+    button:hover { background: #005a9e; }
+    button:active { opacity: 0.8; }
+    .status {
+      padding: 12px;
+      border-radius: 4px;
+      margin: 10px 0;
+      border-left: 4px solid #3c3c3c;
+      font-weight: 500;
+    }
+    .status.waiting { background: rgba(60, 60, 60, 0.5); border-left-color: #858585; }
+    .status.found { background: rgba(78, 201, 176, 0.15); color: #4ec9b0; border-left-color: #4ec9b0; }
+    .status.error { background: rgba(244, 135, 113, 0.15); color: #f48771; border-left-color: #f48771; }
+    .info-box {
+      background: rgba(86, 156, 214, 0.1);
+      border-left: 4px solid #569cd6;
+      padding: 12px;
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+    .data-preview {
+      background: #1e1e1e;
+      border: 1px solid #3e3e42;
+      border-radius: 4px;
+      padding: 12px;
+      margin: 10px 0;
+    }
+    .endpoint-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 10px;
+      margin: 10px 0;
+    }
+    .endpoint-card {
+      background: #252526;
+      border: 1px solid #3e3e42;
+      border-radius: 4px;
+      padding: 12px;
+    }
+    .endpoint-card.active {
+      border-color: #4ec9b0;
+      background: rgba(78, 201, 176, 0.1);
+    }
+    .endpoint-card h3 {
+      margin: 0 0 8px 0;
+      color: #4ec9b0;
+      font-size: 14px;
+    }
+    .endpoint-card p {
+      margin: 4px 0;
+      font-size: 12px;
+      color: #858585;
+    }
+    code {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 2px 6px;
+      border-radius: 2px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>🔍 AIMS Dashboard Diagnostic Tool</h1>
+  <p>This tool monitors API calls to the AIMS Dashboard endpoint to show available schedule data.</p>
+
+  <div id="status" class="status waiting">🔄 Waiting for AIMS Dashboard API calls...</div>
+
+  <div class="info-box">
+    <strong>Dashboard Endpoints:</strong>
+    <div class="endpoint-list">
+      <div class="endpoint-card" id="scheduler-events">
+        <h3>SchedulerEvents</h3>
+        <p><code>/eCrew/CrewSchedule/SchedulerEvents</code></p>
+        <p>Traditional scheduler events endpoint</p>
+      </div>
+      <div class="endpoint-card" id="dashboard">
+        <h3>Dashboard</h3>
+        <p><code>/eCrew/Dashboard</code></p>
+        <p>Dashboard schedule endpoint</p>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <button onclick="clearLogs()">Clear Logs</button>
+    <button onclick="downloadLogs()">Download JSON</button>
+    <button onclick="location.reload()">Reload Page</button>
+  </div>
+
+  <h2>API Calls Captured</h2>
+  <div id="logs"></div>
+
+  <h2>Dashboard Schedule Data</h2>
+  <div id="roster-data" class="log"></div>
+
+  <h2>Debug Information</h2>
+  <div id="debug-info" class="log"></div>
+</main>
+
+<script>
+const logs = [];
+const foundData = { schedules: [], errors: [] };
+const status = document.getElementById('status');
+const logsDiv = document.getElementById('logs');
+const rosterDiv = document.getElementById('roster-data');
+const debugDiv = document.getElementById('debug-info');
+const endpointMap = {
+  '/eCrew/CrewSchedule/SchedulerEvents': 'scheduler-events',
+  '/eCrew/Dashboard': 'dashboard'
+};
+
+function log(type, data) {
+  const entry = { type, data, time: new Date().toISOString() };
+  logs.push(entry);
+
+  const logEl = document.createElement('div');
+  logEl.className = 'log ' + type;
+  logEl.textContent = `[${entry.time}] ${typeof data === 'object' ? JSON.stringify(data, null, 2) : data}`;
+  logsDiv.appendChild(logEl);
+  logsDiv.scrollTop = logsDiv.scrollHeight;
+}
+
+function updateStatus() {
+  if (foundData.schedules.length > 0) {
+    status.className = 'status found';
+    status.textContent = `✓ Found ${foundData.schedules.length} schedule(s) - Ready to use!`;
+  } else if (logs.length > 0) {
+    status.className = 'status waiting';
+    status.textContent = `🔄 Capturing... Found ${logs.length} API response(s)`;
+  } else {
+    status.className = 'status waiting';
+    status.textContent = `🔄 Waiting for AIMS Dashboard API calls...`;
+  }
+}
+
+function displayScheduleData(data, endpoint) {
+  const scheduleEl = document.createElement('div');
+  scheduleEl.className = 'log found';
+  scheduleEl.textContent = `✓ SCHEDULE FOUND from ${endpoint}\n${JSON.stringify(data, null, 2)}`;
+  rosterDiv.appendChild(scheduleEl);
+
+  // Mark endpoint as active
+  const endpointId = endpointMap[endpoint];
+  if (endpointId) {
+    const card = document.getElementById(endpointId);
+    if (card) card.classList.add('active');
+  }
+}
+
+function addDebugInfo(message) {
+  const line = document.createElement('div');
+  line.textContent = `[${new Date().toISOString()}] ${message}`;
+  debugDiv.appendChild(line);
+  debugDiv.scrollTop = debugDiv.scrollHeight;
+}
+
+// Patch fetch
+const origFetch = window.fetch;
+window.fetch = function(...args) {
+  const url = String(args[0]);
+  const isAimsEndpoint =
+    url.includes('/eCrew/Dashboard') ||
+    url.includes('/eCrew/CrewSchedule/SchedulerEvents') ||
+    url.includes('/eCrew/CrewSchedule');
+
+  if (isAimsEndpoint) {
+    addDebugInfo(`Fetching: ${url}`);
+  }
+
+  return origFetch.apply(this, args).then(response => {
+    if (!isAimsEndpoint) return response;
+
+    const clone = response.clone();
+    clone.text().then(text => {
+      try {
+        const data = JSON.parse(text);
+        const keys = Object.keys(data);
+        log('fetch', { url: args[0], keys, status: response.status });
+
+        // Check for schedule data patterns
+        if (data.PeriodStart && data.PeriodEnd && data.SchedulerEvents) {
+          foundData.schedules.push({ type: 'SchedulerEvents', data });
+          displayScheduleData(data, '/eCrew/CrewSchedule/SchedulerEvents');
+          updateStatus();
+        } else if (data.periodStart && data.periodEnd && data.events) {
+          foundData.schedules.push({ type: 'Dashboard', data });
+          displayScheduleData(data, '/eCrew/Dashboard');
+          updateStatus();
+        } else {
+          addDebugInfo(`Response from ${args[0]} doesn't match expected schedule format. Keys: ${keys.join(', ')}`);
+        }
+      } catch (e) {
+        log('fetch', { url: args[0], error: 'not json', status: response.status });
+        addDebugInfo(`Failed to parse JSON from ${args[0]}: ${e.message}`);
+      }
+    }).catch(err => {
+      addDebugInfo(`Error reading response from ${args[0]}: ${err.message}`);
+    });
+
+    return response;
+  }).catch(err => {
+    if (isAimsEndpoint) {
+      log('error', { url: args[0], fetch: String(err) });
+      addDebugInfo(`Fetch error for ${args[0]}: ${err.message}`);
+    }
+    throw err;
+  });
+};
+
+function clearLogs() {
+  logs.length = 0;
+  foundData.schedules.length = 0;
+  foundData.errors.length = 0;
+  logsDiv.innerHTML = '';
+  rosterDiv.innerHTML = '';
+  debugDiv.innerHTML = '';
+  updateStatus();
+}
+
+function downloadLogs() {
+  const data = {
+    timestamp: new Date().toISOString(),
+    logs,
+    foundSchedules: foundData.schedules,
+    errors: foundData.errors
+  };
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `aims-dashboard-diagnostic-${Date.now()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+addDebugInfo('Diagnostic tool started');
+updateStatus();
+</script>
+</body>
+</html>

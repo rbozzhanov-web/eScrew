@@ -1,5 +1,6 @@
 export const AIMS_CREW_SCHEDULE_PATH = '/eCrew/CrewSchedule';
 export const AIMS_SCHEDULER_EVENTS_PATH = '/eCrew/CrewSchedule/SchedulerEvents';
+export const AIMS_DASHBOARD_PATH = '/eCrew/Dashboard';
 
 /** Values allowed to leave the authenticated AIMS page context. */
 export interface AimsExtractedCrewMember {
