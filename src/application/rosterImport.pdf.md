@@ -1,0 +1,1 @@
+The existing PDF parser/storage path remains unchanged. PR #45 additionally provides `adaptPdfRoster()` for the normalized Core contract; this UI compatibility layer does not replace or fork the PDF parser.
