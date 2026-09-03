@@ -35,7 +35,8 @@
       <li>Add this page to Safari bookmarks.</li>
       <li>Edit that bookmark and replace its URL with the connector copied below.</li>
       <li>From eScrew, open AIMS and sign in normally.</li>
-      <li>On the Crew Schedule page, run the “eScrew AIMS” bookmark once.</li>
+      <li>On the Crew Schedule page, run the “eScrew AIMS” bookmark.</li>
+      <li>Then use AIMS normally to retrieve/show the schedule while staying on that page.</li>
     </ol>
     <button id="copy">Copy connector</button>
     <button id="open" class="secondary">Open AIMS Crew Schedule</button>
@@ -84,15 +85,6 @@
       return true;
     };
     const inspectText=(text)=>{try{return deliver(JSON.parse(text));}catch{return false;}};
-    const replayExistingSchedulerEvents=async()=>{
-      try{
-        const entries=performance&&typeof performance.getEntriesByType==='function'?performance.getEntriesByType('resource'):[];
-        const match=[...entries].reverse().find(entry=>SCHEDULER_RE.test(String(entry&&entry.name||'')));
-        if(!match)return false;
-        const response=await fetch(String(match.name),{credentials:'same-origin',cache:'no-store'});
-        return inspectText(await response.text());
-      }catch{return false;}
-    };
     if(!window.__escrewFetchPatched&&window.fetch){
       window.__escrewFetchPatched=true;
       const nativeFetch=window.fetch.bind(window);
@@ -113,22 +105,7 @@
         return send.apply(this,args);
       };
     }
-    replayExistingSchedulerEvents().then((replayed)=>{
-      if(replayed||delivered)return;
-      const retrieveForm=[...document.forms].find(form=>/\/eCrew\/CrewSchedule\/Retrieve/i.test(form.action||''));
-      if(retrieveForm){
-        if(typeof retrieveForm.requestSubmit==='function')retrieveForm.requestSubmit();
-        else retrieveForm.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
-        return;
-      }
-      const retrieveControl=[...document.querySelectorAll('button,input[type="submit"],a')].find(el=>{
-        const text=(el.textContent||el.value||'').trim();
-        const url=el.getAttribute&&((el.getAttribute('formaction')||el.getAttribute('href')||''));
-        return /Retrieve|View schedule|Show schedule/i.test(text)||/\/CrewSchedule\/Retrieve/i.test(url||'');
-      });
-      if(retrieveControl&&typeof retrieveControl.click==='function'){retrieveControl.click();return;}
-      alert('Connector is armed. Refresh or retrieve the schedule in AIMS, then run the eScrew AIMS bookmark once more if the page reloads.');
-    });
+    alert('eScrew AIMS connector is armed. Now retrieve or show the schedule in AIMS normally.');
   })()`;
   const bookmarklet='javascript:'+source.replace(/\s+/g,' ');
   document.getElementById('preview').textContent=bookmarklet;
