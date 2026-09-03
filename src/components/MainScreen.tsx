@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, Platform, Pressable, StyleSheet, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, Animated, FlatList, Platform, Pressable, StyleSheet, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IOSSheet } from './IOSOverlay';
 import { SwipeSurface } from './SwipeSurface';
+import { listenForAimsRoster } from '@/src/aims/bridge';
 import { exportRosterCalendar } from '@/src/domain/calendar';
 import { formatMinutes, rosterMonthLabel, rosterToDuties } from '@/src/domain/rosterView';
 import { stationLocalDateTimeMs } from '@/src/domain/stationTime';
@@ -13,22 +14,36 @@ import { clearStoredRosters, loadStoredRosters, removeStoredRoster, upsertStored
 
 type Tab = 'Home' | 'Roster' | 'More';
 const TABS: Tab[] = ['Home', 'Roster', 'More'];
-const ICONS: Record<Tab, string> = { Home: '⌂', Roster: '✈︎', More: '•••' };
+const TAB_ICONS: Record<Tab, { glyph: string; size: number; nudge: number; weight: '700' | '800' }> = {
+  Home: { glyph: '⌂', size: 24, nudge: 0, weight: '700' },
+  Roster: { glyph: '✈︎', size: 22, nudge: 0, weight: '700' },
+  More: { glyph: '•••', size: 18, nudge: -2, weight: '700' },
+};
 type Palette = { background:string; surface:string; surfaceStrong:string; text:string; muted:string; line:string; accent:string; accentSoft:string; gold:string; danger:string; weekend:string };
 type RosterDuty = { roster: ParsedAirAstanaRoster; duty: Duty };
 type FocusDuty = RosterDuty & { reportMs: number; releaseMs: number };
 type FlightRow = { duty: Duty; sector: Sector };
-const WEB_GLASS = Platform.OS === 'web' ? ({ backdropFilter: 'blur(24px) saturate(1.2)', WebkitBackdropFilter: 'blur(24px) saturate(1.2)' } as any) : undefined;
+type AimsState = 'idle' | 'waiting' | 'received' | 'error';
+
+const WEB_GLASS = Platform.OS === 'web'
+  ? ({ backdropFilter: 'blur(22px) saturate(1.18)', WebkitBackdropFilter: 'blur(22px) saturate(1.18)' } as any)
+  : undefined;
+const WEB_TAB_GLASS = Platform.OS === 'web'
+  ? ({ backdropFilter: 'blur(30px) saturate(1.38)', WebkitBackdropFilter: 'blur(30px) saturate(1.38)' } as any)
+  : undefined;
 
 export default function MainScreen() {
   const scheme = useColorScheme();
-  const dark = scheme === 'dark';
   const { width } = useWindowDimensions();
-  const desktop = Platform.OS === 'web' && width >= 768;
+  const desktopWeb = Platform.OS === 'web' && width >= 768;
+  const [hydrated, setHydrated] = useState(Platform.OS !== 'web');
+  useEffect(() => { if (!hydrated) setHydrated(true); }, [hydrated]);
+  const dark = hydrated && scheme === 'dark';
+
   const palette = useMemo<Palette>(() => dark ? {
     background:'#081519', surface:'rgba(15,34,39,.78)', surfaceStrong:'rgba(21,44,50,.88)', text:'#F3FAFA', muted:'#A8BABC', line:'rgba(174,214,216,.14)', accent:'#35B8C0', accentSoft:'rgba(53,184,192,.16)', gold:'#D4AE62', danger:'#E08383', weekend:'#DCA17B',
   } : {
-    background:'#F2F6F6', surface:'rgba(255,255,255,.74)', surfaceStrong:'rgba(255,255,255,.92)', text:'#102326', muted:'#60777A', line:'rgba(16,74,79,.11)', accent:'#007F86', accentSoft:'#DFF1F2', gold:'#A67A24', danger:'#B84B52', weekend:'#9B613B',
+    background:'#F2F6F6', surface:'rgba(255,255,255,.78)', surfaceStrong:'rgba(255,255,255,.88)', text:'#102326', muted:'#60777A', line:'rgba(16,74,79,.11)', accent:'#007F86', accentSoft:'#DFF1F2', gold:'#A67A24', danger:'#B84B52', weekend:'#9B613B',
   }, [dark]);
 
   const [tab, setTab] = useState<Tab>('Home');
@@ -37,6 +52,9 @@ export default function MainScreen() {
   const [selectedFlight, setSelectedFlight] = useState<string>();
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState<string>();
+  const [aimsState, setAimsState] = useState<AimsState>('idle');
+  const [tabBarWidth, setTabBarWidth] = useState(0);
+  const tabSelection = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const stored = loadStoredRosters();
@@ -44,17 +62,32 @@ export default function MainScreen() {
     setActiveMonth(stored.at(-1)?.period.start);
   }, []);
 
+  useEffect(() => {
+    Animated.spring(tabSelection, {
+      toValue: TABS.indexOf(tab), stiffness: 380, damping: 34, mass: 0.72,
+      useNativeDriver: true, isInteraction: false,
+    }).start();
+  }, [tab, tabSelection]);
+
+  useEffect(() => listenForAimsRoster((parsed) => {
+    const next = upsertStoredRoster(parsed);
+    setRosters(next);
+    setActiveMonth(parsed.period.start);
+    setSelectedFlight(undefined);
+    setImportError(undefined);
+    setAimsState('received');
+    setTab('Roster');
+  }, (error) => {
+    setAimsState('error');
+    setImportError(error.message);
+  }), []);
+
   const roster = rosters.find((item) => item.period.start === activeMonth) ?? rosters.at(-1);
   const duties = useMemo(() => roster ? rosterToDuties(roster) : [], [roster]);
-  const allDuties = useMemo<RosterDuty[]>(() => rosters.flatMap((item) => rosterToDuties(item).map((duty) => ({ roster: item, duty }))), [rosters]);
   const selectedSector = duties.flatMap((duty) => duty.sectors).find((sector) => sector.id === selectedFlight);
-
-  const changeTab = (direction: -1 | 1) => {
-    const next = TABS[TABS.indexOf(tab) + direction];
-    if (!next) return;
-    setSelectedFlight(undefined);
-    setTab(next);
-  };
+  const allDuties = useMemo<RosterDuty[]>(() => rosters.flatMap((item) => rosterToDuties(item).map((duty) => ({ roster: item, duty }))), [rosters]);
+  const tabStep = tabBarWidth / TABS.length;
+  const tabIndicatorX = Animated.multiply(tabSelection, tabStep);
 
   const importRoster = async () => {
     setImportError(undefined);
@@ -74,13 +107,37 @@ export default function MainScreen() {
     }
   };
 
+  const openAims = () => {
+    setAimsState('waiting');
+    setImportError(undefined);
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      const popup = window.open('https://aims.airastana.com/ecrew', 'escrew-aims');
+      if (!popup) setAimsState('error');
+      return;
+    }
+    setAimsState('error');
+  };
+
   const deleteRoster = (periodStart: string) => {
     const next = removeStoredRoster(periodStart);
     setRosters(next);
+    setSelectedFlight(undefined);
     setActiveMonth((current) => current && current !== periodStart && next.some((item) => item.period.start === current) ? current : next.at(-1)?.period.start);
+  };
+  const changeMonth = (direction: -1 | 1) => {
+    if (!roster) return;
+    const index = rosters.findIndex((item) => item.period.start === roster.period.start);
+    const next = rosters[index + direction];
+    if (!next) return;
+    setActiveMonth(next.period.start);
     setSelectedFlight(undefined);
   };
-
+  const changeTab = (direction: -1 | 1) => {
+    const next = TABS[TABS.indexOf(tab) + direction];
+    if (!next) return;
+    setSelectedFlight(undefined);
+    setTab(next);
+  };
   const eraseAll = () => {
     clearStoredRosters();
     setRosters([]);
@@ -89,24 +146,31 @@ export default function MainScreen() {
     setTab('Home');
   };
 
-  return <SafeAreaView style={[styles.safe, { backgroundColor: palette.background }]} edges={desktop ? ['bottom'] : ['top', 'bottom']}>
+  return <SafeAreaView style={[styles.safe, { backgroundColor: palette.background }]} edges={desktopWeb ? ['bottom'] : ['top', 'bottom']}>
     <View style={styles.app}>
       <View style={styles.header}>
-        <View><Text style={[styles.brand, { color: palette.text }]}>eScrew</Text><Text style={[styles.kicker, { color: palette.muted }]}>CREW SCHEDULE</Text></View>
-        <View style={[styles.brandMark, { borderColor: palette.accent }]}><View style={[styles.brandMarkCore, { backgroundColor: palette.gold }]} /></View>
+        <View>
+          <Text style={[styles.brand, { color: palette.text }]}>eScrew</Text>
+          <Text style={[styles.kicker, { color: palette.muted }]}>CREW SCHEDULE</Text>
+        </View>
+        <Pressable onPress={openAims} style={[styles.modeButton, styles.depthSurface, { backgroundColor: aimsState === 'waiting' ? palette.accentSoft : palette.surface, borderColor: aimsState === 'received' ? palette.gold : aimsState === 'error' ? palette.danger : 'transparent', borderWidth: aimsState === 'idle' || aimsState === 'waiting' ? 0 : 1 }]} accessibilityLabel="Open AIMS">
+          <Text style={[styles.aimsGlyph, { color: aimsState === 'error' ? palette.danger : palette.accent }]}>A</Text>
+          {aimsState === 'waiting' && <View style={[styles.aimsDot, { backgroundColor: palette.gold }]} />}
+        </Pressable>
       </View>
 
       <SwipeSurface style={styles.viewport} onSwipeLeft={tab === 'More' ? undefined : () => changeTab(1)} onSwipeRight={tab === 'Home' ? undefined : () => changeTab(-1)}>
         {tab === 'Home' && <Home allDuties={allDuties} fallbackRoster={roster} rosters={rosters} palette={palette} onImport={importRoster} importing={importing} />}
-        {tab === 'Roster' && <RosterScreen roster={roster} rosters={rosters} duties={duties} selectedSector={selectedSector} palette={palette} importing={importing} error={importError} onImport={importRoster} onSelect={setSelectedFlight} onMonth={setActiveMonth} />}
-        {tab === 'More' && <MoreScreen rosters={rosters} palette={palette} onDeleteRoster={deleteRoster} onErase={eraseAll} />}
+        {tab === 'Roster' && <RosterScreen roster={roster} rosters={rosters} duties={duties} selectedSector={selectedSector} palette={palette} importing={importing} error={importError} onImport={importRoster} onSelect={setSelectedFlight} onMonth={changeMonth} />}
+        {tab === 'More' && <MoreScreen rosters={rosters} palette={palette} aimsState={aimsState} onAims={openAims} onDeleteRoster={deleteRoster} onErase={eraseAll} />}
       </SwipeSurface>
 
-      <View style={[styles.tabBar, WEB_GLASS, { backgroundColor: palette.surface, borderColor: palette.line }]}>
+      <View onLayout={(event) => { const nextWidth = event.nativeEvent.layout.width; if (Math.abs(nextWidth - tabBarWidth) > 0.5) setTabBarWidth(nextWidth); }} style={[styles.tabBar, styles.depthSurface, WEB_TAB_GLASS, { backgroundColor: palette.surface, borderColor: palette.line }]}>
+        {tabBarWidth > 0 && <Animated.View pointerEvents="none" style={[styles.tabSelection, { width: Math.max(0, tabStep - 8), backgroundColor: palette.surfaceStrong, transform: [{ translateX: tabIndicatorX }] }]} />}
         {TABS.map((item) => {
           const active = item === tab;
-          return <Pressable key={item} onPress={() => { setSelectedFlight(undefined); setTab(item); }} style={[styles.tabItem, active && { backgroundColor: palette.surfaceStrong }]}>
-            <Text style={[styles.tabIcon, { color: active ? palette.accent : palette.muted }]}>{ICONS[item]}</Text>
+          return <Pressable key={item} onPress={() => { setSelectedFlight(undefined); setTab(item); }} style={styles.tabItem} accessibilityRole="tab" accessibilityState={{ selected: active }}>
+            <View style={styles.tabIconWrap}><Text style={[styles.tabIcon, { color: active ? palette.accent : palette.muted, fontSize: TAB_ICONS[item].size, lineHeight: TAB_ICONS[item].size + 3, marginTop: TAB_ICONS[item].nudge, fontWeight: TAB_ICONS[item].weight }]}>{TAB_ICONS[item].glyph}</Text></View>
             <Text style={[styles.tabText, { color: active ? palette.text : palette.muted }]}>{item}</Text>
           </Pressable>;
         })}
@@ -130,95 +194,93 @@ function Home({ allDuties, fallbackRoster, rosters, palette, onImport, importing
 
   const first = duty.sectors[0];
   const last = duty.sectors[duty.sectors.length - 1];
-  const isUpcoming = focus ? focus.reportMs > now : false;
-  const isActive = focus ? focus.reportMs <= now && focus.releaseMs >= now : false;
-  const countdown = focus ? (isUpcoming ? formatCountdown(focus.reportMs - now) : isActive ? formatCountdown(now - focus.reportMs) : undefined) : undefined;
-  const previous = previousDuties(timeline, focus, now, 6);
+  const reportMs = focus?.reportMs;
+  const releaseMs = focus?.releaseMs;
+  const isUpcoming = reportMs !== undefined && reportMs > now;
+  const isActive = reportMs !== undefined && releaseMs !== undefined && reportMs <= now && releaseMs >= now;
+  const countdown = reportMs === undefined ? undefined : isUpcoming ? formatCountdown(reportMs - now) : isActive ? formatCountdown(now - reportMs) : undefined;
+  const spanMinutes = reportMs !== undefined && releaseMs !== undefined ? Math.round((releaseMs - reportMs) / 60000) : undefined;
+  const dutyMinutes = spanMinutes !== undefined && spanMinutes > 0 ? spanMinutes : undefined;
   const block = roster.totals.blockMinutes;
   const night = roster.totals.nightMinutes;
+  const nightShare = block && night !== undefined ? Math.round((night / block) * 100) : undefined;
+  const neighbours = previousDuties(timeline, focus, now, 6);
   const year = roster.period.start.slice(0, 4);
   const yearRosters = rosters.filter((item) => item.period.start.startsWith(`${year}-`));
-  const ytdBlock = yearRosters.reduce((total, item) => total + (item.totals.blockMinutes ?? 0), 0);
-  const ytdNight = yearRosters.reduce((total, item) => total + (item.totals.nightMinutes ?? 0), 0);
+  const ytdBlock = yearRosters.reduce((sum, item) => sum + (item.totals.blockMinutes ?? 0), 0);
+  const ytdNight = yearRosters.reduce((sum, item) => sum + (item.totals.nightMinutes ?? 0), 0);
 
   return <View style={styles.screen}>
-    <View style={styles.rowBetween}><Text style={[styles.label, { color: isActive ? palette.gold : palette.accent }]}>{isUpcoming ? 'NEXT DUTY' : isActive ? 'ON DUTY NOW' : 'LATEST DUTY'}</Text><Text style={[styles.label, { color: palette.muted }]}>{duty.dateLabel}</Text></View>
-    <View style={[styles.heroCard, WEB_GLASS, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}>
+    <View style={styles.dutyHead}><Text style={[styles.label, { color: isActive ? palette.accent : palette.muted }]}>{isUpcoming ? 'NEXT DUTY' : isActive ? 'ON DUTY NOW' : 'LATEST DUTY'}</Text><Text style={[styles.label, { color: palette.muted }]}>{duty.dateLabel}</Text></View>
+    <View style={[styles.heroCard, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}>
       <Text numberOfLines={1} adjustsFontSizeToFit style={[styles.heroRoute, { color: palette.text }]}>{routeChain(duty)}</Text>
-      <View style={styles.heroMeta}><Text style={[styles.meta, { color: palette.muted }]}>{duty.sectors.map((sector) => sector.flightNumber).join(' · ')}</Text>{countdown && <View style={[styles.countdownPill, { backgroundColor: palette.accentSoft }]}><Text style={[styles.countdown, { color: palette.accent }]}>{countdown}</Text><Text style={[styles.countdownLabel, { color: palette.accent }]}>{isUpcoming ? 'TO REPORT' : 'ON DUTY'}</Text></View>}</View>
-      <View style={[styles.divider, { backgroundColor: palette.line }]} />
+      <View style={[styles.heroMetaRow, countdown ? styles.heroMetaRowTall : undefined]}><Text numberOfLines={1} style={[styles.heroFlight, { color: palette.muted }]}>{duty.sectors.map((sector) => sector.flightNumber).join(' · ')}</Text>{countdown && <View style={[styles.countdownPill, { backgroundColor: palette.accentSoft }]}><Text style={[styles.countdown, { color: palette.accent }]}>{countdown}</Text><Text style={[styles.countdownLabel, { color: palette.accent }]}>{isUpcoming ? 'TO REPORT' : 'ON DUTY'}</Text></View>}</View>
+      <View style={[styles.timeDivider, { backgroundColor: palette.line }]} />
       <View style={styles.timeRow}><TimeCell label="REPORT" value={duty.reportTime} palette={palette} /><TimeCell label={`DEP · ${first.departure}`} value={first.departureTime} palette={palette} /><TimeCell label={`ARR · ${last.arrival}`} value={last.arrivalTime} palette={palette} /><TimeCell label="RELEASE" value={duty.releaseTime} palette={palette} /></View>
+      <Text style={[styles.heroFoot, { color: palette.muted }]}>{dutyMinutes !== undefined ? `Duty ${formatMinutes(dutyMinutes)} · ` : ''}{duty.sectors.length} sector{duty.sectors.length === 1 ? '' : 's'}</Text>
     </View>
-
     <Text style={[styles.label, { color: palette.muted }]}>{rosterMonthLabel(roster)}</Text>
-    <View style={styles.summaryRow}><Summary title="BLOCK HOURS" value={formatMinutes(block)} detail={`${roster.sectors.filter((sector) => !sector.deadhead).length} sectors`} palette={palette} /><Summary title="NIGHT HOURS" value={formatMinutes(night)} detail="reported by roster" palette={palette} /></View>
+    <View style={styles.summaryRow}><Summary title="BLOCK HOURS" value={formatMinutes(block)} detail={`${operatingCount(roster)} sectors flown`} palette={palette} /><Summary title="NIGHT HOURS" value={formatMinutes(night)} detail={nightShare === undefined ? 'reported by the roster' : `${nightShare}% of block time`} palette={palette} /></View>
     {yearRosters.length > 1 && <Text style={[styles.meta, { color: palette.muted }]}>{year} to date · {formatMinutes(ytdBlock)} block · {formatMinutes(ytdNight)} night · {yearRosters.length} months imported</Text>}
-
-    {previous.length > 0 && <View style={styles.previousWrap}><Text style={[styles.label, { color: palette.muted }]}>PREVIOUS FLIGHTS</Text><FlatList data={previous} keyExtractor={(item) => item.duty.id} showsVerticalScrollIndicator={false} renderItem={({ item }) => <View style={[styles.previousRow, { borderColor: palette.line }]}><Text style={[styles.previousDate, { color: palette.muted }]}>{item.duty.dateLabel}</Text><Text numberOfLines={1} style={[styles.previousRoute, { color: palette.text }]}>{routeChain(item.duty)}</Text><View style={styles.previousTime}><Text style={[styles.tinyLabel, { color: palette.muted }]}>RELEASED</Text><Text style={[styles.meta, { color: palette.muted }]}>{item.duty.releaseTime}</Text></View></View>} /></View>}
+    {neighbours.length > 0 && <View style={styles.upNext}><Text style={[styles.label, { color: palette.muted }]}>PREVIOUS FLIGHTS</Text><FlatList data={neighbours} keyExtractor={(item) => item.duty.id} showsVerticalScrollIndicator={false} style={styles.upNextList} renderItem={({ item }) => <View style={[styles.upNextRow, { borderColor: palette.line }]}><Text style={[styles.upNextDate, { color: palette.muted }]}>{item.duty.dateLabel}</Text><Text numberOfLines={1} style={[styles.upNextRoute, { color: palette.text }]}>{routeChain(item.duty)}</Text><View style={styles.upNextTimeBlock}><Text style={[styles.upNextTimeLabel, { color: palette.muted }]}>RELEASED AT</Text><Text style={[styles.upNextTime, { color: palette.muted }]}>{item.duty.releaseTime}</Text></View></View>} /></View>}
   </View>;
 }
 
-function RosterScreen({ roster, rosters, duties, selectedSector, palette, importing, error, onImport, onSelect, onMonth }: { roster?: ParsedAirAstanaRoster; rosters: ParsedAirAstanaRoster[]; duties: Duty[]; selectedSector?: Sector; palette: Palette; importing: boolean; error?: string; onImport: () => void; onSelect: (id?: string) => void; onMonth: (period: string) => void }) {
+function RosterScreen({ roster, rosters, duties, selectedSector, palette, importing, error, onImport, onSelect, onMonth }: { roster?: ParsedAirAstanaRoster; rosters: ParsedAirAstanaRoster[]; duties: Duty[]; selectedSector?: Sector; palette: Palette; importing: boolean; error?: string; onImport: () => void; onSelect: (id?: string) => void; onMonth: (direction: -1 | 1) => void }) {
   const [calendarState, setCalendarState] = useState<'idle'|'working'|'done'|'error'>('idle');
+  const index = roster ? rosters.findIndex((item) => item.period.start === roster.period.start) : -1;
   const flights = useMemo<FlightRow[]>(() => duties.flatMap((duty) => duty.sectors.map((sector) => ({ duty, sector }))), [duties]);
   const selectedIndex = selectedSector ? flights.findIndex(({ sector }) => sector.id === selectedSector.id) : -1;
   const selectedRow = selectedIndex >= 0 ? flights[selectedIndex] : undefined;
-
   useEffect(() => setCalendarState('idle'), [roster?.period.start]);
-  const exportCalendar = async () => {
-    if (!roster || calendarState === 'working') return;
-    setCalendarState('working');
-    try { await exportRosterCalendar(roster); setCalendarState('done'); }
-    catch (exportError) { setCalendarState(exportError instanceof Error && /cancel/i.test(exportError.message) ? 'idle' : 'error'); }
-  };
+  const exportCalendar = async () => { if (!roster || calendarState === 'working') return; setCalendarState('working'); try { await exportRosterCalendar(roster); setCalendarState('done'); } catch (e) { setCalendarState(e instanceof Error && /cancel/i.test(e.message) ? 'idle' : 'error'); } };
 
   return <View style={styles.screen}>
-    <View style={styles.titleRow}><View style={styles.grow}><Text style={[styles.sectionTitle, { color: palette.text }]}>{roster ? rosterMonthLabel(roster) : 'Roster'}</Text><Text style={[styles.meta, { color: palette.muted }]}>{roster?.subject ? `${roster.subject.base ?? '—'} · ${roster.subject.rank ?? 'crew'}` : 'Personal schedule'}</Text></View><View style={styles.actionsRow}>{roster && <Pressable onPress={exportCalendar} style={[styles.compactButton, { backgroundColor: palette.surface, borderColor: palette.line }]}>{calendarState === 'working' ? <ActivityIndicator size="small" /> : <Text style={[styles.compactText, { color: palette.text }]}>{calendarState === 'done' ? 'Added' : calendarState === 'error' ? 'Retry' : 'Calendar'}</Text>}</Pressable>}<Pressable onPress={onImport} style={[styles.compactButton, { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft }]}>{importing ? <ActivityIndicator size="small" /> : <Text style={[styles.compactText, { color: palette.accent }]}>{roster ? 'Add PDF' : 'Import'}</Text>}</Pressable></View></View>
-    {error && <Text style={{ color: palette.danger }}>{error}</Text>}
-    {rosters.length > 1 && <View style={styles.months}>{rosters.map((item) => <Pressable key={item.period.start} onPress={() => onMonth(item.period.start)} style={[styles.monthPill, { backgroundColor: item.period.start === roster?.period.start ? palette.accentSoft : palette.surface }]}><Text style={[styles.meta, { color: item.period.start === roster?.period.start ? palette.accent : palette.muted }]}>{rosterMonthLabel(item).split(' ')[0]}</Text></Pressable>)}</View>}
-    {!roster ? <View style={[styles.emptyCard, { backgroundColor: palette.surface, borderColor: palette.line }]}><Text style={[styles.meta, { color: palette.muted }]}>Import a roster PDF to begin.</Text></View> : <View style={[styles.listWindow, WEB_GLASS, { backgroundColor: palette.surface, borderColor: palette.line }]}><FlatList data={flights} keyExtractor={({ sector }) => sector.id} contentContainerStyle={styles.listContent} showsVerticalScrollIndicator={false} renderItem={({ item }) => <Pressable onPress={() => onSelect(item.sector.id)} style={[styles.flightCard, { backgroundColor: selectedSector?.id === item.sector.id ? palette.accentSoft : palette.surfaceStrong, borderColor: palette.line }]}><View style={styles.rowBetween}><Text style={[styles.label, { color: isWeekend(item.duty.date) ? palette.weekend : palette.muted }]}>{item.duty.dateLabel}</Text><Text style={[styles.label, { color: palette.muted }]}>{item.sector.flightNumber}{item.sector.deadhead ? ' · DHC' : ''}</Text></View><Text style={[styles.routeText, { color: palette.text }]}>{item.sector.departure} → {item.sector.arrival}</Text><Text style={[styles.meta, { color: palette.muted }]}>{item.sector.departureTime} – {item.sector.arrivalTime} · Report {item.duty.reportTime}</Text></Pressable>} /></View>}
+    <View style={styles.titleRow}><View style={styles.grow}><Text style={[styles.sectionTitle, { color: palette.text }]}>{roster ? rosterMonthLabel(roster) : 'Roster'}</Text><Text style={[styles.meta, { color: palette.muted }]}>{roster?.subject ? `${roster.subject.base ?? '—'} · ${roster.subject.rank ?? 'crew'}` : 'Personal schedule'}</Text></View><View style={styles.titleActions}>{roster && <Pressable onPress={exportCalendar} style={[styles.compactButton, { backgroundColor: palette.surface, borderColor: palette.line }]}>{calendarState === 'working' ? <ActivityIndicator size="small" /> : <Text style={[styles.compactText, { color: palette.text }]}>{calendarState === 'done' ? 'Added' : calendarState === 'error' ? 'Retry' : 'Calendar'}</Text>}</Pressable>}<Pressable onPress={onImport} disabled={importing} style={[styles.compactButton, { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft }]}>{importing ? <ActivityIndicator size="small" /> : <Text style={[styles.compactText, { color: palette.accent }]}>{roster ? 'Add PDF' : 'Import'}</Text>}</Pressable></View></View>
+    {roster && rosters.length > 1 && <SwipeSurface style={styles.monthNav} onSwipeRight={index > 0 ? () => onMonth(-1) : undefined} onSwipeLeft={index < rosters.length - 1 ? () => onMonth(1) : undefined} threshold={38}><Pressable disabled={index <= 0} onPress={() => onMonth(-1)}><Text style={[styles.monthNavText, { color: index <= 0 ? palette.line : palette.text }]}>‹ Previous</Text></Pressable><Text style={[styles.meta, { color: palette.muted }]}>{index + 1} / {rosters.length}</Text><Pressable disabled={index >= rosters.length - 1} onPress={() => onMonth(1)}><Text style={[styles.monthNavText, { color: index >= rosters.length - 1 ? palette.line : palette.text }]}>Next ›</Text></Pressable></SwipeSurface>}
+    {error && <Text style={[styles.error, { color: palette.danger }]}>{error}</Text>}
+    {!roster ? <View style={[styles.emptyCard, styles.depthSurface, { backgroundColor: palette.surface, borderColor: palette.line }]}><Text style={[styles.meta, { color: palette.muted }]}>Import a roster PDF to begin.</Text></View> : <View style={[styles.innerWindow, styles.depthSurface, { backgroundColor: palette.surface, borderColor: palette.line }]}><FlatList data={flights} keyExtractor={({ sector }) => sector.id} contentContainerStyle={styles.listContent} showsVerticalScrollIndicator={false} renderItem={({ item: { duty, sector } }) => { const dateMeta = rosterDateMeta(duty); return <Pressable onPress={() => onSelect(sector.id)} style={[styles.rosterCard, { backgroundColor: selectedSector?.id === sector.id ? palette.accentSoft : palette.surfaceStrong, borderColor: palette.line }]}><View style={styles.flightCardTop}><Text style={[styles.label, { color: dateMeta.weekend ? palette.weekend : palette.muted }]}>{dateMeta.label}</Text><Text style={[styles.flightNumber, { color: palette.muted }]}>{sector.flightNumber}{sector.deadhead ? ' · DHC' : ''}</Text></View><Text style={[styles.rosterRoute, { color: palette.text }]}>{sector.departure} → {sector.arrival}</Text><Text style={[styles.meta, { color: palette.muted }]}>{sector.departureTime} – {sector.arrivalTime} · Report {duty.reportTime}</Text></Pressable>; }} /></View>}
     {selectedRow && <FlightDetail row={selectedRow} palette={palette} onClose={() => onSelect(undefined)} onPrevious={selectedIndex > 0 ? () => onSelect(flights[selectedIndex - 1].sector.id) : undefined} onNext={selectedIndex < flights.length - 1 ? () => onSelect(flights[selectedIndex + 1].sector.id) : undefined} />}
   </View>;
 }
 
 function FlightDetail({ row, palette, onClose, onPrevious, onNext }: { row: FlightRow; palette: Palette; onClose: () => void; onPrevious?: () => void; onNext?: () => void }) {
-  return <IOSSheet visible onClose={onClose} handleColor={palette.line} style={[styles.flightSheet, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}>
-    <SwipeSurface style={styles.flightSheetContent} onSwipeLeft={onNext} onSwipeRight={onPrevious} threshold={44}>
-      <Text style={[styles.label, { color: palette.muted }]}>{row.duty.dateLabel} · {row.sector.flightNumber}{row.sector.deadhead ? ' · DHC' : ''}</Text>
-      <Text style={[styles.sheetRoute, { color: palette.text }]}>{row.sector.departure} → {row.sector.arrival}</Text>
-      <Text style={[styles.meta, { color: palette.muted }]}>{row.sector.departureTime} – {row.sector.arrivalTime}</Text>
-      <Text style={[styles.swipeHint, { color: palette.muted }]}>{onPrevious ? '‹ ' : ''}swipe flight{onNext ? ' ›' : ''} · swipe down to close</Text>
-      <Text style={[styles.crewHeading, { color: palette.accent }]}>Flying with · {row.sector.crew.length}</Text>
-      {row.sector.crew.length > 0 ? <FlatList data={row.sector.crew} keyExtractor={(member) => member.id} style={styles.crewList} showsVerticalScrollIndicator={false} renderItem={({ item }) => <View style={styles.crewRow}><View style={[styles.avatar, { backgroundColor: palette.accentSoft }]}><Text style={[styles.avatarText, { color: palette.accent }]}>{item.name[0]}</Text></View><View style={styles.grow}><Text style={[styles.crewName, { color: palette.text }]}>{item.name}</Text><Text style={[styles.meta, { color: palette.muted }]}>{item.position ?? item.role}</Text></View></View>} /> : <Text style={[styles.meta, { color: palette.muted, marginTop: 12 }]}>Crew is not listed for this flight in the imported report.</Text>}
-    </SwipeSurface>
-  </IOSSheet>;
+  return <IOSSheet visible onClose={onClose} handleColor={palette.line} style={[styles.flightSheet, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}><SwipeSurface style={styles.flightSheetContent} onSwipeLeft={onNext} onSwipeRight={onPrevious} threshold={44}><Text style={[styles.label, { color: palette.muted }]}>{row.duty.dateLabel} · {row.sector.flightNumber}{row.sector.deadhead ? ' · DHC' : ''}</Text><Text style={[styles.sheetRoute, { color: palette.text }]}>{row.sector.departure} → {row.sector.arrival}</Text><Text style={[styles.meta, { color: palette.muted }]}>{row.sector.departureTime} – {row.sector.arrivalTime}</Text><Text style={[styles.swipeHint, { color: palette.muted }]}>{onPrevious ? '‹ ' : ''}swipe flight{onNext ? ' ›' : ''} · swipe down to close</Text><Text style={[styles.flyingWith, { color: palette.accent }]}>Flying with · {row.sector.crew.length}</Text>{row.sector.crew.length > 0 ? <FlatList data={row.sector.crew} keyExtractor={(member) => member.id} style={styles.crewScroll} contentContainerStyle={styles.crewList} showsVerticalScrollIndicator={false} renderItem={({ item }) => <View style={styles.crewRow}><View style={[styles.avatar, { backgroundColor: palette.accentSoft }]}><Text style={[styles.avatarText, { color: palette.accent }]}>{item.name[0]}</Text></View><View style={styles.grow}><Text style={[styles.crewName, { color: palette.text }]}>{item.name}</Text><Text style={[styles.meta, { color: palette.muted }]}>{item.position ?? item.role}</Text></View></View>} /> : <Text style={[styles.meta, { color: palette.muted, marginTop: 12 }]}>Crew is not listed for this flight in the imported report.</Text>}</SwipeSurface></IOSSheet>;
 }
 
-function MoreScreen({ rosters, palette, onDeleteRoster, onErase }: { rosters: ParsedAirAstanaRoster[]; palette: Palette; onDeleteRoster: (periodStart: string) => void; onErase: () => void }) {
+function MoreScreen({ rosters, palette, aimsState, onAims, onDeleteRoster, onErase }: { rosters: ParsedAirAstanaRoster[]; palette: Palette; aimsState: AimsState; onAims: () => void; onDeleteRoster: (periodStart: string) => void; onErase: () => void }) {
   return <View style={styles.screen}>
     <Text style={[styles.sectionTitle, { color: palette.text }]}>More</Text>
-    <View style={[styles.infoCard, WEB_GLASS, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}><Text style={[styles.cardTitle, { color: palette.text }]}>Imported rosters</Text>{rosters.length ? rosters.map((item) => <View key={item.period.start} style={[styles.libraryRow, { borderColor: palette.line }]}><View style={styles.grow}><Text style={[styles.cardTitle, { color: palette.text }]}>{rosterMonthLabel(item)}</Text><Text style={[styles.meta, { color: palette.muted }]}>{item.subject?.base ?? 'Roster'} · parsed locally</Text></View><Pressable onPress={() => onDeleteRoster(item.period.start)}><Text style={{ color: palette.danger, fontWeight: '700' }}>Delete</Text></Pressable></View>) : <Text style={[styles.meta, { color: palette.muted }]}>No months imported</Text>}</View>
-    <View style={[styles.infoCard, WEB_GLASS, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}><Text style={[styles.cardTitle, { color: palette.text }]}>Privacy</Text><Text style={[styles.meta, { color: palette.muted }]}>Roster PDFs are parsed locally. The source PDF bytes are not stored by eScrew.</Text></View>
-    {rosters.length > 0 && <Pressable onPress={onErase} style={[styles.eraseButton, { borderColor: palette.line }]}><Text style={[styles.cardTitle, { color: palette.text }]}>Erase local roster data</Text></Pressable>}
+    <Pressable onPress={onAims} style={[styles.settingsCard, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}><View style={styles.grow}><Text style={[styles.cardTitle, { color: palette.text }]}>AIMS</Text><Text style={[styles.meta, { color: palette.muted }]}>{aimsState === 'waiting' ? 'AIMS opened · waiting for roster bridge' : aimsState === 'received' ? 'Roster received from AIMS' : aimsState === 'error' ? 'Could not open or receive AIMS roster' : 'Open AIMS and sign in normally'}</Text></View><Text style={[styles.chevron, { color: palette.muted }]}>›</Text></Pressable>
+    <View style={[styles.libraryCard, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}><Text style={[styles.cardTitle, { color: palette.text }]}>Imported rosters</Text>{rosters.length ? <FlatList data={rosters} keyExtractor={(item) => item.period.start} style={styles.libraryList} showsVerticalScrollIndicator={false} renderItem={({ item }) => <View style={[styles.libraryRow, { borderColor: palette.line }]}><View style={styles.grow}><Text style={[styles.libraryMonth, { color: palette.text }]}>{rosterMonthLabel(item)}</Text><Text style={[styles.meta, { color: palette.muted }]}>{item.subject?.base ?? 'Roster'} · stored locally</Text></View><Pressable onPress={() => onDeleteRoster(item.period.start)} style={[styles.deleteRosterButton, { backgroundColor: palette.accentSoft }]}><Text style={[styles.deleteRosterText, { color: palette.danger }]}>Delete</Text></Pressable></View>} /> : <Text style={[styles.meta, { color: palette.muted }]}>No months imported</Text>}</View>
+    <View style={[styles.infoCard, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}><Text style={[styles.cardTitle, { color: palette.text }]}>Privacy</Text><Text style={[styles.meta, { color: palette.muted }]}>Roster PDFs are parsed locally. AIMS bridge accepts roster JSON only; credentials and session data are not stored by eScrew.</Text></View>
+    {rosters.length > 0 && <Pressable onPress={onErase} style={[styles.secondaryButton, { borderColor: palette.line }]}><Text style={[styles.secondaryText, { color: palette.text }]}>Erase local roster data</Text></Pressable>}
   </View>;
 }
 
 function useNow(): number { const [now, setNow] = useState(() => Date.now()); useEffect(() => { const timer = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(timer); }, []); return now; }
 function timedDuties(items: RosterDuty[]): FocusDuty[] { return items.flatMap((item) => { const duty = item.duty; if (!duty.date || !duty.sectors.length) return []; const first = duty.sectors[0], last = duty.sectors[duty.sectors.length - 1]; const reportMs = stationLocalDateTimeMs(first.departure, duty.reportDate ?? duty.date, duty.reportTime); const releaseMs = stationLocalDateTimeMs(last.arrival, duty.releaseDate ?? duty.date, duty.releaseTime); return reportMs === undefined || releaseMs === undefined ? [] : [{ ...item, reportMs, releaseMs }]; }).sort((a, b) => a.reportMs - b.reportMs); }
 function pickFocusDuty(timed: FocusDuty[], now: number): FocusDuty | undefined { return timed.filter((item) => item.reportMs <= now && item.releaseMs >= now).sort((a, b) => b.reportMs - a.reportMs)[0] ?? timed.find((item) => item.reportMs > now) ?? timed[timed.length - 1]; }
-function previousDuties(timed: FocusDuty[], focus: FocusDuty | undefined, now: number, count: number): FocusDuty[] { return timed.filter((item) => item.releaseMs < now && item.duty.id !== focus?.duty.id).sort((a, b) => b.releaseMs - a.releaseMs).slice(0, count); }
+function previousDuties(timed: FocusDuty[], focus: FocusDuty | undefined, now: number, count = 3): FocusDuty[] { return timed.filter((item) => item.releaseMs < now && item.duty.id !== focus?.duty.id).sort((a, b) => b.releaseMs - a.releaseMs).slice(0, count); }
 function formatCountdown(milliseconds: number): string { const total = Math.max(0, Math.floor(milliseconds / 1000)); const days = Math.floor(total / 86400), hours = Math.floor((total % 86400) / 3600), minutes = Math.floor((total % 3600) / 60), seconds = total % 60; const clock = `${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`; return days > 0 ? `${days}d ${clock}` : clock; }
+function rosterDateMeta(duty: Duty): { label: string; weekend: boolean } { if (!duty.date) return { label: duty.dateLabel, weekend: false }; const [year, month, day] = duty.date.split('-').map(Number); const date = new Date(Date.UTC(year, month - 1, day)); if (!Number.isFinite(date.getTime()) || date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return { label: duty.dateLabel, weekend: false }; const weekdayIndex = date.getUTCDay(); const weekday = ['SUN','MON','TUE','WED','THU','FRI','SAT'][weekdayIndex]; return { label: `${duty.dateLabel} · ${weekday}`, weekend: weekdayIndex === 0 || weekdayIndex === 6 }; }
 function routeChain(duty: Duty): string { return [duty.sectors[0]?.departure, ...duty.sectors.map((sector) => sector.arrival)].filter(Boolean).join(' → '); }
-function isWeekend(date?: string): boolean { if (!date) return false; const [year, month, day] = date.split('-').map(Number); const value = new Date(Date.UTC(year, month - 1, day)); if (value.getUTCFullYear() !== year || value.getUTCMonth() !== month - 1 || value.getUTCDate() !== day) return false; const weekday = value.getUTCDay(); return weekday === 0 || weekday === 6; }
 function TimeCell({ label, value, palette }: { label: string; value: string; palette: Palette }) { return <View style={styles.timeCell}><Text numberOfLines={1} style={[styles.timeLabel, { color: palette.muted }]}>{label}</Text><Text style={[styles.timeValue, { color: palette.text }]}>{value}</Text></View>; }
-function Summary({ title, value, detail, palette }: { title: string; value: string; detail: string; palette: Palette }) { return <View style={[styles.summary, WEB_GLASS, { backgroundColor: palette.surface, borderColor: palette.line }]}><Text style={[styles.label, { color: palette.muted }]}>{title}</Text><Text style={[styles.summaryValue, { color: palette.text }]}>{value}</Text><Text style={[styles.meta, { color: palette.muted }]}>{detail}</Text></View>; }
-function PrimaryButton({ title, onPress, loading, palette }: { title: string; onPress: () => void; loading: boolean; palette: Palette }) { return <Pressable onPress={onPress} disabled={loading} style={[styles.primaryButton, { backgroundColor: palette.accent }]}>{loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryText}>{title}</Text>}</Pressable>; }
+function Summary({ title, value, detail, palette }: { title: string; value: string; detail: string; palette: Palette }) { return <View style={[styles.summary, styles.depthSurface, { backgroundColor: palette.surface, borderColor: palette.line }]}><Text style={[styles.label, { color: palette.muted }]}>{title}</Text><Text style={[styles.summaryValue, { color: palette.text }]}>{value}</Text><Text style={[styles.meta, { color: palette.muted }]}>{detail}</Text></View>; }
+function PrimaryButton({ title, onPress, loading, palette }: { title: string; onPress: () => void; loading: boolean; palette: Palette }) { return <Pressable onPress={onPress} disabled={loading} style={[styles.primaryButton, { backgroundColor: palette.accent }]}>{loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.actionText}>{title}</Text>}</Pressable>; }
+function operatingCount(roster: ParsedAirAstanaRoster) { return roster.sectors.filter((sector) => !sector.deadhead).length; }
 
 const styles = StyleSheet.create({
-  safe:{flex:1}, app:{flex:1,width:'100%',maxWidth:620,alignSelf:'center',paddingHorizontal:16}, header:{height:72,flexDirection:'row',alignItems:'center',justifyContent:'space-between'}, brand:{fontSize:28,fontWeight:'800',letterSpacing:-1}, kicker:{fontSize:10,fontWeight:'800',letterSpacing:1.4}, brandMark:{width:34,height:34,borderRadius:17,borderWidth:2,alignItems:'center',justifyContent:'center'}, brandMarkCore:{width:9,height:9,borderRadius:5}, viewport:{flex:1,minHeight:0}, screen:{flex:1,paddingTop:8,gap:12}, grow:{flex:1,minWidth:0}, sectionTitle:{fontSize:27,lineHeight:31,fontWeight:'700',letterSpacing:-.8}, intro:{fontSize:15,lineHeight:22}, label:{fontSize:11,fontWeight:'700',letterSpacing:.8}, meta:{fontSize:13,lineHeight:18}, tinyLabel:{fontSize:8,fontWeight:'700',letterSpacing:.45}, rowBetween:{flexDirection:'row',alignItems:'center',justifyContent:'space-between',gap:10},
-  heroCard:{borderWidth:1,borderRadius:26,padding:18,shadowColor:'#000',shadowOpacity:.09,shadowRadius:22,shadowOffset:{width:0,height:10}}, heroRoute:{fontSize:35,lineHeight:41,fontWeight:'700',letterSpacing:-1}, heroMeta:{flexDirection:'row',alignItems:'center',justifyContent:'space-between',gap:10,marginTop:4}, countdownPill:{borderRadius:15,paddingHorizontal:12,paddingVertical:6,alignItems:'center'}, countdown:{fontSize:18,fontWeight:'800',fontVariant:['tabular-nums']}, countdownLabel:{fontSize:9,fontWeight:'700',letterSpacing:.7}, divider:{height:StyleSheet.hairlineWidth,marginVertical:14}, timeRow:{flexDirection:'row',gap:5}, timeCell:{flex:1,minWidth:0}, timeLabel:{fontSize:9,fontWeight:'700'}, timeValue:{fontSize:20,fontWeight:'700',marginTop:4,fontVariant:['tabular-nums']},
-  summaryRow:{flexDirection:'row',gap:10}, summary:{flex:1,borderWidth:1,borderRadius:20,padding:14}, summaryValue:{fontSize:28,fontWeight:'700',marginTop:6,fontVariant:['tabular-nums']}, previousWrap:{flex:1,minHeight:0,gap:2}, previousRow:{flexDirection:'row',alignItems:'center',gap:12,paddingVertical:11,borderBottomWidth:StyleSheet.hairlineWidth}, previousDate:{fontSize:12,fontWeight:'700',width:54}, previousRoute:{flex:1,fontSize:15,fontWeight:'600'}, previousTime:{minWidth:70,alignItems:'flex-end'},
-  primaryButton:{height:50,borderRadius:16,alignItems:'center',justifyContent:'center'}, primaryText:{color:'#fff',fontWeight:'700'}, titleRow:{flexDirection:'row',alignItems:'center',gap:8}, actionsRow:{flexDirection:'row',gap:7}, compactButton:{height:38,minWidth:72,borderWidth:1,borderRadius:14,alignItems:'center',justifyContent:'center',paddingHorizontal:10}, compactText:{fontWeight:'700',fontSize:12}, months:{flexDirection:'row',gap:7,flexWrap:'wrap'}, monthPill:{paddingHorizontal:10,paddingVertical:7,borderRadius:12}, emptyCard:{borderWidth:1,borderRadius:20,padding:16}, listWindow:{flex:1,minHeight:0,borderWidth:1,borderRadius:20,overflow:'hidden'}, listContent:{padding:8,gap:7,paddingBottom:18}, flightCard:{borderWidth:1,borderRadius:16,padding:13}, routeText:{fontSize:20,fontWeight:'700',marginTop:4},
-  infoCard:{borderWidth:1,borderRadius:20,padding:14,gap:8}, cardTitle:{fontSize:15,fontWeight:'700'}, libraryRow:{minHeight:58,flexDirection:'row',alignItems:'center',borderBottomWidth:StyleSheet.hairlineWidth,gap:10}, eraseButton:{height:48,borderWidth:1,borderRadius:15,alignItems:'center',justifyContent:'center'}, tabBar:{height:68,marginTop:8,marginBottom:4,borderWidth:1,borderRadius:22,flexDirection:'row',padding:4,gap:4}, tabItem:{flex:1,borderRadius:18,alignItems:'center',justifyContent:'center',gap:2}, tabIcon:{fontSize:22,fontWeight:'700'}, tabText:{fontSize:11,fontWeight:'600'},
-  flightSheet:{width:'100%',maxWidth:620,maxHeight:'78%',borderTopWidth:1,borderTopLeftRadius:28,borderTopRightRadius:28,paddingHorizontal:18,paddingBottom:18,overflow:'hidden'}, flightSheetContent:{minHeight:0,flexShrink:1}, sheetRoute:{fontSize:28,lineHeight:33,fontWeight:'700',marginTop:5}, swipeHint:{fontSize:10,marginTop:7}, crewHeading:{fontSize:12,fontWeight:'700',marginTop:14,marginBottom:7}, crewList:{minHeight:0,flexShrink:1}, crewRow:{minHeight:50,flexDirection:'row',alignItems:'center'}, avatar:{width:34,height:34,borderRadius:17,alignItems:'center',justifyContent:'center',marginRight:11}, avatarText:{fontSize:12,fontWeight:'800'}, crewName:{fontSize:14,fontWeight:'600'},
+  safe:{flex:1}, app:{flex:1,width:'100%',maxWidth:620,alignSelf:'center',paddingHorizontal:16},
+  header:{height:72,flexDirection:'row',alignItems:'center',justifyContent:'space-between'}, brand:{fontSize:27,fontWeight:'700',letterSpacing:-.8}, kicker:{fontSize:10,fontWeight:'700',letterSpacing:1.2},
+  modeButton:{width:42,height:42,borderRadius:21,alignItems:'center',justifyContent:'center'}, aimsGlyph:{fontSize:17,lineHeight:20,fontWeight:'800'}, aimsDot:{position:'absolute',right:7,top:7,width:6,height:6,borderRadius:3},
+  viewport:{flex:1,minHeight:0}, screen:{flex:1,paddingTop:8,gap:12}, grow:{flex:1,minWidth:0}, sectionTitle:{fontSize:27,lineHeight:31,fontWeight:'700',letterSpacing:-.8}, intro:{fontSize:15,lineHeight:22}, label:{fontSize:11,fontWeight:'700',letterSpacing:.9}, meta:{fontSize:13,lineHeight:18},
+  dutyHead:{flexDirection:'row',alignItems:'center',justifyContent:'space-between'}, heroCard:{borderWidth:1,borderRadius:26,padding:18}, heroRoute:{fontSize:36,lineHeight:42,fontWeight:'700',letterSpacing:-1}, heroMetaRow:{flexDirection:'row',alignItems:'center',gap:10,marginTop:4}, heroMetaRowTall:{minHeight:44}, heroFlight:{flex:1,fontSize:13,fontWeight:'600'},
+  countdownPill:{borderRadius:15,paddingHorizontal:12,paddingVertical:6,alignItems:'center'}, countdown:{fontSize:18,fontWeight:'800',fontVariant:['tabular-nums']}, countdownLabel:{fontSize:10,fontWeight:'700',letterSpacing:.7,marginTop:1}, timeDivider:{height:StyleSheet.hairlineWidth,marginVertical:14}, timeRow:{flexDirection:'row',alignItems:'flex-start',gap:6}, timeCell:{flex:1,minWidth:0}, timeLabel:{fontSize:11,lineHeight:14,fontWeight:'700',letterSpacing:.3}, timeValue:{fontSize:22,lineHeight:27,fontWeight:'700',marginTop:3,fontVariant:['tabular-nums']}, heroFoot:{fontSize:13,fontWeight:'600',marginTop:14},
+  summaryRow:{flexDirection:'row',gap:10}, summary:{flex:1,borderWidth:1,borderRadius:20,padding:14}, summaryValue:{fontSize:28,fontWeight:'700',marginTop:6,fontVariant:['tabular-nums']}, upNext:{flex:1,minHeight:0,gap:2}, upNextList:{flex:1}, upNextRow:{flexDirection:'row',alignItems:'center',gap:12,paddingVertical:11,borderBottomWidth:StyleSheet.hairlineWidth}, upNextDate:{fontSize:12,fontWeight:'700',letterSpacing:.4,width:54}, upNextRoute:{flex:1,fontSize:15,fontWeight:'600'}, upNextTimeBlock:{minWidth:72,alignItems:'flex-end'}, upNextTimeLabel:{fontSize:8,lineHeight:10,fontWeight:'700',letterSpacing:.45,marginBottom:1}, upNextTime:{fontSize:14,fontWeight:'600',fontVariant:['tabular-nums']},
+  primaryButton:{height:50,borderRadius:16,alignItems:'center',justifyContent:'center'}, actionText:{color:'#fff',fontWeight:'700'}, titleRow:{flexDirection:'row',alignItems:'center',gap:8}, titleActions:{flexDirection:'row',gap:7}, compactButton:{height:38,minWidth:72,borderWidth:1,borderRadius:14,alignItems:'center',justifyContent:'center',paddingHorizontal:10}, compactText:{fontWeight:'700',fontSize:12}, monthNav:{height:40,flexDirection:'row',alignItems:'center',justifyContent:'space-between'}, monthNavText:{fontSize:12,fontWeight:'600'}, error:{fontSize:12},
+  emptyCard:{borderWidth:1,borderRadius:20,padding:14}, innerWindow:{flex:1,minHeight:0,borderWidth:1,borderRadius:20,overflow:'hidden'}, listContent:{padding:8,gap:7,paddingBottom:18}, rosterCard:{borderWidth:1,borderRadius:16,padding:13}, flightCardTop:{flexDirection:'row',justifyContent:'space-between'}, flightNumber:{fontSize:11,fontWeight:'700'}, rosterRoute:{fontSize:20,fontWeight:'700',marginTop:4},
+  infoCard:{borderWidth:1,borderRadius:20,padding:14,gap:3}, cardTitle:{fontSize:15,fontWeight:'700'}, settingsCard:{minHeight:68,borderWidth:1,borderRadius:20,padding:14,flexDirection:'row',alignItems:'center'}, chevron:{fontSize:30}, secondaryButton:{height:48,borderWidth:1,borderRadius:15,alignItems:'center',justifyContent:'center'}, secondaryText:{fontWeight:'600'}, libraryCard:{borderWidth:1,borderRadius:20,padding:14,minHeight:88,maxHeight:190}, libraryList:{marginTop:5}, libraryRow:{minHeight:54,flexDirection:'row',alignItems:'center',gap:10,borderBottomWidth:StyleSheet.hairlineWidth}, libraryMonth:{fontSize:14,fontWeight:'700'}, deleteRosterButton:{minWidth:58,height:34,borderRadius:12,alignItems:'center',justifyContent:'center',paddingHorizontal:8}, deleteRosterText:{fontSize:11,fontWeight:'700'},
+  depthSurface:{shadowColor:'#000',shadowOffset:{width:0,height:10},shadowOpacity:.1,shadowRadius:24,elevation:5}, tabBar:{height:68,marginTop:8,marginBottom:4,borderWidth:1,borderRadius:22,flexDirection:'row'}, tabSelection:{position:'absolute',left:4,top:4,bottom:4,borderRadius:18,shadowColor:'#000',shadowOffset:{width:0,height:5},shadowOpacity:.08,shadowRadius:12,elevation:2}, tabItem:{flex:1,zIndex:1,alignItems:'center',justifyContent:'center',gap:2}, tabIconWrap:{minWidth:35,height:27,borderRadius:14,alignItems:'center',justifyContent:'center'}, tabIcon:{textAlign:'center'}, tabText:{fontSize:11,fontWeight:'600'},
+  flightSheet:{width:'100%',maxWidth:620,maxHeight:'78%',alignSelf:'center',borderTopWidth:1,borderTopLeftRadius:28,borderTopRightRadius:28,paddingHorizontal:18,paddingBottom:12,overflow:'hidden'}, flightSheetContent:{minHeight:0,flexShrink:1}, sheetRoute:{fontSize:28,lineHeight:33,fontWeight:'700',marginTop:5}, swipeHint:{fontSize:10,marginTop:7}, flyingWith:{fontSize:12,fontWeight:'700',marginTop:12,marginBottom:7}, crewScroll:{minHeight:0,flexShrink:1}, crewList:{paddingBottom:12}, crewRow:{minHeight:50,flexDirection:'row',alignItems:'center'}, avatar:{width:34,height:34,borderRadius:17,alignItems:'center',justifyContent:'center',marginRight:11}, avatarText:{fontSize:12,fontWeight:'800'}, crewName:{fontSize:14,fontWeight:'600'},
 });
