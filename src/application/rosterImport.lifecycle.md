@@ -1,0 +1,1 @@
+Current main UI presentation lifecycle from PR #44 is preserved: waiting → importing → success, with error/cancelled paths, popup-close cancellation, retry through the existing AIMS entry point, and an active-attempt guard preventing duplicate handling.
