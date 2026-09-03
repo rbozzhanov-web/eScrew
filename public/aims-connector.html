@@ -28,15 +28,16 @@
 <body>
 <main>
   <h1>eScrew AIMS Connector</h1>
-  <p class="muted">One-time Safari setup. The connector runs only inside aims.airastana.com, observes the normal AIMS schedule request, and sends only roster JSON to eScrew.</p>
+  <p class="muted">One-time Safari setup. The connector runs only inside aims.airastana.com, observes the normal AIMS schedule request, and copies only roster JSON for eScrew.</p>
   <div class="card">
     <strong>iPhone / iPad</strong>
     <ol>
       <li>Add this page to Safari bookmarks.</li>
       <li>Edit that bookmark and replace its URL with the connector copied below.</li>
-      <li>From eScrew, open AIMS and sign in normally.</li>
-      <li>On the Crew Schedule page, run the “eScrew AIMS” bookmark.</li>
-      <li>Then use AIMS normally to retrieve/show the schedule while staying on that page.</li>
+      <li>Open AIMS in normal Safari and sign in.</li>
+      <li>On Crew Schedule, run the “eScrew AIMS” bookmark.</li>
+      <li>Retrieve/show the schedule normally.</li>
+      <li>Tap “Copy roster to eScrew” when it appears, return to eScrew, then tap AIMS.</li>
     </ol>
     <button id="copy">Copy connector</button>
     <button id="open" class="secondary">Open AIMS Crew Schedule</button>
@@ -44,44 +45,52 @@
   </div>
   <div class="card">
     <strong>Privacy boundary</strong>
-    <p class="muted">The connector never asks for or reads your password. It does not serialize cookies, CSRF values, tokens, or the short Retrieve response. Authentication stays entirely inside the native AIMS browser session.</p>
+    <p class="muted">The connector never asks for or reads your password. It does not serialize cookies, CSRF values, tokens, or the short Retrieve response. Authentication stays entirely inside Safari; only the sanitized roster payload is copied.</p>
   </div>
 </main>
 <script>
 (() => {
   const source = String.raw`(()=>{
     const AIMS='https://aims.airastana.com';
-    const APP='https://rbozzhanov-web.github.io/eScrew/';
-    const APP_ORIGIN='https://rbozzhanov-web.github.io';
     const TYPE='escrew:aims-scheduler-events';
-    const READY='escrew:aims-ready';
     const SCHEDULER_RE=/\/eCrew\/CrewSchedule\/SchedulerEvents/i;
     if(location.origin!==AIMS){alert('Open this connector on aims.airastana.com');return;}
     if(!/\/eCrew\/CrewSchedule/i.test(location.pathname)){location.href=AIMS+'/eCrew/CrewSchedule';alert('After Crew Schedule opens, run the eScrew AIMS bookmark again.');return;}
-    let delivered=false;
+    let captured=null;
     const clean=(value)=>({
       PeriodStart:value&&value.PeriodStart,
       PeriodEnd:value&&value.PeriodEnd,
       RosterDateTime:value&&value.RosterDateTime,
       SchedulerEvents:Array.isArray(value&&value.SchedulerEvents)?value.SchedulerEvents:[]
     });
+    const ensureCopyButton=()=>{
+      let button=document.getElementById('__escrewAimsCopy');
+      if(button)return button;
+      button=document.createElement('button');
+      button.id='__escrewAimsCopy';
+      button.type='button';
+      button.textContent='Copy roster to eScrew';
+      Object.assign(button.style,{position:'fixed',left:'16px',right:'16px',bottom:'calc(16px + env(safe-area-inset-bottom))',zIndex:'2147483647',minHeight:'52px',border:'0',borderRadius:'14px',padding:'12px 18px',background:'#007F86',color:'#fff',font:'700 16px -apple-system,BlinkMacSystemFont,system-ui,sans-serif',boxShadow:'0 8px 24px rgba(0,0,0,.25)'});
+      button.addEventListener('click',async()=>{
+        if(!captured){alert('Load the schedule in AIMS first.');return;}
+        const text=JSON.stringify(captured);
+        try{
+          await navigator.clipboard.writeText(text);
+          button.textContent='Copied — return to eScrew';
+          alert('Roster copied. Return to eScrew and tap AIMS to import it.');
+        }catch{
+          prompt('Copy this roster JSON, then return to eScrew and tap AIMS:',text);
+        }
+      });
+      document.body.appendChild(button);
+      return button;
+    };
     const deliver=(value)=>{
-      if(delivered||!value||!Array.isArray(value.SchedulerEvents))return false;
-      const payload=clean(value);
-      let target=null;
-      try{if(window.opener&&!window.opener.closed)target=window.opener;}catch{}
-      if(!target)target=window.open(APP,'escrew-home');
-      if(!target){alert('Safari blocked the eScrew return window. Allow pop-ups and try again.');return false;}
-      delivered=true;
-      const envelope={type:TYPE,payload};
-      let tries=0;
-      let timer=0;
-      const send=()=>{try{target.postMessage(envelope,APP_ORIGIN);}catch{} if(++tries>=20&&timer)clearInterval(timer);};
-      const ready=(event)=>{if(event.origin===APP_ORIGIN&&event.source===target&&event.data&&event.data.type===READY){send();window.removeEventListener('message',ready);}};
-      window.addEventListener('message',ready);
-      send();
-      timer=setInterval(send,300);
-      try{target.focus();}catch{}
+      if(!value||!Array.isArray(value.SchedulerEvents))return false;
+      captured={type:TYPE,payload:clean(value)};
+      const button=ensureCopyButton();
+      button.textContent='Copy roster to eScrew';
+      alert('Roster captured. Tap “Copy roster to eScrew” at the bottom of the page.');
       return true;
     };
     const inspectText=(text)=>{try{return deliver(JSON.parse(text));}catch{return false;}};
