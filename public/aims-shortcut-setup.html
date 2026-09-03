@@ -213,14 +213,9 @@ const shortcutScript = String.raw`(() => {
     return 'https://rbozzhanov-web.github.io/eScrew/#aims-shortcut=' + encoded;
   };
 
-  const deadline = Date.now() + 8000;
-  const run = () => {
-    const result = capture();
-    if (result) { completion(result); return; }
-    if (Date.now() < deadline) { setTimeout(run, 300); return; }
-    throw new Error('Could not read Crew Schedule from this Safari page. Make sure Crew Schedule is visible, then run eScrew Capture once more.');
-  };
-  run();
+  const result = capture();
+  if (!result) throw new Error('Could not read embedded Crew Schedule data from this Safari page. Open Crew Schedule and run eScrew Capture from Share.');
+  completion(result);
 })();`;
 const code = document.getElementById('code');
 code.value = shortcutScript;
