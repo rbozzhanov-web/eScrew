@@ -1,0 +1,43 @@
+import type { ExtractedPage, TextItem } from './pdfWeb';
+
+export interface ReportSubject { staffId:string; name:string; base?:string; rank?:string; qualification?:string }
+export interface ReportPeriod { start:string; end:string }
+export interface ReportTotals { blockMinutes?:number; nightMinutes?:number }
+export interface RosterCrewMember { rank:string; id:string; name:string; deadhead:boolean }
+export interface CrewRecord { date:string; flightNumber:string; members:RosterCrewMember[] }
+export interface RosterSector { flightNumber:string; date:string; departureAirport:string; arrivalAirport:string; timeOut:string; timeIn:string; arrivalDate?:string; aircraftType?:string; deadhead:boolean; actualTimes:boolean; dutyIndex:number; dutySectorIndex:number }
+export interface RosterDuty { index:number; start?:string; end?:string; sectorCount:number }
+export interface RosterAbsence { code:'SICK'|'UFF'|'VAC'|'CHLD'; date:string }
+export interface ParsedAirAstanaRoster { subject?:ReportSubject; period:ReportPeriod; totals:ReportTotals; sectors:RosterSector[]; duties:RosterDuty[]; absences:RosterAbsence[]; crewRecords:CrewRecord[]; unreadCells:string[] }
+
+type Line={y:number;items:TextItem[];text:string}; type DayColumn={label:string;cells:string[]};
+const DAY=/^([0-3]\d)\/([01]\d)$/; const DATE=/^([0-3]\d)\/([01]\d)\/(\d{4})$/; const TIME=/^(A?)([0-2]\d):([0-5]\d)$/; const PLAIN=/^([0-1]?\d|2[0-3]):([0-5]\d)$/; const FLIGHT=/^\d{1,5}$/; const STATION=/^(\*?)([A-Z]{3,4})$/; const AIRCRAFT=/^\[([A-Z0-9]{2,6})\]$/;
+const NON=new Set(['OFF','DOFF','UFF','SICK','AVLB','LVE','VAC','ULV','ROFF','NR','HOMS','CHLD','BOFF']); const ABS=new Set(['SICK','UFF','VAC','CHLD']);
+
+export function parseAirAstanaRoster(pages:ExtractedPage[]):ParsedAirAstanaRoster{
+  const text=pages.flatMap(p=>p.items.map(i=>i.str)).join(' '); if(!text.includes('AIR ASTANA')||!text.includes('Personal Crew Schedule Report')) throw new Error('Unsupported roster PDF');
+  const period=parsePeriod(pages); if(!period) throw new Error('Could not read roster period');
+  const columns=dedupe(pages.flatMap(extractDayColumns)); const {sectors,duties,absences,unreadCells}=readRoster(columns,period.start,period.end);
+  return {subject:parseSubject(pages),period,totals:parseTotals(pages),sectors,duties,absences,crewRecords:extractCrewRecords(pages),unreadCells};
+}
+
+export function getSectorCrew(roster:ParsedAirAstanaRoster,sector:RosterSector){
+  const r=roster.crewRecords.find(x=>x.flightNumber===sector.flightNumber&&x.date===sector.date)??roster.crewRecords.find(x=>x.flightNumber===sector.flightNumber&&Math.abs(Date.parse(x.date+'T00:00:00Z')-Date.parse(sector.date+'T00:00:00Z'))<=86400000);
+  if(!r)return undefined; return {members:r.members};
+}
+function lines(page:ExtractedPage):Line[]{const out:Line[]=[];for(const item of page.items){if(!item.str.trim())continue;let line=out.find(x=>Math.abs(x.y-item.y)<=2);if(line){line.items.push(item);line.y=(line.y*(line.items.length-1)+item.y)/line.items.length}else out.push({y:item.y,items:[item],text:''})}for(const l of out){l.items.sort((a,b)=>a.x-b.x);l.text=l.items.map(i=>i.str).join(' ').replace(/\s+/g,' ').trim()}return out.sort((a,b)=>a.y-b.y)}
+function parseDate(v:string){const m=DATE.exec(v.trim());if(!m)return null;const [,d,mo,y]=m;const dt=new Date(Date.UTC(+y,+mo-1,+d));return dt.getUTCFullYear()===+y&&dt.getUTCMonth()===+mo-1&&dt.getUTCDate()===+d?`${y}-${mo}-${d}`:null}
+function parsePeriod(pages:ExtractedPage[]){const re=/(\d{2}\/\d{2}\/\d{4})\s*-\s*(\d{2}\/\d{2}\/\d{4})/;for(const p of pages)for(const l of lines(p)){const m=re.exec(l.text);if(m){const start=parseDate(m[1]),end=parseDate(m[2]);if(start&&end)return{start,end}}}}
+function parseSubject(pages:ExtractedPage[]):ReportSubject|undefined{const full=/^(\d{2,6})\s+([A-Z][A-Z' -]*?)\s+([A-Z]{3})-([A-Z]{2,3})-([A-Z0-9]{2,6})$/;const min=/^(\d{2,6})\s+([A-Z][A-Z' -]+)$/;for(const p of pages)for(const l of lines(p)){let m=full.exec(l.text.trim());if(m)return{staffId:m[1],name:m[2].trim(),base:m[3],rank:m[4],qualification:m[5]};m=min.exec(l.text.trim());if(m)return{staffId:m[1],name:m[2].trim()}}}
+function parseTotals(pages:ExtractedPage[]):ReportTotals{for(const p of pages){const ls=lines(p);const i=ls.findIndex(l=>l.text.startsWith('Block Hours'));if(i<0||!ls[i+1])continue;const vals=ls[i+1].items.filter(x=>/^\d{1,4}:[0-5]\d$/.test(x.str.trim()));const toMin=(v?:string)=>{if(!v)return undefined;const[h,m]=v.split(':').map(Number);return h*60+m};return{blockMinutes:toMin(vals[0]?.str.trim()),nightMinutes:toMin(vals[1]?.str.trim())}}return{}}
+function extractDayColumns(page:ExtractedPage[]):DayColumn[]{return[]}
+function dayColumns(page:ExtractedPage):DayColumn[]{const ls=lines(page);const head=ls.find(l=>l.items.filter(i=>DAY.test(i.str.trim())).length>=3);if(!head)return[];const hs=head.items.filter(i=>DAY.test(i.str.trim())).sort((a,b)=>a.x-b.x);const top=head.y+12;const marker=ls.find(l=>l.y>top&&['Total Hours','Other Crew','Expiry Dates'].some(t=>l.text.startsWith(t)));const bottom=marker?marker.y-2:Infinity;const pitch=hs.length>1?hs[1].x-hs[0].x:page.width;const body=page.items.filter(i=>i.str.trim()&&i.str.trim()!=='M'&&i.y>top&&i.y<bottom);return hs.map((h,i)=>{const from=h.x-pitch/4,to=(hs[i+1]?.x??Infinity)-pitch/4;return{label:h.str.trim(),cells:body.filter(x=>x.x>=from&&x.x<to).sort((a,b)=>Math.abs(a.y-b.y)>1.5?a.y-b.y:a.x-b.x).map(x=>x.str.trim())}})}
+function dedupe(cols:DayColumn[]){const m=new Map<string,DayColumn>();for(const c of cols){const e=m.get(c.label);if(!e||c.cells.length>e.cells.length)m.set(c.label,c)}return[...m.values()]}
+function resolve(label:string,start:string,end:string){const m=DAY.exec(label);if(!m)return;const [,d,mo]=m;const plus=new Date(Date.parse(end+'T00:00:00Z')+86400000).toISOString().slice(0,10);for(const y of new Set([start.slice(0,4),end.slice(0,4)])){const c=`${y}-${mo}-${d}`;const dt=new Date(c+'T00:00:00Z');if(dt.toISOString().slice(0,10)===c&&c>=start&&c<=plus)return c}}
+function readRoster(cols:DayColumn[],start:string,end:string){const sectors:RosterSector[]=[],duties:RosterDuty[]=[],absences:RosterAbsence[]=[],unreadCells:string[]=[];let current:RosterDuty|undefined;const open=()=>{const d={index:duties.length,sectorCount:0} as RosterDuty;duties.push(d);current=d;return d};for(const col of cols){const date=resolve(col.label,start,end);if(!date)continue;for(let i=0;i<col.cells.length;){const cell=col.cells[i];if(NON.has(cell)){if(ABS.has(cell))absences.push({code:cell as RosterAbsence['code'],date});current=undefined;i++;continue}if(PLAIN.test(cell)){const t=cell;i++;if(FLIGHT.test(col.cells[i]??''))open().start=`${date}T${t}`;else if(current){current.end=`${date}T${t}`;current=undefined}continue}if(FLIGHT.test(cell)){const d=current??open();const dep=TIME.exec(col.cells[i+1]??''),from=STATION.exec(col.cells[i+2]??''),to=STATION.exec(col.cells[i+3]??''),arr=TIME.exec(col.cells[i+4]??'');if(!dep||!from||!to||!arr){unreadCells.push(cell);i++;continue}const s:RosterSector={flightNumber:cell,date,departureAirport:from[2],arrivalAirport:to[2],timeOut:`${dep[2]}:${dep[3]}`,timeIn:`${arr[2]}:${arr[3]}`,deadhead:from[1]==='*',actualTimes:dep[1]==='A'&&arr[1]==='A',dutyIndex:d.index,dutySectorIndex:d.sectorCount+1};const ac=AIRCRAFT.exec(col.cells[i+5]??'');if(ac)s.aircraftType=ac[1];d.sectorCount++;sectors.push(s);i+=ac?6:5;continue}i++}}return{sectors,duties,absences,unreadCells}}
+function extractCrewRecords(_pages:ExtractedPage[]):CrewRecord[]{return[]}
+
+// Wrapper kept separate so the parser still mirrors the old public API.
+function extractDayColumnsAll(page:ExtractedPage){return dayColumns(page)}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _compat=extractDayColumnsAll;
