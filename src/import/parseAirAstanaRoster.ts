@@ -6,6 +6,36 @@ import type { ExtractedPage } from './types';
 
 export type { RosterDuty, RosterSector } from './duties';
 
+export interface RosterHotelStay {
+  hotelNo?: number;
+  eventDate?: string;
+  name?: string;
+  address?: string;
+  telephone1?: string;
+  telephone2?: string;
+  bookingReferenceName?: string;
+  hotelReference?: string;
+  checkInDate?: string;
+  checkInTime?: string;
+  checkOutDate?: string;
+  checkOutTime?: string;
+  rest?: string;
+  airportToHotel?: string;
+  hotelToAirport?: string;
+  pickupAirportDate?: string;
+  pickupAirport?: string;
+  pickupAirportType?: string;
+  pickupAirportPhone?: string;
+  pickupHotelDate?: string;
+  pickupHotel?: string;
+  pickupHotelType?: string;
+  pickupHotelPhone?: string;
+  shuttleBusRequired?: boolean;
+  latitude?: number;
+  longitude?: number;
+  memo?: string;
+}
+
 export interface ParsedAirAstanaRoster {
   subject?: ReportSubject;
   period: ReportPeriod;
@@ -14,6 +44,7 @@ export interface ParsedAirAstanaRoster {
   duties: RosterDuty[];
   absences: RosterAbsence[];
   crewRecords: CrewRecord[];
+  hotelStays?: RosterHotelStay[];
   unreadCells: string[];
 }
 
