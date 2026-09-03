@@ -54,6 +54,7 @@
     const APP_ORIGIN='https://rbozzhanov-web.github.io';
     const TYPE='escrew:aims-scheduler-events';
     const READY='escrew:aims-ready';
+    const SCHEDULER_RE=/\/eCrew\/CrewSchedule\/SchedulerEvents/i;
     if(location.origin!==AIMS){alert('Open this connector on aims.airastana.com');return;}
     if(!/\/eCrew\/CrewSchedule/i.test(location.pathname)){location.href=AIMS+'/eCrew/CrewSchedule';alert('After Crew Schedule opens, run the eScrew AIMS bookmark again.');return;}
     let delivered=false;
@@ -64,30 +65,41 @@
       SchedulerEvents:Array.isArray(value&&value.SchedulerEvents)?value.SchedulerEvents:[]
     });
     const deliver=(value)=>{
-      if(delivered||!value||!Array.isArray(value.SchedulerEvents))return;
-      delivered=true;
+      if(delivered||!value||!Array.isArray(value.SchedulerEvents))return false;
       const payload=clean(value);
       let target=null;
       try{if(window.opener&&!window.opener.closed)target=window.opener;}catch{}
       if(!target)target=window.open(APP,'escrew-home');
-      if(!target){alert('Safari blocked the eScrew return window. Allow pop-ups and try again.');return;}
+      if(!target){alert('Safari blocked the eScrew return window. Allow pop-ups and try again.');return false;}
+      delivered=true;
       const envelope={type:TYPE,payload};
       let tries=0;
-      const send=()=>{try{target.postMessage(envelope,APP_ORIGIN);}catch{} if(++tries>=20)clearInterval(timer);};
+      let timer=0;
+      const send=()=>{try{target.postMessage(envelope,APP_ORIGIN);}catch{} if(++tries>=20&&timer)clearInterval(timer);};
       const ready=(event)=>{if(event.origin===APP_ORIGIN&&event.source===target&&event.data&&event.data.type===READY){send();window.removeEventListener('message',ready);}};
       window.addEventListener('message',ready);
       send();
-      const timer=setInterval(send,300);
+      timer=setInterval(send,300);
       try{target.focus();}catch{}
+      return true;
     };
-    const inspectText=(text)=>{try{deliver(JSON.parse(text));}catch{}};
+    const inspectText=(text)=>{try{return deliver(JSON.parse(text));}catch{return false;}};
+    const replayExistingSchedulerEvents=async()=>{
+      try{
+        const entries=performance&&typeof performance.getEntriesByType==='function'?performance.getEntriesByType('resource'):[];
+        const match=[...entries].reverse().find(entry=>SCHEDULER_RE.test(String(entry&&entry.name||'')));
+        if(!match)return false;
+        const response=await fetch(String(match.name),{credentials:'same-origin',cache:'no-store'});
+        return inspectText(await response.text());
+      }catch{return false;}
+    };
     if(!window.__escrewFetchPatched&&window.fetch){
       window.__escrewFetchPatched=true;
       const nativeFetch=window.fetch.bind(window);
       window.fetch=async(...args)=>{
         const response=await nativeFetch(...args);
         const url=String(response.url||args[0]||'');
-        if(/\/eCrew\/CrewSchedule\/SchedulerEvents/i.test(url))response.clone().text().then(inspectText).catch(()=>{});
+        if(SCHEDULER_RE.test(url))response.clone().text().then(inspectText).catch(()=>{});
         return response;
       };
     }
@@ -97,23 +109,26 @@
       XMLHttpRequest.prototype.open=function(method,url,...rest){this.__escrewUrl=String(url||'');return open.call(this,method,url,...rest);};
       const send=XMLHttpRequest.prototype.send;
       XMLHttpRequest.prototype.send=function(...args){
-        if(/\/eCrew\/CrewSchedule\/SchedulerEvents/i.test(this.__escrewUrl||''))this.addEventListener('load',()=>{try{inspectText(this.responseText);}catch{}});
+        if(SCHEDULER_RE.test(this.__escrewUrl||''))this.addEventListener('load',()=>{try{inspectText(this.responseText);}catch{}});
         return send.apply(this,args);
       };
     }
-    const retrieveForm=[...document.forms].find(form=>/\/eCrew\/CrewSchedule\/Retrieve/i.test(form.action||''));
-    if(retrieveForm){
-      if(typeof retrieveForm.requestSubmit==='function')retrieveForm.requestSubmit();
-      else retrieveForm.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
-      return;
-    }
-    const retrieveControl=[...document.querySelectorAll('button,input[type="submit"],a')].find(el=>{
-      const text=(el.textContent||el.value||'').trim();
-      const url=el.getAttribute&&((el.getAttribute('formaction')||el.getAttribute('href')||''));
-      return /Retrieve|View schedule|Show schedule/i.test(text)||/\/CrewSchedule\/Retrieve/i.test(url||'');
+    replayExistingSchedulerEvents().then((replayed)=>{
+      if(replayed||delivered)return;
+      const retrieveForm=[...document.forms].find(form=>/\/eCrew\/CrewSchedule\/Retrieve/i.test(form.action||''));
+      if(retrieveForm){
+        if(typeof retrieveForm.requestSubmit==='function')retrieveForm.requestSubmit();
+        else retrieveForm.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
+        return;
+      }
+      const retrieveControl=[...document.querySelectorAll('button,input[type="submit"],a')].find(el=>{
+        const text=(el.textContent||el.value||'').trim();
+        const url=el.getAttribute&&((el.getAttribute('formaction')||el.getAttribute('href')||''));
+        return /Retrieve|View schedule|Show schedule/i.test(text)||/\/CrewSchedule\/Retrieve/i.test(url||'');
+      });
+      if(retrieveControl&&typeof retrieveControl.click==='function'){retrieveControl.click();return;}
+      alert('Connector is armed. Refresh or retrieve the schedule in AIMS, then run the eScrew AIMS bookmark once more if the page reloads.');
     });
-    if(retrieveControl&&typeof retrieveControl.click==='function'){retrieveControl.click();return;}
-    alert('Connector is armed. Refresh or retrieve the schedule in AIMS; eScrew will capture the SchedulerEvents response.');
   })()`;
   const bookmarklet='javascript:'+source.replace(/\s+/g,' ');
   document.getElementById('preview').textContent=bookmarklet;
