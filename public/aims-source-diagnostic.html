@@ -1,0 +1,13 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>eScrew AIMS Source Diagnostic</title>
+<style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;max-width:720px;margin:40px auto;padding:0 20px;line-height:1.45}button{font:inherit;padding:12px 16px;border-radius:10px;border:1px solid #bbb;background:#fff}code{word-break:break-all}</style>
+<h1>AIMS Source Diagnostic</h1>
+<p>Creates an iPhone Safari bookmarklet that maps the current AIMS page structure without exporting page text, form values, storage, cookies, tokens, or request bodies.</p>
+<button id="copy">Copy AIMS Source Diagnostic</button>
+<p id="status"></p>
+<script>
+const code=`javascript:(()=>{try{if(location.origin!=='https://aims.airastana.com'){alert('Open AIMS first');return}const safePath=u=>{try{const x=new URL(u,location.href);return x.origin===location.origin?x.pathname:null}catch{return null}};const scan=(d,label,depth,out)=>{if(depth>4)return;const scripts=[...d.scripts].map(s=>safePath(s.src)).filter(Boolean);const links=[...d.querySelectorAll('link[href]')].map(x=>safePath(x.href)).filter(Boolean);const anchors=[...d.querySelectorAll('a[href]')].map(a=>safePath(a.href)).filter(Boolean);const forms=[...d.forms].map(f=>({method:(f.method||'get').toUpperCase(),action:safePath(f.action||location.href)}));const frames=[...d.querySelectorAll('iframe')];out.push({label,depth,titleLength:(d.title||'').length,elementCount:d.querySelectorAll('*').length,scripts:[...new Set(scripts)],styles:[...new Set(links)],sameOriginLinks:[...new Set(anchors)],forms,iframeCount:frames.length});frames.forEach((f,i)=>{try{if(f.contentDocument)scan(f.contentDocument,label+'.frame'+(i+1),depth+1,out)}catch{out.push({label:label+'.frame'+(i+1),depth:depth+1,inaccessible:true})}})};const documents=[];scan(document,'main',0,documents);const result={version:1,note:'AIMS navigation/source structure only. No page text, names, staff IDs, form values, local/session storage, cookies, credentials, CSRF/verification tokens, request bodies or session data are emitted.',page:{origin:location.origin,path:location.pathname},documents};const text=JSON.stringify(result,null,2);navigator.clipboard.writeText(text).then(()=>alert('AIMS source diagnostic copied')).catch(()=>prompt('Copy diagnostic:',text))}catch(e){alert('Diagnostic failed')}})()`;
+document.getElementById('copy').onclick=async()=>{try{await navigator.clipboard.writeText(code);document.getElementById('status').textContent='Copied. Create or edit a Safari bookmark and paste this into its URL field.'}catch{document.getElementById('status').textContent='Copy failed. Select the bookmarklet code manually: '+code}};
+</script>
