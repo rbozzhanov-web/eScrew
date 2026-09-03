@@ -28,7 +28,7 @@
 <body>
 <main>
   <h1>eScrew AIMS Connector</h1>
-  <p class="muted">One-time Safari setup. Arm the connector on the AIMS home page before opening My Schedule. It observes the normal AIMS schedule request and copies only roster JSON for eScrew.</p>
+  <p class="muted">One-time Safari setup. Arm the connector on the AIMS home page before opening My Schedule. It watches normal AIMS responses and copies only sanitized roster JSON for eScrew.</p>
   <div class="card">
     <strong>iPhone / iPad</strong>
     <ol>
@@ -36,7 +36,7 @@
       <li>Edit that bookmark and replace its URL with the connector copied below.</li>
       <li>Open AIMS in normal Safari and sign in.</li>
       <li>While still on the AIMS home page, run the “eScrew AIMS” bookmark.</li>
-      <li>After the armed message appears, open My Schedule normally.</li>
+      <li>Open My Schedule normally.</li>
       <li>When the status changes to “Copy roster to eScrew”, tap it, return to eScrew, then tap AIMS.</li>
     </ol>
     <button id="copy">Copy connector</button>
@@ -45,7 +45,7 @@
   </div>
   <div class="card">
     <strong>Privacy boundary</strong>
-    <p class="muted">The connector never asks for or reads your password. It does not serialize cookies, CSRF values, tokens, request bodies, or the short Retrieve response. Authentication stays entirely inside Safari; only the sanitized roster payload is copied.</p>
+    <p class="muted">The connector never asks for or reads your password. It does not serialize cookies, CSRF values, tokens, request bodies, credentials, or session data. Authentication stays inside Safari; only a response that structurally matches an AIMS roster is copied.</p>
   </div>
 </main>
 <script>
@@ -53,32 +53,56 @@
   const source = String.raw`(()=>{
     const AIMS='https://aims.airastana.com';
     const TYPE='escrew:aims-scheduler-events';
-    const SCHEDULER_RE=/\/eCrew\/CrewSchedule\/SchedulerEvents/i;
     if(location.origin!==AIMS){alert('Open this connector on aims.airastana.com');return;}
     let captured=null;
-    const clean=(value)=>({PeriodStart:value&&value.PeriodStart,PeriodEnd:value&&value.PeriodEnd,RosterDateTime:value&&value.RosterDateTime,SchedulerEvents:Array.isArray(value&&value.SchedulerEvents)?value.SchedulerEvents:[]});
-    const ensureStatusButton=()=>{
-      let button=document.getElementById('__escrewAimsCopy');
-      if(button)return button;
-      button=document.createElement('button');
-      button.id='__escrewAimsCopy';button.type='button';
-      Object.assign(button.style,{position:'fixed',left:'16px',right:'16px',bottom:'calc(16px + env(safe-area-inset-bottom))',zIndex:'2147483647',minHeight:'52px',border:'0',borderRadius:'14px',padding:'12px 18px',background:'#60777A',color:'#fff',font:'700 15px -apple-system,BlinkMacSystemFont,system-ui,sans-serif',boxShadow:'0 8px 24px rgba(0,0,0,.25)'});
-      button.textContent='eScrew armed — open My Schedule';
-      button.addEventListener('click',async()=>{
-        if(!captured){alert('Connector is armed and waiting for AIMS SchedulerEvents. Open My Schedule normally. If My Schedule is already open, change Zoom or Period so AIMS refreshes the schedule.');return;}
+    let button=null;
+    const isRoster=(value)=>!!value&&typeof value==='object'&&typeof value.PeriodStart==='string'&&typeof value.PeriodEnd==='string'&&Array.isArray(value.SchedulerEvents);
+    const clean=(value)=>({PeriodStart:value.PeriodStart,PeriodEnd:value.PeriodEnd,RosterDateTime:value.RosterDateTime,SchedulerEvents:value.SchedulerEvents});
+    const ensureButton=(doc=document)=>{
+      let existing=doc.getElementById('__escrewAimsCopy');
+      if(existing)return existing;
+      const b=doc.createElement('button');
+      b.id='__escrewAimsCopy';b.type='button';
+      Object.assign(b.style,{position:'fixed',left:'16px',right:'16px',bottom:'calc(16px + env(safe-area-inset-bottom))',zIndex:'2147483647',minHeight:'52px',border:'0',borderRadius:'14px',padding:'12px 18px',background:'#60777A',color:'#fff',font:'700 15px -apple-system,BlinkMacSystemFont,system-ui,sans-serif',boxShadow:'0 8px 24px rgba(0,0,0,.25)'});
+      b.textContent='eScrew armed — waiting for roster response';
+      b.addEventListener('click',async()=>{
+        if(!captured){alert('Connector is still waiting for a roster-shaped AIMS response. Open My Schedule normally or change Zoom/Period to make AIMS refresh it.');return;}
         const text=JSON.stringify(captured);
-        try{await navigator.clipboard.writeText(text);button.textContent='Copied — return to eScrew';button.style.background='#007F86';alert('Roster copied. Return to eScrew and tap AIMS to import it.');}
+        try{await navigator.clipboard.writeText(text);b.textContent='Copied — return to eScrew';b.style.background='#007F86';alert('Roster copied. Return to eScrew and tap AIMS to import it.');}
         catch{prompt('Copy this roster JSON, then return to eScrew and tap AIMS:',text);}
       });
-      document.body.appendChild(button);return button;
+      doc.body.appendChild(b);
+      return b;
     };
-    const button=ensureStatusButton();
-    const deliver=(value)=>{if(!value||!Array.isArray(value.SchedulerEvents))return false;captured={type:TYPE,payload:clean(value)};button.textContent='Copy roster to eScrew';button.style.background='#007F86';alert('Roster captured. Tap “Copy roster to eScrew” at the bottom of the page.');return true;};
+    button=ensureButton();
+    const deliver=(value)=>{
+      if(!isRoster(value))return false;
+      captured={type:TYPE,payload:clean(value)};
+      button.textContent='Copy roster to eScrew';button.style.background='#007F86';
+      alert('Roster captured. Tap “Copy roster to eScrew” at the bottom of the page.');
+      return true;
+    };
     const inspectText=(text)=>{try{return deliver(JSON.parse(text));}catch{return false;}};
-    if(!window.__escrewFetchPatched&&window.fetch){window.__escrewFetchPatched=true;const nativeFetch=window.fetch.bind(window);window.fetch=async(...args)=>{const response=await nativeFetch(...args);const url=String(response.url||args[0]||'');if(SCHEDULER_RE.test(url)){button.textContent='eScrew: SchedulerEvents received';response.clone().text().then(inspectText).catch(()=>{button.textContent='eScrew: could not read SchedulerEvents';});}return response;};}
-    if(!window.__escrewXhrPatched&&window.XMLHttpRequest){window.__escrewXhrPatched=true;const open=XMLHttpRequest.prototype.open;XMLHttpRequest.prototype.open=function(method,url,...rest){this.__escrewUrl=String(url||'');return open.call(this,method,url,...rest);};const send=XMLHttpRequest.prototype.send;XMLHttpRequest.prototype.send=function(...args){if(SCHEDULER_RE.test(this.__escrewUrl||''))this.addEventListener('load',()=>{button.textContent='eScrew: SchedulerEvents received';try{if(!inspectText(this.responseText))button.textContent='eScrew: SchedulerEvents was not roster JSON';}catch{button.textContent='eScrew: could not read SchedulerEvents';}});return send.apply(this,args);};}
-    const onCrewSchedule=/\/eCrew\/CrewSchedule/i.test(location.pathname);
-    alert(onCrewSchedule?'eScrew connector is armed. My Schedule is already open, so make AIMS refresh the schedule by changing Zoom or Period.':'eScrew connector is armed. Now open My Schedule normally.');
+    const patch=(win)=>{
+      try{
+        if(win.location.origin!==AIMS)return;
+        if(!win.__escrewFetchPatched&&win.fetch){
+          win.__escrewFetchPatched=true;
+          const nativeFetch=win.fetch.bind(win);
+          win.fetch=async(...args)=>{const response=await nativeFetch(...args);try{response.clone().text().then(inspectText).catch(()=>{});}catch{}return response;};
+        }
+        if(!win.__escrewXhrPatched&&win.XMLHttpRequest){
+          win.__escrewXhrPatched=true;
+          const send=win.XMLHttpRequest.prototype.send;
+          win.XMLHttpRequest.prototype.send=function(...args){this.addEventListener('load',()=>{try{inspectText(this.responseText);}catch{}});return send.apply(this,args);};
+        }
+        try{for(const frame of win.document.querySelectorAll('iframe')){try{patch(frame.contentWindow);}catch{}}}catch{}
+      }catch{}
+    };
+    patch(window);
+    const observer=new MutationObserver(()=>{try{for(const frame of document.querySelectorAll('iframe')){try{patch(frame.contentWindow);}catch{}}}catch{}});
+    observer.observe(document.documentElement,{childList:true,subtree:true});
+    alert('eScrew connector is armed. Now open My Schedule normally.');
   })()`;
   const bookmarklet='javascript:'+source.replace(/\s+/g,' ');
   document.getElementById('preview').textContent=bookmarklet;
