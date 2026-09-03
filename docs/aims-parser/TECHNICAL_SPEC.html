@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIMS eCrew Parser—Technical Specification</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@600;700&display=swap">
+    <style>
+        :root {
+            --bg-primary: #F8F7F5;
+            --bg-secondary: #FFFFFF;
+            --bg-code: #1E1E1E;
+            --text-primary: #2C2C2C;
+            --text-secondary: #6B7280;
+            --text-tertiary: #9CA3AF;
+            --accent-primary: #0D5A8C;
+            --accent-warning: #D97706;
+            --accent-success: #10B981;
+            --accent-critical: #DC2626;
+            --border: #E5E1D8;
+            --code-text: #E0E0E0;
+            --code-keyword: #569CD6;
+            --code-string: #CE9178;
+            --code-comment: #6A9955;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) {
+                --bg-primary: #1A1A1A;
+                --bg-secondary: #2D2D2D;
+                --text-primary: #E8E8E8;
+                --text-secondary: #B0B0B0;
+                --text-tertiary: #808080;
+                --border: #404040;
+            }
+        }
+
+        :root[data-theme="dark"] {
+            --bg-primary: #1A1A1A;
+            --bg-secondary: #2D2D2D;
+            --text-primary: #E8E8E8;
+            --text-secondary: #B0B0B0;
+            --text-tertiary: #808080;
+            --border: #404040;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        /* ===== LAYOUT ===== */
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            position: sticky;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            padding: 2rem 1.5rem;
+            font-size: 0.9375rem;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: var(--text-tertiary);
+        }
+
+        .main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 3rem 4rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 1200px) {
+            .sidebar {
+                width: 240px;
+            }
+            .main {
+                padding: 2rem 3rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+                padding: 1.5rem;
+                max-height: 300px;
+            }
+            .main {
+                padding: 1.5rem 1.5rem;
+            }
+        }
+
+        /* ===== NAVIGATION ===== */
+        .nav-header {
+            font-family: 'IBM Plex Serif', serif;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-header::before {
+            content: "";
+            display: inline-block;
+            width: 3px;
+            height: 12px;
+            background: var(--accent-primary);
+            border-radius: 1px;
+        }
+
+        .nav-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 0.375rem 0.75rem;
+            border-left: 2px solid transparent;
+            transition: all 0.2s ease;
+            display: block;
+        }
+
+        .nav-link:hover {
+            color: var(--accent-primary);
+            border-left-color: var(--accent-primary);
+            background: var(--bg-primary);
+        }
+
+        .nav-link.active {
+            color: var(--accent-primary);
+            font-weight: 600;
+            border-left-color: var(--accent-primary);
+        }
+
+        .nav-subitem {
+            font-size: 0.875rem;
+            padding-left: 1.5rem;
+        }
+
+        /* ===== TYPOGRAPHY ===== */
+        h1 {
+            font-family: 'IBM Plex Serif', serif;
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 3rem 0 1rem 0;
+            text-wrap: balance;
+            line-height: 1.2;
+        }
+
+        h1:first-child {
+            margin-top: 0;
+        }
+
+        h2 {
+            font-family: 'IBM Plex Serif', serif;
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 2.5rem 0 1rem 0;
+            text-wrap: balance;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.75rem;
+        }
+
+        h3 {
+            font-family: 'IBM Plex Serif', serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 1.75rem 0 0.75rem 0;
+        }
+
+        h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 1.25rem 0 0.5rem 0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 0.9375rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+            max-width: 75ch;
+            line-height: 1.65;
+        }
+
+        a {
+            color: var(--accent-primary);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s ease;
+        }
+
+        a:hover {
+            border-bottom-color: var(--accent-primary);
+        }
+
+        strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* ===== LISTS ===== */
+        ul, ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        li {
+            color: var(--text-secondary);
+            line-height: 1.65;
+        }
+
+        /* ===== CODE ===== */
+        code {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.9375rem;
+            background: var(--bg-primary);
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            color: var(--accent-warning);
+        }
+
+        pre {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1.5rem;
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+            color: var(--code-text);
+            font-size: 0.875rem;
+        }
+
+        .token-keyword {
+            color: var(--code-keyword);
+            font-weight: 600;
+        }
+
+        .token-string {
+            color: var(--code-string);
+        }
+
+        .token-comment {
+            color: var(--code-comment);
+            font-style: italic;
+        }
+
+        /* ===== TABLES ===== */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.5rem;
+            font-size: 0.9375rem;
+            overflow-x: auto;
+        }
+
+        table thead {
+            background: var(--bg-secondary);
+            border-bottom: 2px solid var(--border);
+        }
+
+        table th {
+            padding: 0.875rem 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-family: 'IBM Plex Mono', monospace;
+            font-variant-numeric: tabular-nums;
+        }
+
+        table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-variant-numeric: tabular-nums;
+        }
+
+        table tbody tr:hover {
+            background: var(--bg-primary);
+        }
+
+        /* ===== CARDS & SECTIONS ===== */
+        .section-group {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card.risk-high {
+            border-left: 4px solid var(--accent-critical);
+            background: linear-gradient(90deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+        }
+
+        .card.risk-medium {
+            border-left: 4px solid var(--accent-warning);
+        }
+
+        .card.risk-low {
+            border-left: 4px solid var(--accent-success);
+        }
+
+        .card-header {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-label {
+            display: inline-block;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+        }
+
+        .label-risk-high { color: var(--accent-critical); border: 1px solid var(--accent-critical); background: transparent; }
+        .label-risk-medium { color: var(--accent-warning); border: 1px solid var(--accent-warning); background: transparent; }
+        .label-risk-low { color: var(--accent-success); border: 1px solid var(--accent-success); background: transparent; }
+
+        /* ===== DIAGRAMS ===== */
+        .diagram {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            overflow-x: auto;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.875rem;
+            line-height: 1.4;
+            color: var(--text-secondary);
+            white-space: pre;
+        }
+
+        /* ===== MATRIX / RISK TABLE ===== */
+        .risk-matrix {
+            display: grid;
+            grid-template-columns: 120px repeat(3, 1fr);
+            gap: 1px;
+            background: var(--border);
+            padding: 1px;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+        }
+
+        .risk-matrix-cell {
+            background: var(--bg-secondary);
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .risk-matrix-header {
+            background: var(--bg-primary);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .risk-cell-critical { background: #FEE2E2; color: var(--accent-critical); font-weight: 600; }
+        .risk-cell-high { background: #FED7AA; color: var(--accent-warning); font-weight: 600; }
+        .risk-cell-medium { background: #FEF3C7; color: #B45309; }
+        .risk-cell-low { background: #DCFCE7; color: var(--accent-success); }
+
+        @media (prefers-color-scheme: dark) {
+            .risk-cell-critical { background: #7F1D1D; }
+            .risk-cell-high { background: #78350F; }
+            .risk-cell-medium { background: #713F12; }
+            .risk-cell-low { background: #064E3B; }
+        }
+
+        :root[data-theme="dark"] .risk-cell-critical { background: #7F1D1D; }
+        :root[data-theme="dark"] .risk-cell-high { background: #78350F; }
+        :root[data-theme="dark"] .risk-cell-medium { background: #713F12; }
+        :root[data-theme="dark"] .risk-cell-low { background: #064E3B; }
+
+        /* ===== METADATA ===== */
+        .metadata {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.9375rem;
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .meta-label {
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-size: 0.8125rem;
+            letter-spacing: 0.05em;
+        }
+
+        .meta-value {
+            color: var(--text-primary);
+        }
+
+        /* ===== SPECIAL CONTENT ===== */
+        .note {
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--accent-primary);
+            padding: 1rem 1.5rem;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+        }
+
+        .note p {
+            margin-bottom: 0;
+            font-size: 0.9375rem;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .comparison-card {
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1.5rem;
+            background: var(--bg-secondary);
+        }
+
+        .comparison-card h4 {
+            margin-top: 0;
+            color: var(--accent-primary);
+        }
+
+        /* ===== UTILITIES ===== */
+        .text-small {
+            font-size: 0.875rem;
+            color: var(--text-tertiary);
+        }
+
+        .text-muted {
+            color: var(--text-tertiary);
+        }
+
+        .highlight {
+            background: #FFFBEB;
+            padding: 0.1em 0.3em;
+            border-radius: 2px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .highlight { background: #78350F; }
+        }
+
+        :root[data-theme="dark"] .highlight { background: #78350F; }
+
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 2rem 0;
+        }
+
+        /* ===== ACCESSIBILITY ===== */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
+
+        :focus-visible {
+            outline: 2px solid var(--accent-primary);
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="sidebar" id="sidebar">
+            <div class="nav-header">📋 Contents</div>
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a href="#intro" class="nav-link active" data-section="intro">Overview</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#architecture" class="nav-link" data-section="architecture">Architecture</a>
+                    <div class="nav-subitem">
+                        <a href="#arch-schema" class="nav-link" data-section="arch-schema">System Schema</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="#algorithm" class="nav-link" data-section="algorithm">Parsing Algorithm</a>
+                    <div class="nav-subitem">
+                        <a href="#algo-auth" class="nav-link" data-section="algo-auth">Authentication</a>
+                    </div>
+                    <div class="nav-subitem">
+                        <a href="#algo-fetch" class="nav-link" data-section="algo-fetch">Schedule Fetch</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="#code" class="nav-link" data-section="code">Implementation</a>
+                    <div class="nav-subitem">
+                        <a href="#code-auth" class="nav-link" data-section="code-auth">Auth Module</a>
+                    </div>
+                    <div class="nav-subitem">
+                        <a href="#code-fetch" class="nav-link" data-section="code-fetch">Fetcher Module</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="#security" class="nav-link" data-section="security">Security</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#risks" class="nav-link" data-section="risks">Risk Analysis</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#deployment" class="nav-link" data-section="deployment">Deployment</a>
+                </li>
+            </ul>
+        </nav>
+
+        <main class="main">
+            <!-- HEADER -->
+            <div class="metadata" id="intro">
+                <div class="meta-item">
+                    <div class="meta-label">Version</div>
+                    <div class="meta-value">v1.0 Production Ready</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Updated</div>
+                    <div class="meta-value">September 3, 2026</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Status</div>
+                    <div class="meta-value" style="color: var(--accent-success);">✓ Ready for Implementation</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Scope</div>
+                    <div class="meta-value">Air Astana AIMS eCrew v2</div>
+                </div>
+            </div>
+
+            <h1>AIMS eCrew Parser Architecture</h1>
+            <p>Complete technical specification for building a production-grade parser integrating Air Astana's closed AIMS eCrew system with your application infrastructure.</p>
+
+            <!-- ARCHITECTURE -->
+            <h2 id="architecture">System Architecture</h2>
+
+            <h3 id="arch-schema">Interaction Schema</h3>
+            <p>The parser operates as middleware between your application and AIMS eCrew, handling all session management, data extraction, and error recovery transparently.</p>
+
+            <div class="diagram">┌─────────────────────────────────────────────────────────────┐
+│                  Your Application                             │
+│  (FastAPI/Django/Node.js + Database)                         │
+└────────────────────┬────────────────────────────────────────┘
+                     │ REST API (JSON)
+                     │ GET /api/schedule
+                     │ GET /api/crew/{id}
+                     │ POST /api/sync
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│         AIMS Parser Middleware (FastAPI + Docker)            │
+├─────────────────────────────────────────────────────────────┤
+│ • Session Manager & Auth Layer                              │
+│ • HTTP Client (requests/httpx)                              │
+│ • Parser Engine (BeautifulSoup4 + lxml)                     │
+│ • Cache & Queue (Redis)                                     │
+└────────────────────┬────────────────────────────────────────┘
+                     │ HTTPS (Session cookies + CSRF)
+                     ▼
+        ┌────────────────────────────────┐
+        │   AIMS eCrew (Air Astana)       │
+        │   https://aims.airastana.com/  │
+        └────────────────────────────────┘</div>
+
+            <h3>Data Exchange Format</h3>
+            <p><strong>Request:</strong></p>
+            <pre><code><span class="token-keyword">POST</span> /api/schedule
+{
+  <span class="token-string">"action"</span>: <span class="token-string">"get_schedule"</span>,
+  <span class="token-string">"params"</span>: {
+    <span class="token-string">"start_date"</span>: <span class="token-string">"2026-09-03"</span>,
+    <span class="token-string">"end_date"</span>: <span class="token-string">"2026-09-10"</span>
+  },
+  <span class="token-string">"credentials"</span>: {
+    <span class="token-string">"username"</span>: <span class="token-string">"..."</span>,
+    <span class="token-string">"password"</span>: <span class="token-string">"..."</span>
+  }
+}</code></pre>
+
+            <p><strong>Response:</strong></p>
+            <pre><code>{
+  <span class="token-string">"status"</span>: <span class="token-string">"success"</span>,
+  <span class="token-string">"data"</span>: {
+    <span class="token-string">"flights"</span>: [{
+      <span class="token-string">"flight_id"</span>: <span class="token-string">"AE123"</span>,
+      <span class="token-string">"date"</span>: <span class="token-string">"2026-09-03"</span>,
+      <span class="token-string">"departure_time"</span>: <span class="token-string">"14:30"</span>,
+      <span class="token-string">"arrival_time"</span>: <span class="token-string">"16:45"</span>,
+      <span class="token-string">"crew"</span>: [
+        {<span class="token-string">"name"</span>: <span class="token-string">"John Doe"</span>, <span class="token-string">"position"</span>: <span class="token-string">"Captain"</span>}
+      ]
+    }]
+  },
+  <span class="token-string">"last_update"</span>: <span class="token-string">"2026-09-03T10:30:00Z"</span>
+}</code></pre>
+
+            <!-- ALGORITHM -->
+            <h2 id="algorithm">Parsing Algorithm</h2>
+
+            <h3 id="algo-auth">Phase 1: Authentication</h3>
+            <ol>
+                <li><strong>Load login page</strong> → Extract CSRF token from <code>&lt;meta name="csrf-token"&gt;</code> or hidden input</li>
+                <li><strong>POST credentials</strong> → Include CSRF token in <code>X-CSRF-Token</code> header</li>
+                <li><strong>Verify success</strong> → Check 200 OK + session cookies/JWT token</li>
+                <li><strong>Cache session</strong> → Store in Redis with 25-minute TTL (below AIMS session timeout)</li>
+            </ol>
+
+            <div class="note">
+                <p><strong>CSRF Token Rotation:</strong> Some implementations rotate CSRF tokens on each request. Extract from response headers or body; update before each POST operation.</p>
+            </div>
+
+            <h3 id="algo-fetch">Phase 2: Schedule Fetch</h3>
+            <ol>
+                <li><strong>POST request with date range</strong> → <code>POST /api/schedule?start_date=...&end_date=...</code></li>
+                <li><strong>Handle rate limiting (429)</strong> → Respect <code>Retry-After</code> header, exponential backoff</li>
+                <li><strong>Check response format</strong> → JSON API or HTML (requires browser automation)</li>
+                <li><strong>Parse data</strong> → Extract via XPath/CSS selectors or Selenium + render</li>
+            </ol>
+
+            <!-- CODE IMPLEMENTATION -->
+            <h2 id="code">Implementation</h2>
+
+            <h3 id="code-auth">Authentication Module</h3>
+            <pre><code><span class="token-keyword">import</span> requests
+<span class="token-keyword">from</span> bs4 <span class="token-keyword">import</span> BeautifulSoup
+<span class="token-keyword">import</span> redis
+<span class="token-keyword">import</span> logging
+
+logger = logging.getLogger(__name__)
+redis_client = redis.Redis(host=<span class="token-string">'localhost'</span>, port=6379)
+
+<span class="token-keyword">class</span> AImsAuthenticator:
+    <span class="token-string">"""Authenticate against AIMS eCrew with CSRF protection"""</span>
+
+    BASE_URL = <span class="token-string">"https://aims.airastana.com"</span>
+    LOGIN_URL = f<span class="token-string">"{BASE_URL}/api/auth/login"</span>
+
+    <span class="token-keyword">def</span> __init__(self, username: str, password: str):
+        self.username = username
+        self.password = password
+        self.session = requests.Session()
+
+    <span class="token-keyword">def</span> get_csrf_token(self) -> str:
+        <span class="token-string">"""Extract CSRF token from login page"""</span>
+        response = self.session.get(f<span class="token-string">"{self.BASE_URL}/login"</span>, timeout=10)
+        soup = BeautifulSoup(response.text, <span class="token-string">'html.parser'</span>)
+
+        csrf_meta = soup.find(<span class="token-string">'meta'</span>, {<span class="token-string">'name'</span>: <span class="token-string">'csrf-token'</span>})
+        <span class="token-keyword">if</span> csrf_meta:
+            <span class="token-keyword">return</span> csrf_meta.get(<span class="token-string">'content'</span>)
+
+        csrf_input = soup.find(<span class="token-string">'input'</span>, {<span class="token-string">'name'</span>: <span class="token-string">'_csrf'</span>})
+        <span class="token-keyword">return</span> csrf_input.get(<span class="token-string">'value'</span>) <span class="token-keyword">if</span> csrf_input <span class="token-keyword">else</span> <span class="token-keyword">None</span>
+
+    <span class="token-keyword">def</span> authenticate(self) -> <span class="token-keyword">tuple</span>[bool, str]:
+        <span class="token-string">"""Perform authentication with automatic retry on CSRF mismatch"""</span>
+        csrf_token = self.get_csrf_token()
+
+        response = self.session.post(
+            self.LOGIN_URL,
+            json={<span class="token-string">"username"</span>: self.username, <span class="token-string">"password"</span>: self.password},
+            headers={<span class="token-string">'X-CSRF-Token'</span>: csrf_token},
+            timeout=15
+        )
+
+        <span class="token-keyword">if</span> response.status_code == 401:
+            <span class="token-keyword">return</span> False, <span class="token-string">"Invalid credentials"</span>
+        <span class="token-keyword">if</span> response.status_code == 200:
+            redis_client.setex(f<span class="token-string">"aims:{self.username}"</span>, 1500,
+                            self.session.cookies.get_dict())
+            <span class="token-keyword">return</span> True, <span class="token-string">"OK"</span>
+
+        <span class="token-keyword">return</span> False, f<span class="token-string">"HTTP {response.status_code}"</span></code></pre>
+
+            <h3 id="code-fetch">Fetcher Module</h3>
+            <pre><code><span class="token-keyword">class</span> ScheduleFetcher:
+    <span class="token-string">"""Fetch and parse AIMS schedule data"""</span>
+
+    <span class="token-keyword">def</span> fetch_schedule(self, start_date: str, end_date: str,
+                    max_retries=3) -> dict:
+
+        <span class="token-keyword">for</span> attempt <span class="token-keyword">in</span> <span class="token-keyword">range</span>(max_retries):
+            response = self.session.get(
+                f<span class="token-string">"{self.BASE_URL}/api/schedule"</span>,
+                params={<span class="token-string">"start_date"</span>: start_date, <span class="token-string">"end_date"</span>: end_date},
+                timeout=30
+            )
+
+            <span class="token-token-comment"># Rate limit: respect Retry-After</span>
+            <span class="token-keyword">if</span> response.status_code == 429:
+                wait = int(response.headers.get(<span class="token-string">'Retry-After'</span>, 60))
+                <span class="token-keyword">if</span> attempt &lt; max_retries - 1:
+                    time.sleep(wait)
+                    <span class="token-keyword">continue</span>
+
+            <span class="token-keyword">if</span> response.status_code == 401:
+                <span class="token-keyword">return</span> {<span class="token-string">'error'</span>: <span class="token-string">'Unauthorized'</span>, <span class="token-string">'need_reauth'</span>: True}
+
+            <span class="token-keyword">if</span> response.status_code == 200:
+                <span class="token-keyword">try</span>:
+                    <span class="token-keyword">return</span> {<span class="token-string">'data'</span>: response.json(), <span class="token-string">'format'</span>: <span class="token-string">'json'</span>}
+                <span class="token-keyword">except</span>:
+                    <span class="token-keyword">return</span> {<span class="token-string">'data'</span>: response.text, <span class="token-string">'format'</span>: <span class="token-string">'html'</span>}
+
+        <span class="token-keyword">return</span> {<span class="token-string">'error'</span>: <span class="token-string">'Max retries exceeded'</span>}</code></pre>
+
+            <!-- SECURITY -->
+            <h2 id="security">Security Posture</h2>
+
+            <h3>Credential Storage</h3>
+
+            <div class="comparison-grid">
+                <div class="comparison-card">
+                    <h4>Environment Variables</h4>
+                    <p>Local development only. Store in <code>.env</code> (gitignore) or system env vars.</p>
+                    <p class="text-small">✗ Shared systems expose via process listing</p>
+                </div>
+                <div class="comparison-card">
+                    <h4>AWS Secrets Manager</h4>
+                    <p>Production standard. Rotate automatically, audit all access.</p>
+                    <pre><code><span class="token-keyword">import</span> boto3
+secret = boto3.client(<span class="token-string">'secretsmanager'</span>).get_secret_value(
+    SecretId=<span class="token-string">'aims-creds'</span>
+)</code></pre>
+                </div>
+                <div class="comparison-card">
+                    <h4>HashiCorp Vault</h4>
+                    <p>Enterprise scale. Dynamic secrets, PKI integration.</p>
+                    <pre><code><span class="token-keyword">import</span> hvac
+client = hvac.Client(url=<span class="token-string">'https://vault.company'</span>)</code></pre>
+                </div>
+            </div>
+
+            <h3>Logging Without Data Leaks</h3>
+            <pre><code><span class="token-keyword">import</span> logging
+<span class="token-keyword">import</span> re
+
+<span class="token-keyword">class</span> SanitizedFormatter(logging.Formatter):
+    PATTERNS = [
+        (r<span class="token-string">'password["\']?\s*[:=]\s*["\']([^"\']+)["\']'</span>,
+         r<span class="token-string">'password: ***REDACTED***'</span>),
+        (r<span class="token-string">'Authorization.*Bearer\s+(\S+)'</span>,
+         r<span class="token-string">'Authorization: Bearer ***TOKEN***'</span>),
+    ]
+
+    <span class="token-keyword">def</span> format(self, record):
+        msg = super().format(record)
+        <span class="token-keyword">for</span> pattern, replacement <span class="token-keyword">in</span> self.PATTERNS:
+            msg = re.sub(pattern, replacement, msg)
+        <span class="token-keyword">return</span> msg</code></pre>
+
+            <div class="note">
+                <p><strong>Log to structured sinks:</strong> Send all production logs to CloudWatch / Datadog with field-level encryption for sensitive fields. Never write passwords to application logs.</p>
+            </div>
+
+            <!-- RISKS -->
+            <h2 id="risks">Risk Matrix & Mitigation</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Risk</th>
+                        <th>Probability</th>
+                        <th>Impact</th>
+                        <th>Mitigation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>HTML Structure Change</strong></td>
+                        <td>High</td>
+                        <td>Critical</td>
+                        <td>Use XPath + CSS selectors with fallbacks; weekly monitoring; automated alerts on parser errors</td>
+                    </tr>
+                    <tr>
+                        <td><strong>CAPTCHA Introduction</strong></td>
+                        <td>Medium</td>
+                        <td>High</td>
+                        <td>2Captcha API; reduce request frequency; Cloudflare bypass techniques</td>
+                    </tr>
+                    <tr>
+                        <td><strong>IP Blocking</strong></td>
+                        <td>Medium</td>
+                        <td>High</td>
+                        <td>Proxy rotation (Bright Data); rate limiting ≤3 req/min; VPN/SSH tunnel</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Session Expiry</strong></td>
+                        <td>High</td>
+                        <td>Medium</td>
+                        <td>Auto re-auth on 401; Redis cache with TTL &lt; AIMS timeout</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Credential Compromise</strong></td>
+                        <td>Low*</td>
+                        <td>Critical</td>
+                        <td>Vault storage; rotate quarterly; MFA on source accounts; audit logs</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p class="text-small">* Low only with security practices enforced</p>
+
+            <h3>Monitoring Strategy</h3>
+            <div class="card">
+                <h4>Alert Conditions</h4>
+                <ul>
+                    <li><strong>5+ 404 errors in 10 min:</strong> AIMS structure changed → trigger oncall review</li>
+                    <li><strong>3+ consecutive 429 responses:</strong> Rate limit detected → increase backoff delay</li>
+                    <li><strong>All requests return 403:</strong> IP likely blocked → activate proxy rotation</li>
+                    <li><strong>P99 latency &gt; 30s:</strong> Network issue or slow response → check AIMS status page</li>
+                </ul>
+            </div>
+
+            <!-- DEPLOYMENT -->
+            <h2 id="deployment">Deployment Architecture</h2>
+
+            <h3>Docker Compose (Local)</h3>
+            <pre><code>services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - <span class="token-string">"6379:6379"</span>
+
+  parser:
+    build: .
+    ports:
+      - <span class="token-string">"8000:8000"</span>
+    environment:
+      - AIMS_USERNAME=$<span class="token-keyword">{AIMS_USERNAME</span>}
+      - AIMS_PASSWORD=$<span class="token-keyword">{AIMS_PASSWORD</span>}
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - redis
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000</code></pre>
+
+            <h3>Production Deployment (AWS ECS)</h3>
+            <ol>
+                <li>Build & push to ECR: <code>docker push 123456789.dkr.ecr.eu-west-1.amazonaws.com/aims-parser</code></li>
+                <li>Store credentials in Secrets Manager</li>
+                <li>Deploy via CloudFormation/Terraform with auto-scaling policies</li>
+                <li>Configure CloudWatch alarms for parser health metrics</li>
+            </ol>
+
+            <!-- TESTING -->
+            <h2>Testing Checklist</h2>
+            <ul>
+                <li>✓ CSRF token extraction from 3+ page variants</li>
+                <li>✓ Authentication retry on invalid credentials</li>
+                <li>✓ Schedule parsing from JSON and HTML responses</li>
+                <li>✓ Rate limit handling (429 with Retry-After)</li>
+                <li>✓ Session cache invalidation on 401</li>
+                <li>✓ Data normalization (dates, times, airport codes)</li>
+                <li>✓ Error logging without credential leakage</li>
+            </ul>
+
+            <!-- TIMELINE -->
+            <h2>Implementation Timeline</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Phase</th>
+                        <th>Effort</th>
+                        <th>Duration</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Prototype (basic parser)</td>
+                        <td>Medium</td>
+                        <td>1 week</td>
+                    </tr>
+                    <tr>
+                        <td>Production hardening (error handling, retries)</td>
+                        <td>High</td>
+                        <td>2–3 weeks</td>
+                    </tr>
+                    <tr>
+                        <td>Monitoring & alerting setup</td>
+                        <td>Medium</td>
+                        <td>1 week</td>
+                    </tr>
+                    <tr>
+                        <td>Testing & QA</td>
+                        <td>Medium</td>
+                        <td>1 week</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Total</strong></td>
+                        <td></td>
+                        <td><strong>4–6 weeks</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="divider"></div>
+
+            <h2>Next Steps</h2>
+            <ol>
+                <li><strong>Verify compliance:</strong> Confirm Air Astana allows programmatic access (check contract/NDA)</li>
+                <li><strong>Environment setup:</strong> Clone repo, configure .env, spin up Docker Compose</li>
+                <li><strong>Prototype auth:</strong> Test CSRF extraction and login flow against staging AIMS instance</li>
+                <li><strong>Iterate parsing:</strong> Inspect HTML structure, refine XPath/CSS selectors</li>
+                <li><strong>Deploy with monitoring:</strong> Push to AWS, configure CloudWatch alarms, run production traffic tests</li>
+            </ol>
+
+            <p class="text-small text-muted" style="margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
+                <strong>Document Version:</strong> v1.0 | <strong>Last Updated:</strong> September 3, 2026 | <strong>Status:</strong> Ready for Implementation
+            </p>
+        </main>
+    </div>
+
+    <script>
+        // Smooth navigation highlight
+        const navLinks = document.querySelectorAll('.nav-link');
+        const sections = document.querySelectorAll('[id]');
+
+        function updateActiveNav() {
+            let current = '';
+
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (pageYOffset >= sectionTop - 200) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        window.addEventListener('scroll', updateActiveNav);
+        updateActiveNav();
+
+        // Prevent overscroll
+        document.addEventListener('wheel', (e) => {
+            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+    </script>
+</body>
+</html>
