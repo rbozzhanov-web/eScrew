@@ -1,69 +1,14 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="color-scheme" content="light dark" />
-  <title>eScrew AIMS Request Diagnostic</title>
-  <style>
-    :root{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,system-ui,sans-serif;color-scheme:light dark}
-    body{margin:0;padding:24px;background:#F2F6F6;color:#102326}main{max-width:620px;margin:0 auto}h1{font-size:28px;margin:10px 0 8px;letter-spacing:-.7px}p,li{line-height:1.5}.card{margin-top:16px;padding:18px;border-radius:22px;background:rgba(255,255,255,.84);box-shadow:0 14px 36px rgba(0,0,0,.08)}button{display:block;box-sizing:border-box;width:100%;min-height:48px;border:0;border-radius:15px;padding:14px 16px;font:inherit;font-weight:700;text-align:center;background:#007F86;color:white}.muted{color:#60777A;font-size:13px}@media(prefers-color-scheme:dark){body{background:#081519;color:#F3FAFA}.card{background:rgba(21,44,50,.9)}.muted{color:#A8BABC}}
-  </style>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>eScrew AIMS Request Diagnostic</title>
+<style>body{font:16px -apple-system,system-ui;margin:0;padding:24px;background:#f2f6f6;color:#102326}main{max-width:620px;margin:auto}.card{background:#fff;padding:18px;border-radius:20px;margin-top:16px}button{width:100%;min-height:48px;border:0;border-radius:15px;background:#007f86;color:#fff;font:700 16px -apple-system,system-ui}</style>
 </head>
-<body>
-<main>
-  <h1>AIMS Request Diagnostic</h1>
-  <p class="muted">Finds the roster POST shape without exporting request values or session data.</p>
-  <div class="card">
-    <strong>Set up</strong>
-    <ol>
-      <li>Tap <strong>Copy diagnostic bookmark</strong>.</li>
-      <li>Replace the URL of your <strong>eScrew Request Diagnostic</strong> Safari bookmark.</li>
-    </ol>
-    <button id="copy">Copy diagnostic bookmark</button>
-  </div>
-  <div class="card">
-    <strong>Run in AIMS</strong>
-    <ol>
-      <li>Open <strong>My Schedule</strong>.</li>
-      <li>Run the diagnostic bookmark.</li>
-      <li>Change the displayed roster period once.</li>
-      <li>Tap <strong>Copy diagnostic</strong> and send the JSON back here.</li>
-    </ol>
-    <p class="muted">Output contains method, pathname, outer body keys and a value-free structural description of the <code>Data</code> field. No raw Data value, cookies, auth headers, tokens, CSRF/session values, passwords or query values are copied.</p>
-  </div>
-</main>
+<body><main><h1>AIMS Request Diagnostic</h1><div class="card"><p>Copy the short iPhone diagnostic, replace your Safari bookmark URL, run it on <b>My Schedule</b>, then change the roster period once.</p><button id="copy">Copy short diagnostic</button></div></main>
 <script>
 (()=>{
-const source=String.raw`(()=>{
-const A='https://aims.airastana.com',ACTIVE='__escrewRequestDiagActive',BOX='__escrewRequestDiagBox';
-if(location.origin!==A){alert('Open Air Astana AIMS first, then run the diagnostic.');return;}
-if(window[ACTIVE]){alert('eScrew request diagnostic is already active.');return;}
-window[ACTIVE]=true;
-const safePath=u=>{try{const x=new URL(u,location.href);return x.origin===location.origin?x.pathname:'cross-origin';}catch{return'unknown';}};
-const scrub=xs=>[...new Set((xs||[]).map(String).filter(k=>!/pass|pwd|token|auth|cookie|session|csrf|secret/i.test(k)))].sort();
-const isRoster=v=>!!v&&typeof v==='object'&&typeof v.PeriodStart==='string'&&typeof v.PeriodEnd==='string'&&Array.isArray(v.SchedulerEvents);
-const bucket=n=>n===0?'0':n<=16?'1-16':n<=64?'17-64':n<=256?'65-256':n<=1024?'257-1024':'>1024';
-const valueShape=(v,d=0)=>{if(v===null)return{type:'null'};if(Array.isArray(v)){const out={type:'array',count:v.length};if(v.length&&d<3)out.item=valueShape(v[0],d+1);return out;}const t=typeof v;if(t==='object'){const keys=scrub(Object.keys(v));const out={type:'object',keys};if(d<3){const fields={};for(const k of keys.slice(0,40))fields[k]=valueShape(v[k],d+1);out.fields=fields;}return out;}if(t==='string')return{type:'string',lengthBucket:bucket(v.length)};return{type:t};};
-const parseDataShape=v=>{try{if(v===undefined)return{present:false};if(typeof v!=='string')return{present:true,encoding:'native',shape:valueShape(v)};const raw=v.trim(),base={present:true,encoding:'string',lengthBucket:bucket(raw.length)};try{return{...base,encoding:'json-string',shape:valueShape(JSON.parse(raw))};}catch{}try{const dec=decodeURIComponent(raw);if(dec!==raw){try{return{...base,encoding:'uri-json-string',shape:valueShape(JSON.parse(dec))};}catch{return{...base,encoding:'uri-string',decodedLengthBucket:bucket(dec.length)}}}catch{}return base;}catch{return{present:true,encoding:'unknown'};}};
-const inspectBody=b=>{try{if(!b)return{keys:[],data:{present:false}};if(typeof b==='string'){const s=b.trim();if(s.startsWith('{')){const o=JSON.parse(s);return{keys:scrub(Object.keys(o)),data:parseDataShape(o.Data)};}const p=new URLSearchParams(s);return{keys:scrub([...p.keys()]),data:parseDataShape(p.get('Data')??undefined)};}if(b instanceof URLSearchParams)return{keys:scrub([...b.keys()]),data:parseDataShape(b.get('Data')??undefined)};if(typeof FormData!=='undefined'&&b instanceof FormData)return{keys:scrub([...b.keys()]),data:parseDataShape(b.get('Data')??undefined)};if(typeof b==='object')return{keys:scrub(Object.keys(b)),data:parseDataShape(b.Data)};return{keys:[],data:{present:false}};}catch{return{keys:[],data:{present:false,error:'unreadable-shape'}};}};
-let result=null;
-const box=document.createElement('div');box.id=BOX;Object.assign(box.style,{position:'fixed',left:'16px',right:'16px',bottom:'calc(16px + env(safe-area-inset-bottom))',zIndex:'2147483647',padding:'14px',borderRadius:'14px',background:'rgba(21,44,50,.97)',color:'#F3FAFA',font:'13px -apple-system,BlinkMacSystemFont,system-ui,sans-serif',boxShadow:'0 8px 24px rgba(0,0,0,.25)'});
-const status=document.createElement('div');status.textContent='Listening for roster POST…';status.style.marginBottom='10px';
-const detail=document.createElement('div');detail.textContent='Change the displayed roster period once.';Object.assign(detail.style,{fontSize:'11px',lineHeight:'1.4',color:'#A8BABC',wordBreak:'break-word',marginBottom:'10px'});
-const copy=document.createElement('button');copy.type='button';copy.disabled=true;copy.textContent='Waiting…';Object.assign(copy.style,{width:'100%',minHeight:'44px',border:'0',borderRadius:'12px',padding:'10px 12px',background:'#60777A',color:'#fff',font:'700 13px system-ui'});box.append(status,detail,copy);document.body.appendChild(box);
-const found=(v,m)=>{if(result||!isRoster(v))return false;result={version:2,method:String(m.method||'GET').toUpperCase(),path:String(m.path||'unknown'),bodyKeys:scrub(m.body&&m.body.keys),dataShape:m.body&&m.body.data?m.body.data:{present:false},response:{PeriodStartType:typeof v.PeriodStart,PeriodEndType:typeof v.PeriodEnd,SchedulerEventsCount:v.SchedulerEvents.length}};status.textContent='✓ Roster POST shape found';status.style.color='#35B8C0';detail.textContent=result.method+' '+result.path+' · Data: '+JSON.stringify(result.dataShape);copy.disabled=false;copy.textContent='Copy diagnostic';copy.style.background='#007F86';copy.onclick=async()=>{const text=JSON.stringify(result,null,2);try{await navigator.clipboard.writeText(text);copy.textContent='Diagnostic copied';alert('Diagnostic copied. It contains no raw request values.');}catch{prompt('Copy this diagnostic:',text);}};return true;};
-const parseText=(t,m)=>{try{return found(JSON.parse(t),m);}catch{return false;}};
-const patch=w=>{try{if(!w||w.location.origin!==A)return;
-if(!w.__escrewReqDiagFetch&&w.fetch){w.__escrewReqDiagFetch=true;const f=w.fetch.bind(w);w.fetch=async function(input,init){const meta={method:(init&&init.method)||(input&&input.method)||'GET',path:safePath(input&&input.url?input.url:input),body:inspectBody(init&&init.body)};const r=await f.apply(this,arguments);try{r.clone().text().then(t=>parseText(t,meta)).catch(()=>{});}catch{}return r;};}
-if(!w.__escrewReqDiagXhr&&w.XMLHttpRequest){w.__escrewReqDiagXhr=true;const o=w.XMLHttpRequest.prototype.open,s=w.XMLHttpRequest.prototype.send;w.XMLHttpRequest.prototype.open=function(method,url){this.__escrewReqMeta={method:String(method||'GET'),path:safePath(url),body:{keys:[],data:{present:false}}};return o.apply(this,arguments);};w.XMLHttpRequest.prototype.send=function(body){if(this.__escrewReqMeta)this.__escrewReqMeta.body=inspectBody(body);this.addEventListener('load',()=>{try{if(this.responseType==='json'&&this.response!==null)found(this.response,this.__escrewReqMeta||{});else parseText(this.responseText,this.__escrewReqMeta||{});}catch{}});return s.apply(this,arguments);};}}
-catch{}};
-const hookFrame=fr=>{try{if(fr.__escrewReqDiagLoad)return;fr.__escrewReqDiagLoad=true;const apply=()=>{try{patch(fr.contentWindow);}catch{}};apply();fr.addEventListener('load',apply);}catch{}};
-const scan=n=>{try{if(n instanceof HTMLIFrameElement)hookFrame(n);if(n&&n.querySelectorAll)for(const fr of n.querySelectorAll('iframe'))hookFrame(fr);}catch{}};
-patch(window);scan(document);new MutationObserver(ms=>{for(const m of ms)for(const n of m.addedNodes)scan(n);}).observe(document.documentElement,{childList:true,subtree:true});
-})()`;
-const bm='javascript:'+source.replace(/\s+/g,' '),copy=document.getElementById('copy');copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(bm);copy.textContent='Copied';}catch{prompt('Copy this bookmark URL:',bm);}});
+const src=`(()=>{if(location.origin!=='https://aims.airastana.com'){alert('Open Air Astana AIMS first');return}if(window.__erd){alert('Diagnostic already active');return}window.__erd=1;const P='/eCrew/CrewSchedule/SchedulerEvents',sh=v=>{if(v===null)return'null';if(Array.isArray(v))return{type:'array',count:v.length,item:v.length?sh(v[0]):undefined};if(typeof v==='object'){let o={};for(let k of Object.keys(v).slice(0,30))if(!/pass|pwd|token|auth|cookie|session|csrf|secret/i.test(k))o[k]=sh(v[k]);return{type:'object',fields:o}}if(typeof v==='string')return{type:'string',length:v.length};return typeof v},bd=b=>{try{let d;if(typeof b==='string'){let p=new URLSearchParams(b);d=p.get('Data');if(d==null&&b.trim()[0]==='{')d=JSON.parse(b).Data}else if(b instanceof URLSearchParams)d=b.get('Data');else if(typeof FormData!=='undefined'&&b instanceof FormData)d=b.get('Data');else if(b&&typeof b==='object')d=b.Data;if(typeof d==='string'){try{d=JSON.parse(d)}catch{try{d=JSON.parse(decodeURIComponent(d))}catch{}}}return sh(d)}catch{return'unreadable'}},ok=v=>v&&typeof v==='object'&&Array.isArray(v.SchedulerEvents),done=(v,m,s)=>{if(!ok(v)||window.__erdDone)return;window.__erdDone=1;prompt('Copy diagnostic',JSON.stringify({version:3,method:m,path:P,dataShape:s,response:{SchedulerEventsCount:v.SchedulerEvents.length}},null,2))},patch=w=>{try{if(!w||w.location.origin!==location.origin)return;let X=w.XMLHttpRequest&&w.XMLHttpRequest.prototype;if(X&&!X.__erd){X.__erd=1;let o=X.open,s=X.send;X.open=function(m,u){this.__m=m;this.__u=u;return o.apply(this,arguments)};X.send=function(b){let z=bd(b);this.addEventListener('load',()=>{try{if(new URL(this.__u,location.href).pathname!==P)return;let v=this.responseType==='json'?this.response:JSON.parse(this.responseText);done(v,this.__m,z)}catch{}});return s.apply(this,arguments)}}if(w.fetch&&!w.fetch.__erd){let f=w.fetch.bind(w),g=async function(i,n){let u=i&&i.url?i.url:i,m=n&&n.method||i&&i.method||'GET',z=bd(n&&n.body),r=await f(i,n);try{if(new URL(u,location.href).pathname===P)r.clone().json().then(v=>done(v,m,z)).catch(()=>{})}catch{}return r};g.__erd=1;w.fetch=g}}catch{}};patch(window);for(let f of document.querySelectorAll('iframe'))try{patch(f.contentWindow)}catch{}alert('Diagnostic active. Change roster period once.')})()`;
+const bm='javascript:'+src.replace(/\s+/g,' '),b=document.getElementById('copy');b.onclick=async()=>{try{await navigator.clipboard.writeText(bm);b.textContent='Copied'}catch{prompt('Copy bookmark URL',bm)}};
 })();
-</script>
-</body>
-</html>
+</script></body></html>
