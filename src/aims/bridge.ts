@@ -39,7 +39,9 @@ export function parseAimsMessage(event: Pick<MessageEvent, 'origin' | 'data'>): 
     return adaptAimsSchedulerResponse(event.data.payload);
   }
   if (isAimsDashboardBridgeMessage(event.data)) {
-    return adaptDashboardResponse(event.data.payload.events, event.data.payload.periodStart, event.data.payload.periodEnd);
+    const { events, periodStart, periodEnd } = event.data.payload;
+    if (!events) return undefined;
+    return adaptDashboardResponse(events, periodStart, periodEnd);
   }
   return undefined;
 }
