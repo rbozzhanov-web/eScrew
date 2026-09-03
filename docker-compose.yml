@@ -1,0 +1,61 @@
+version: '3.9'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: aims-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  parser:
+    build: .
+    container_name: aims-parser
+    ports:
+      - "8000:8000"
+    environment:
+      - AIMS_USERNAME=${AIMS_USERNAME}
+      - AIMS_PASSWORD=${AIMS_PASSWORD}
+      - REDIS_URL=redis://redis:6379
+      - LOG_LEVEL=INFO
+      - DEBUG=false
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./src:/app/src
+      - ./logs:/app/logs
+    restart: unless-stopped
+    networks:
+      - aims-network
+
+  # Optional: Celery worker for async tasks
+  celery:
+    build: .
+    container_name: aims-celery
+    command: celery -A src.tasks worker --loglevel=info
+    environment:
+      - AIMS_USERNAME=${AIMS_USERNAME}
+      - AIMS_PASSWORD=${AIMS_PASSWORD}
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - redis
+    volumes:
+      - ./src:/app/src
+    restart: unless-stopped
+    networks:
+      - aims-network
+
+volumes:
+  redis_data:
+
+networks:
+  aims-network:
+    driver: bridge
