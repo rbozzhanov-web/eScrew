@@ -1,6 +1,46 @@
 import type { ParsedAirAstanaRoster } from '@/src/import/parseAirAstanaRoster';
 import type { RosterAbsence, RosterDuty, RosterSector } from '@/src/import/duties';
 
+export interface AimsHotelInfo {
+  HotelName?: string;
+  ADDRESS?: string;
+  SCHECKIN?: string;
+  SCHECKOUT?: string;
+  CONTACT_NAME1?: string;
+  CONTACT_NAME2?: string;
+  DISTANCE?: number;
+  SDISTANCE?: string;
+  TELEPHONE1?: string;
+  TELEPHONE2?: string;
+  FAX1?: string;
+  FAX2?: string;
+  Emails?: string[];
+  HotelMemo?: string;
+  CheckInTime?: string;
+  CheckOutTime?: string;
+  CheckInDate?: string;
+  CheckOutDate?: string;
+  Rest?: string;
+}
+
+export interface AimsCrewMember {
+  name: string;
+  crewId: string;
+  position: string;
+  isPIC?: boolean;
+}
+
+export interface AimsFlightInfo {
+  flightNumber: string;
+  route: string;
+  from: string;
+  to: string;
+  reportTime?: string;
+  debriefTime?: string;
+  isDeadhead: boolean;
+  crew?: AimsCrewMember[];
+}
+
 export interface AimsSchedulerEvent {
   start?: string;
   end?: string;
@@ -11,6 +51,13 @@ export interface AimsSchedulerEvent {
   details?: string;
   location?: string;
   IsDeadhead?: boolean;
+  WillingToFly?: boolean;
+  NoContact?: boolean;
+  ReplaceGDO?: boolean;
+  Memo?: boolean;
+  Notification?: boolean;
+  HotelInfo?: AimsHotelInfo;
+  HotelNo?: number;
 }
 
 export interface AimsSchedulerResponse {
@@ -164,4 +211,59 @@ function addDays(date: string, days: number): string | undefined {
   const [year, month, day] = parsed.split('-').map(Number);
   const shifted = new Date(Date.UTC(year, month - 1, day + days));
   return `${shifted.getUTCFullYear()}-${String(shifted.getUTCMonth() + 1).padStart(2, '0')}-${String(shifted.getUTCDate()).padStart(2, '0')}`;
+}
+
+export function parseFlightInfo(event: AimsSchedulerEvent): AimsFlightInfo | undefined {
+  if (event.type !== 'Flight' && event.type !== 'Default') return undefined;
+
+  const details = event.details ?? '';
+  const text = event.text ?? '';
+
+  // Parse flight number from text (first line)
+  const flightMatch = /^([A-Z]?\d{1,5})/.exec(text);
+  if (!flightMatch) return undefined;
+
+  const flightNumber = flightMatch[1];
+
+  // Parse route from text (second line, format: AAA-BBB or similar)
+  const routeMatch = /\n([A-Z]{3})-([A-Z]{3})/.exec(text);
+  const from = routeMatch?.[1] ?? '';
+  const to = routeMatch?.[2] ?? from;
+  const route = `${from}-${to}`;
+
+  return {
+    flightNumber,
+    route,
+    from,
+    to,
+    reportTime: event.report,
+    debriefTime: event.debrief,
+    isDeadhead: Boolean(event.IsDeadhead),
+  };
+}
+
+export function parseHotelInfo(event: AimsSchedulerEvent): AimsHotelInfo | undefined {
+  if (event.type !== 'Hotel' || !event.HotelInfo) return undefined;
+
+  return {
+    HotelName: event.HotelInfo.HotelName,
+    ADDRESS: event.HotelInfo.ADDRESS,
+    CheckInTime: event.HotelInfo.CheckInTime,
+    CheckOutTime: event.HotelInfo.CheckOutTime,
+    CheckInDate: event.HotelInfo.CheckInDate,
+    CheckOutDate: event.HotelInfo.CheckOutDate,
+    TELEPHONE1: event.HotelInfo.TELEPHONE1,
+    TELEPHONE2: event.HotelInfo.TELEPHONE2,
+    Rest: event.HotelInfo.Rest,
+    HotelMemo: event.HotelInfo.HotelMemo,
+  };
+}
+
+export function extractCrewFromEvent(event: AimsSchedulerEvent): AimsCrewMember[] {
+  const crew: AimsCrewMember[] = [];
+
+  // Crew info would come from a separate crew list associated with the event
+  // For now, this is a placeholder that can be enhanced when crew data is available
+
+  return crew;
 }
