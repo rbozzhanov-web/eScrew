@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="color-scheme" content="light dark" />
+  <title>eScrew AIMS Connector</title>
+  <style>
+    :root { font-family: -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,system-ui,sans-serif; color-scheme: light dark; }
+    body { margin:0; padding:24px; background:#F2F6F6; color:#102326; }
+    main { max-width:620px; margin:0 auto; }
+    h1 { font-size:28px; margin:10px 0 8px; letter-spacing:-.7px; }
+    p,li { line-height:1.5; }
+    .card { margin-top:16px; padding:18px; border-radius:22px; background:rgba(255,255,255,.84); box-shadow:0 14px 36px rgba(0,0,0,.08); }
+    button { width:100%; min-height:48px; border:0; border-radius:15px; font:inherit; font-weight:700; background:#007F86; color:white; }
+    .secondary { margin-top:10px; background:#DFF1F2; color:#007F86; }
+    code { display:block; margin-top:12px; padding:12px; border-radius:14px; overflow-wrap:anywhere; font-size:11px; background:rgba(0,0,0,.05); }
+    .muted { color:#60777A; font-size:13px; }
+    @media (prefers-color-scheme:dark) {
+      body { background:#081519; color:#F3FAFA; }
+      .card { background:rgba(21,44,50,.9); }
+      .muted { color:#A8BABC; }
+      code { background:rgba(255,255,255,.06); }
+      .secondary { background:rgba(53,184,192,.16); color:#35B8C0; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>eScrew AIMS Connector</h1>
+  <p class="muted">One-time Safari setup. The connector runs only inside aims.airastana.com, observes the normal AIMS schedule request, and sends only roster JSON to eScrew.</p>
+  <div class="card">
+    <strong>iPhone / iPad</strong>
+    <ol>
+      <li>Add this page to Safari bookmarks.</li>
+      <li>Edit that bookmark and replace its URL with the connector copied below.</li>
+      <li>From eScrew, open AIMS and sign in normally.</li>
+      <li>On the Crew Schedule page, run the “eScrew AIMS” bookmark once.</li>
+    </ol>
+    <button id="copy">Copy connector</button>
+    <button id="open" class="secondary">Open AIMS Crew Schedule</button>
+    <code id="preview"></code>
+  </div>
+  <div class="card">
+    <strong>Privacy boundary</strong>
+    <p class="muted">The connector never asks for or reads your password. It does not serialize cookies, CSRF values, tokens, or the short Retrieve response. Authentication stays entirely inside the native AIMS browser session.</p>
+  </div>
+</main>
+<script>
+(() => {
+  const source = String.raw`(()=>{
+    const AIMS='https://aims.airastana.com';
+    const APP='https://rbozzhanov-web.github.io/eScrew/';
+    const APP_ORIGIN='https://rbozzhanov-web.github.io';
+    const TYPE='escrew:aims-scheduler-events';
+    const READY='escrew:aims-ready';
+    if(location.origin!==AIMS){alert('Open this connector on aims.airastana.com');return;}
+    if(!/\/eCrew\/CrewSchedule/i.test(location.pathname)){location.href=AIMS+'/eCrew/CrewSchedule';alert('After Crew Schedule opens, run the eScrew AIMS bookmark again.');return;}
+    let delivered=false;
+    const clean=(value)=>({
+      PeriodStart:value&&value.PeriodStart,
+      PeriodEnd:value&&value.PeriodEnd,
+      RosterDateTime:value&&value.RosterDateTime,
+      SchedulerEvents:Array.isArray(value&&value.SchedulerEvents)?value.SchedulerEvents:[]
+    });
+    const deliver=(value)=>{
+      if(delivered||!value||!Array.isArray(value.SchedulerEvents))return;
+      delivered=true;
+      const payload=clean(value);
+      let target=null;
+      try{if(window.opener&&!window.opener.closed)target=window.opener;}catch{}
+      if(!target)target=window.open(APP,'escrew-home');
+      if(!target){alert('Safari blocked the eScrew return window. Allow pop-ups and try again.');return;}
+      const envelope={type:TYPE,payload};
+      let tries=0;
+      const send=()=>{try{target.postMessage(envelope,APP_ORIGIN);}catch{} if(++tries>=20)clearInterval(timer);};
+      const ready=(event)=>{if(event.origin===APP_ORIGIN&&event.source===target&&event.data&&event.data.type===READY){send();window.removeEventListener('message',ready);}};
+      window.addEventListener('message',ready);
+      send();
+      const timer=setInterval(send,300);
+      try{target.focus();}catch{}
+    };
+    const inspectText=(text)=>{try{deliver(JSON.parse(text));}catch{}};
+    if(!window.__escrewFetchPatched&&window.fetch){
+      window.__escrewFetchPatched=true;
+      const nativeFetch=window.fetch.bind(window);
+      window.fetch=async(...args)=>{
+        const response=await nativeFetch(...args);
+        const url=String(response.url||args[0]||'');
+        if(/\/eCrew\/CrewSchedule\/SchedulerEvents/i.test(url))response.clone().text().then(inspectText).catch(()=>{});
+        return response;
+      };
+    }
+    if(!window.__escrewXhrPatched&&window.XMLHttpRequest){
+      window.__escrewXhrPatched=true;
+      const open=XMLHttpRequest.prototype.open;
+      XMLHttpRequest.prototype.open=function(method,url,...rest){this.__escrewUrl=String(url||'');return open.call(this,method,url,...rest);};
+      const send=XMLHttpRequest.prototype.send;
+      XMLHttpRequest.prototype.send=function(...args){
+        if(/\/eCrew\/CrewSchedule\/SchedulerEvents/i.test(this.__escrewUrl||''))this.addEventListener('load',()=>{try{inspectText(this.responseText);}catch{}});
+        return send.apply(this,args);
+      };
+    }
+    const retrieveForm=[...document.forms].find(form=>/\/eCrew\/CrewSchedule\/Retrieve/i.test(form.action||''));
+    if(retrieveForm){
+      if(typeof retrieveForm.requestSubmit==='function')retrieveForm.requestSubmit();
+      else retrieveForm.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
+      return;
+    }
+    const retrieveControl=[...document.querySelectorAll('button,input[type="submit"],a')].find(el=>{
+      const text=(el.textContent||el.value||'').trim();
+      const url=el.getAttribute&&((el.getAttribute('formaction')||el.getAttribute('href')||''));
+      return /Retrieve|View schedule|Show schedule/i.test(text)||/\/CrewSchedule\/Retrieve/i.test(url||'');
+    });
+    if(retrieveControl&&typeof retrieveControl.click==='function'){retrieveControl.click();return;}
+    alert('Connector is armed. Refresh or retrieve the schedule in AIMS; eScrew will capture the SchedulerEvents response.');
+  })()`;
+  const bookmarklet='javascript:'+source.replace(/\s+/g,' ');
+  document.getElementById('preview').textContent=bookmarklet;
+  document.getElementById('copy').addEventListener('click',async()=>{
+    try{
+      await navigator.clipboard.writeText(bookmarklet);
+      document.getElementById('copy').textContent='Copied';
+    }catch{
+      prompt('Copy this connector URL:',bookmarklet);
+    }
+  });
+  document.getElementById('open').addEventListener('click',()=>window.open('https://aims.airastana.com/eCrew/CrewSchedule','escrew-aims'));
+})();
+</script>
+</body>
+</html>

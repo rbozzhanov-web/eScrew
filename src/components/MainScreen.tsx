@@ -111,11 +111,16 @@ export default function MainScreen() {
     setAimsState('waiting');
     setImportError(undefined);
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
-      const popup = window.open('https://aims.airastana.com/ecrew', 'escrew-aims');
+      const popup = window.open('https://aims.airastana.com/eCrew/CrewSchedule', 'escrew-aims');
       if (!popup) setAimsState('error');
       return;
     }
     setAimsState('error');
+  };
+  const openAimsSetup = () => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      window.open('/eScrew/aims-connector.html', 'escrew-aims-setup', 'noopener,noreferrer');
+    }
   };
 
   const deleteRoster = (periodStart: string) => {
@@ -162,7 +167,7 @@ export default function MainScreen() {
       <SwipeSurface style={styles.viewport} onSwipeLeft={tab === 'More' ? undefined : () => changeTab(1)} onSwipeRight={tab === 'Home' ? undefined : () => changeTab(-1)}>
         {tab === 'Home' && <Home allDuties={allDuties} fallbackRoster={roster} rosters={rosters} palette={palette} onImport={importRoster} importing={importing} />}
         {tab === 'Roster' && <RosterScreen roster={roster} rosters={rosters} duties={duties} selectedSector={selectedSector} palette={palette} importing={importing} error={importError} onImport={importRoster} onSelect={setSelectedFlight} onMonth={changeMonth} />}
-        {tab === 'More' && <MoreScreen rosters={rosters} palette={palette} aimsState={aimsState} onAims={openAims} onDeleteRoster={deleteRoster} onErase={eraseAll} />}
+        {tab === 'More' && <MoreScreen rosters={rosters} palette={palette} aimsState={aimsState} onAims={openAims} onAimsSetup={openAimsSetup} onDeleteRoster={deleteRoster} onErase={eraseAll} />}
       </SwipeSurface>
 
       <View onLayout={(event) => { const nextWidth = event.nativeEvent.layout.width; if (Math.abs(nextWidth - tabBarWidth) > 0.5) setTabBarWidth(nextWidth); }} style={[styles.tabBar, styles.depthSurface, WEB_TAB_GLASS, { backgroundColor: palette.surface, borderColor: palette.line }]}>
@@ -248,10 +253,11 @@ function FlightDetail({ row, palette, onClose, onPrevious, onNext }: { row: Flig
   return <IOSSheet visible onClose={onClose} handleColor={palette.line} style={[styles.flightSheet, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}><SwipeSurface style={styles.flightSheetContent} onSwipeLeft={onNext} onSwipeRight={onPrevious} threshold={44}><Text style={[styles.label, { color: palette.muted }]}>{row.duty.dateLabel} · {row.sector.flightNumber}{row.sector.deadhead ? ' · DHC' : ''}</Text><Text style={[styles.sheetRoute, { color: palette.text }]}>{row.sector.departure} → {row.sector.arrival}</Text><Text style={[styles.meta, { color: palette.muted }]}>{row.sector.departureTime} – {row.sector.arrivalTime}</Text><Text style={[styles.swipeHint, { color: palette.muted }]}>{onPrevious ? '‹ ' : ''}swipe flight{onNext ? ' ›' : ''} · swipe down to close</Text><Text style={[styles.flyingWith, { color: palette.accent }]}>Flying with · {row.sector.crew.length}</Text>{row.sector.crew.length > 0 ? <FlatList data={row.sector.crew} keyExtractor={(member) => member.id} style={styles.crewScroll} contentContainerStyle={styles.crewList} showsVerticalScrollIndicator={false} renderItem={({ item }) => <View style={styles.crewRow}><View style={[styles.avatar, { backgroundColor: palette.accentSoft }]}><Text style={[styles.avatarText, { color: palette.accent }]}>{item.name[0]}</Text></View><View style={styles.grow}><Text style={[styles.crewName, { color: palette.text }]}>{item.name}</Text><Text style={[styles.meta, { color: palette.muted }]}>{item.position ?? item.role}</Text></View></View>} /> : <Text style={[styles.meta, { color: palette.muted, marginTop: 12 }]}>Crew is not listed for this flight in the imported report.</Text>}</SwipeSurface></IOSSheet>;
 }
 
-function MoreScreen({ rosters, palette, aimsState, onAims, onDeleteRoster, onErase }: { rosters: ParsedAirAstanaRoster[]; palette: Palette; aimsState: AimsState; onAims: () => void; onDeleteRoster: (periodStart: string) => void; onErase: () => void }) {
+function MoreScreen({ rosters, palette, aimsState, onAims, onAimsSetup, onDeleteRoster, onErase }: { rosters: ParsedAirAstanaRoster[]; palette: Palette; aimsState: AimsState; onAims: () => void; onAimsSetup: () => void; onDeleteRoster: (periodStart: string) => void; onErase: () => void }) {
   return <View style={styles.screen}>
     <Text style={[styles.sectionTitle, { color: palette.text }]}>More</Text>
-    <Pressable onPress={onAims} style={[styles.settingsCard, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}><View style={styles.grow}><Text style={[styles.cardTitle, { color: palette.text }]}>AIMS</Text><Text style={[styles.meta, { color: palette.muted }]}>{aimsState === 'waiting' ? 'AIMS opened · waiting for roster bridge' : aimsState === 'received' ? 'Roster received from AIMS' : aimsState === 'error' ? 'Could not open or receive AIMS roster' : 'Open AIMS and sign in normally'}</Text></View><Text style={[styles.chevron, { color: palette.muted }]}>›</Text></Pressable>
+    <Pressable onPress={onAims} style={[styles.settingsCard, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}><View style={styles.grow}><Text style={[styles.cardTitle, { color: palette.text }]}>AIMS</Text><Text style={[styles.meta, { color: palette.muted }]}>{aimsState === 'waiting' ? 'AIMS opened · waiting for roster bridge' : aimsState === 'received' ? 'Roster received from AIMS' : aimsState === 'error' ? 'Could not open or receive AIMS roster' : 'Open Crew Schedule and sign in normally'}</Text></View><Text style={[styles.chevron, { color: palette.muted }]}>›</Text></Pressable>
+    <Pressable onPress={onAimsSetup} style={[styles.settingsCard, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}><View style={styles.grow}><Text style={[styles.cardTitle, { color: palette.text }]}>Safari connector setup</Text><Text style={[styles.meta, { color: palette.muted }]}>One-time setup for sending SchedulerEvents back to eScrew without sharing credentials or session data.</Text></View><Text style={[styles.chevron, { color: palette.muted }]}>›</Text></Pressable>
     <View style={[styles.libraryCard, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}><Text style={[styles.cardTitle, { color: palette.text }]}>Imported rosters</Text>{rosters.length ? <FlatList data={rosters} keyExtractor={(item) => item.period.start} style={styles.libraryList} showsVerticalScrollIndicator={false} renderItem={({ item }) => <View style={[styles.libraryRow, { borderColor: palette.line }]}><View style={styles.grow}><Text style={[styles.libraryMonth, { color: palette.text }]}>{rosterMonthLabel(item)}</Text><Text style={[styles.meta, { color: palette.muted }]}>{item.subject?.base ?? 'Roster'} · stored locally</Text></View><Pressable onPress={() => onDeleteRoster(item.period.start)} style={[styles.deleteRosterButton, { backgroundColor: palette.accentSoft }]}><Text style={[styles.deleteRosterText, { color: palette.danger }]}>Delete</Text></Pressable></View>} /> : <Text style={[styles.meta, { color: palette.muted }]}>No months imported</Text>}</View>
     <View style={[styles.infoCard, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}><Text style={[styles.cardTitle, { color: palette.text }]}>Privacy</Text><Text style={[styles.meta, { color: palette.muted }]}>Roster PDFs are parsed locally. AIMS bridge accepts roster JSON only; credentials and session data are not stored by eScrew.</Text></View>
     {rosters.length > 0 && <Pressable onPress={onErase} style={[styles.secondaryButton, { borderColor: palette.line }]}><Text style={[styles.secondaryText, { color: palette.text }]}>Erase local roster data</Text></Pressable>}
@@ -271,7 +277,7 @@ function PrimaryButton({ title, onPress, loading, palette }: { title: string; on
 function operatingCount(roster: ParsedAirAstanaRoster) { return roster.sectors.filter((sector) => !sector.deadhead).length; }
 
 const styles = StyleSheet.create({
-  safe:{flex:1}, app:{flex:1,width:'100%',maxWidth:620,alignSelf:'center',paddingHorizontal:16},
+  safe:{flex:1}, app:{flex:1,width:'100%',maxWidth:620,alignSelf:'center',paddingHorizontal:16,paddingTop:10.58},
   header:{height:72,flexDirection:'row',alignItems:'center',justifyContent:'space-between'}, brand:{fontSize:27,fontWeight:'700',letterSpacing:-.8}, kicker:{fontSize:10,fontWeight:'700',letterSpacing:1.2},
   modeButton:{width:42,height:42,borderRadius:21,alignItems:'center',justifyContent:'center'}, aimsGlyph:{fontSize:17,lineHeight:20,fontWeight:'800'}, aimsDot:{position:'absolute',right:7,top:7,width:6,height:6,borderRadius:3},
   viewport:{flex:1,minHeight:0}, screen:{flex:1,paddingTop:8,gap:12}, grow:{flex:1,minWidth:0}, sectionTitle:{fontSize:27,lineHeight:31,fontWeight:'700',letterSpacing:-.8}, intro:{fontSize:15,lineHeight:22}, label:{fontSize:11,fontWeight:'700',letterSpacing:.9}, meta:{fontSize:13,lineHeight:18},

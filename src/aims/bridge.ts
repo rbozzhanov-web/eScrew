@@ -2,7 +2,9 @@ import { parseAimsSchedulerResponse, type AimsSchedulerResponse } from './adapte
 import type { ParsedAirAstanaRoster } from '@/src/import/parseAirAstanaRoster';
 
 export const AIMS_ORIGIN = 'https://aims.airastana.com';
+export const ESCREW_ORIGIN = 'https://rbozzhanov-web.github.io';
 export const AIMS_MESSAGE_TYPE = 'escrew:aims-scheduler-events';
+export const AIMS_READY_MESSAGE_TYPE = 'escrew:aims-ready';
 
 export interface AimsBridgeEnvelope {
   type: typeof AIMS_MESSAGE_TYPE;
@@ -34,6 +36,23 @@ export function isBridgeEnvelope(value: unknown): value is AimsBridgeEnvelope {
 }
 
 /**
+ * Tells an AIMS-side sender that the eScrew receiver is loaded.
+ *
+ * This is intentionally one-way and contains no local roster data or session
+ * material. The target origin is pinned to AIMS.
+ */
+function announceReceiverReady(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    if (window.opener && !window.opener.closed) {
+      window.opener.postMessage({ type: AIMS_READY_MESSAGE_TYPE }, AIMS_ORIGIN);
+    }
+  } catch {
+    // The sender also retries delivery, so readiness is best-effort only.
+  }
+}
+
+/**
  * Registers the receiving side of the web-only AIMS bridge.
  * Returns a cleanup function suitable for a React effect.
  */
@@ -50,5 +69,6 @@ export function listenForAimsRoster(onRoster: (roster: ParsedAirAstanaRoster) =>
   };
 
   window.addEventListener('message', listener);
+  announceReceiverReady();
   return () => window.removeEventListener('message', listener);
 }
