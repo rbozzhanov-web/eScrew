@@ -11,6 +11,10 @@ body{background:#F6F7FA;color:#0F172A;-webkit-tap-highlight-color:transparent;-w
 @media(prefers-color-scheme:dark){body{background:#0B1220;color:#F8FAFC}}
 `;
 
+const OPEN_AIMS_EXTERNALLY = `
+(()=>{const AIMS='https://aims.airastana.com/';const standalone=(typeof window.matchMedia==='function'&&window.matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;if(!standalone)return;const nativeOpen=window.open.bind(window);window.open=(url,target,features)=>{const href=typeof url==='string'?url:String(url??'');if(href.startsWith(AIMS)){window.location.assign(href);return window;}return nativeOpen(url,target,features);};})();
+`;
+
 const REGISTER_SW = `
 if('serviceWorker' in navigator){window.addEventListener('load',async()=>{const had=Boolean(navigator.serviceWorker.controller);let notified=false;try{const r=await navigator.serviceWorker.register('sw.js',{scope:'./',updateViaCache:'none'});const notify=()=>{if(had&&!notified){notified=true;window.alert('A new version of eScrew is available.')}};r.addEventListener('updatefound',()=>{const w=r.installing;if(w)w.addEventListener('statechange',()=>{if(w.state==='installed')notify()})});const check=()=>{if(navigator.onLine)r.update().catch(()=>{})};check();window.addEventListener('online',check);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')check()})}catch{}})};
 `;
@@ -29,6 +33,7 @@ export default function Root({ children }: { children: ReactNode }) {
     <meta name="description" content="Personal flight crew schedule companion." />
     <link rel="manifest" href="manifest.webmanifest" />
     <style dangerouslySetInnerHTML={{__html:APP_SHELL_CSS}} />
+    <script dangerouslySetInnerHTML={{__html:OPEN_AIMS_EXTERNALLY}} />
     <ScrollViewStyleReset />{headNodes}
   </head><body {...bodyAttributes}>{children}{bodyNodes}<script dangerouslySetInnerHTML={{__html:REGISTER_SW}} /></body></html>;
 }
