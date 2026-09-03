@@ -125,8 +125,9 @@ If you see the roster imported but no flights appear:
 2. Use the Diagnostic Tool to verify API response
 3. Try with the other endpoint
 
-## Diagnostic Tool
+## Diagnostic Tools
 
+### API Response Monitor
 To monitor what data AIMS is sending:
 
 1. Open: `public/aims-dashboard-diagnostic.html` in your browser
@@ -139,6 +140,27 @@ This is useful for:
 - Debugging format issues
 - Reporting problems to developers
 - Understanding data structure
+
+### Endpoint Debugger (For 404 Errors)
+If you get "404 Not Found" or "Could not read roster" errors:
+
+1. Open: `public/aims-debug-endpoints.html` **in the authenticated AIMS page** (not in eScrew)
+2. The tool will check your AIMS instance for available endpoints
+3. Click "Test [Endpoint]" to test specific paths
+4. Click "Scan All Paths" to find which endpoints work on your AIMS
+5. Note which paths return status 200 (working) vs 404 (not found)
+
+This helps identify:
+- Which API endpoints exist on your AIMS instance
+- Whether the paths have changed
+- The correct endpoint for your version of AIMS
+- Response structure and data format
+
+**Common reasons for 404:**
+- Your AIMS instance doesn't have the Dashboard endpoint
+- The endpoint path is different on your server
+- You're not logged in (run debugger while authenticated)
+- Using a different AIMS version with different endpoints
 
 ## Security Notes
 

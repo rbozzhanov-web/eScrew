@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>AIMS Endpoint Debugger</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+      background: #1e1e1e;
+      color: #d4d4d4;
+    }
+    main { max-width: 1000px; margin: 0 auto; }
+    h1 { color: #4ec9b0; margin-top: 0; }
+    h2 { color: #569cd6; margin-top: 30px; border-bottom: 1px solid #3e3e42; padding-bottom: 10px; }
+    .status-box {
+      padding: 12px;
+      border-radius: 4px;
+      margin: 10px 0;
+      border-left: 4px solid #569cd6;
+      background: rgba(86, 156, 214, 0.1);
+    }
+    .status-box.error { border-left-color: #f48771; background: rgba(244, 135, 113, 0.1); }
+    .status-box.success { border-left-color: #4ec9b0; background: rgba(78, 201, 176, 0.1); }
+    .endpoint-test {
+      background: #252526;
+      border: 1px solid #3e3e42;
+      padding: 16px;
+      border-radius: 4px;
+      margin: 12px 0;
+    }
+    .endpoint-test h3 { margin: 0 0 8px 0; color: #569cd6; }
+    button {
+      padding: 10px 16px;
+      background: #007acc;
+      color: white;
+      border: 0;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 8px 8px 8px 0;
+      font-size: 12px;
+    }
+    button:hover { background: #005a9e; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .log {
+      background: #1e1e1e;
+      border: 1px solid #3e3e42;
+      border-radius: 4px;
+      padding: 12px;
+      margin: 8px 0;
+      font-size: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .log.success { border-color: #4ec9b0; }
+    .log.error { border-color: #f48771; }
+    code {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 2px 6px;
+      border-radius: 2px;
+      font-size: 11px;
+    }
+    .info { color: #858585; font-size: 12px; margin-top: 8px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 12px;
+    }
+    th, td {
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid #3e3e42;
+    }
+    th { background: #2d2d30; color: #4ec9b0; font-weight: 600; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>🔧 AIMS Endpoint Debugger</h1>
+  <p>Test AIMS API endpoints to diagnose 404 and other errors.</p>
+
+  <div class="status-box">
+    <strong>⚠️ Important:</strong> This tool must be run INSIDE an authenticated AIMS page.
+    Make sure you're logged in to <code>https://aims.airastana.com/ecrew</code> before using this.
+  </div>
+
+  <h2>Current Page Info</h2>
+  <div class="endpoint-test">
+    <table>
+      <tr>
+        <th>Property</th>
+        <th>Value</th>
+      </tr>
+      <tr>
+        <td>Current URL</td>
+        <td><code id="current-url"></code></td>
+      </tr>
+      <tr>
+        <td>Origin</td>
+        <td><code id="current-origin"></code></td>
+      </tr>
+      <tr>
+        <td>Authenticated</td>
+        <td id="auth-status">Checking...</td>
+      </tr>
+      <tr>
+        <td>Same Origin</td>
+        <td id="same-origin-status">Checking...</td>
+      </tr>
+    </table>
+  </div>
+
+  <h2>Endpoint Tests</h2>
+
+  <div class="endpoint-test">
+    <h3>1️⃣ SchedulerEvents Endpoint</h3>
+    <p class="info">Path: <code>/eCrew/CrewSchedule/SchedulerEvents</code></p>
+    <button onclick="testEndpoint('/eCrew/CrewSchedule/SchedulerEvents', 'scheduler-events-log')">Test SchedulerEvents</button>
+    <div id="scheduler-events-log" class="log"></div>
+  </div>
+
+  <div class="endpoint-test">
+    <h3>2️⃣ Dashboard Endpoint</h3>
+    <p class="info">Path: <code>/eCrew/Dashboard</code></p>
+    <button onclick="testEndpoint('/eCrew/Dashboard', 'dashboard-log')">Test Dashboard</button>
+    <div id="dashboard-log" class="log"></div>
+  </div>
+
+  <div class="endpoint-test">
+    <h3>3️⃣ Crew Schedule Path</h3>
+    <p class="info">Path: <code>/eCrew/CrewSchedule</code></p>
+    <button onclick="testEndpoint('/eCrew/CrewSchedule', 'crew-schedule-log')">Test Crew Schedule</button>
+    <div id="crew-schedule-log" class="log"></div>
+  </div>
+
+  <div class="endpoint-test">
+    <h3>4️⃣ Root eCrew Path</h3>
+    <p class="info">Path: <code>/eCrew</code></p>
+    <button onclick="testEndpoint('/eCrew', 'ecrew-log')">Test eCrew</button>
+    <div id="ecrew-log" class="log"></div>
+  </div>
+
+  <h2>Available Paths Scanner</h2>
+  <div class="endpoint-test">
+    <p>Scan common AIMS paths to find available endpoints:</p>
+    <button onclick="scanPaths()">Scan All Paths</button>
+    <div id="scan-results" class="log"></div>
+  </div>
+
+  <h2>What to Do If You See 404 Errors</h2>
+  <ol>
+    <li><strong>Check Authentication</strong> - Make sure you're logged in to AIMS</li>
+    <li><strong>Check URL Structure</strong> - Verify the path is correct (case-sensitive)</li>
+    <li><strong>Try Alternative Endpoint</strong> - If Dashboard fails, try SchedulerEvents</li>
+    <li><strong>Report Issue</strong> - Share the results with support including:
+      <ul>
+        <li>Your AIMS URL</li>
+        <li>Which endpoint failed (404)</li>
+        <li>Response headers and status</li>
+        <li>Browser console errors</li>
+      </ul>
+    </li>
+  </ol>
+</main>
+
+<script>
+// Update page info
+document.getElementById('current-url').textContent = window.location.href;
+document.getElementById('current-origin').textContent = window.location.origin;
+
+// Check if authenticated
+const isAims = window.location.origin === 'https://aims.airastana.com';
+document.getElementById('auth-status').textContent = isAims ? '✓ AIMS Domain' : '✗ Not AIMS Domain';
+document.getElementById('same-origin-status').textContent = isAims ? '✓ Same Origin' : '✗ Different Origin';
+
+async function testEndpoint(path, logId) {
+  const logEl = document.getElementById(logId);
+  logEl.innerHTML = '';
+  logEl.className = 'log';
+
+  function log(text, isError = false) {
+    const line = document.createElement('div');
+    line.textContent = text;
+    logEl.appendChild(line);
+    if (isError) logEl.className = 'log error';
+    else logEl.className = 'log success';
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  log('Testing: ' + path);
+  log('');
+  log('Fetching...');
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+    const response = await fetch(path, {
+      method: 'GET',
+      credentials: 'same-origin',
+      headers: { Accept: 'application/json' },
+      signal: controller.signal
+    });
+
+    clearTimeout(timeoutId);
+
+    log(`Status: ${response.status} ${response.statusText}`);
+    log('');
+    log('Response Headers:');
+    for (const [key, value] of response.headers.entries()) {
+      log(`  ${key}: ${value}`);
+    }
+    log('');
+
+    const text = await response.text();
+    if (text) {
+      try {
+        const json = JSON.parse(text);
+        log('Response Body (JSON):');
+        log(JSON.stringify(json, null, 2));
+
+        // Check response structure
+        log('');
+        log('Response Structure:');
+        const keys = Object.keys(json);
+        keys.forEach(key => {
+          const value = json[key];
+          if (Array.isArray(value)) {
+            log(`  ${key}: Array (${value.length} items)`);
+          } else if (typeof value === 'object') {
+            log(`  ${key}: Object`);
+          } else {
+            log(`  ${key}: ${typeof value}`);
+          }
+        });
+      } catch (e) {
+        log('Response Body (Text):');
+        log(text.substring(0, 500));
+      }
+    } else {
+      log('Response: (empty)');
+    }
+
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      log('Error: Request timeout (>10s)', true);
+    } else {
+      log(`Error: ${error.message}`, true);
+      log('');
+      log('Possible causes:');
+      log('  - Network error (check browser console)');
+      log('  - CORS error (cross-origin)');
+      log('  - Invalid path');
+      log('  - AIMS API not responding');
+    }
+  }
+}
+
+async function scanPaths() {
+  const resultsEl = document.getElementById('scan-results');
+  resultsEl.innerHTML = '';
+  resultsEl.className = 'log';
+
+  const paths = [
+    '/eCrew',
+    '/eCrew/Dashboard',
+    '/eCrew/Schedule',
+    '/eCrew/CrewSchedule',
+    '/eCrew/CrewSchedule/SchedulerEvents',
+    '/eCrew/CrewSchedule/Events',
+    '/api/eCrew/Dashboard',
+    '/api/schedule',
+  ];
+
+  function log(text) {
+    const line = document.createElement('div');
+    line.textContent = text;
+    resultsEl.appendChild(line);
+    resultsEl.scrollTop = resultsEl.scrollHeight;
+  }
+
+  log('Scanning paths...');
+  log('');
+
+  const results = [];
+
+  for (const path of paths) {
+    log(`Testing ${path}...`);
+    try {
+      const response = await fetch(path, {
+        method: 'GET',
+        credentials: 'same-origin',
+        headers: { Accept: 'application/json' },
+      });
+
+      const status = response.status;
+      const isSuccess = status < 300;
+      const symbol = isSuccess ? '✓' : status === 404 ? '✗' : '⚠';
+
+      log(`  ${symbol} ${status} - ${path}`);
+      results.push({ path, status, success: isSuccess });
+    } catch (e) {
+      log(`  ✗ ERROR - ${path} (${e.message})`);
+      results.push({ path, status: 'ERROR', success: false });
+    }
+  }
+
+  log('');
+  log('Summary:');
+  log('');
+  const working = results.filter(r => r.success);
+  const notFound = results.filter(r => r.status === 404);
+  const errors = results.filter(r => !r.success && r.status !== 404);
+
+  if (working.length > 0) {
+    log('✓ Working endpoints:');
+    working.forEach(r => log(`    ${r.path} (${r.status})`));
+  }
+
+  if (notFound.length > 0) {
+    log('✗ Not found (404):');
+    notFound.forEach(r => log(`    ${r.path}`));
+  }
+
+  if (errors.length > 0) {
+    log('⚠ Errors:');
+    errors.forEach(r => log(`    ${r.path} (${r.status})`));
+  }
+
+  resultsEl.className = 'log success';
+}
+</script>
+</body>
+</html>
