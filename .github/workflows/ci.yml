@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [main, 'feature/**']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --ignore-scripts
+      - run: npm run typecheck
+      - run: npm run build:web
+      - name: Verify PWA output
+        run: |
+          test -f dist/manifest.webmanifest
+          test -f dist/sw.js
+          grep -q 'eScrew' dist/index.html
+          grep -q 'serviceWorker' dist/index.html
+          grep -q "escrew-" dist/sw.js
