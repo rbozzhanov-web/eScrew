@@ -15,7 +15,10 @@ body{background:#F6F7FA;color:#0F172A;-webkit-tap-highlight-color:transparent;-w
 const VISUAL_SKIN = `
 (()=>{
   const root=()=>document.getElementById('root');
-  const set=(el,name,value)=>el.style.setProperty(name,value,'important');
+  const set=(el,name,value)=>{
+    if(el.style.getPropertyValue(name)===value&&el.style.getPropertyPriority(name)==='important')return;
+    el.style.setProperty(name,value,'important');
+  };
   const eq=(value,...candidates)=>candidates.includes(value.replace(/\\s+/g,''));
   const normalized=(value)=>value.replace(/\\s+/g,'');
 
