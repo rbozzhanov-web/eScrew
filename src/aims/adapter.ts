@@ -1,4 +1,13 @@
-import type { NormalizedAbsence, NormalizedDuty, NormalizedFlight, NormalizedRoster } from '@/src/core/rosterContract';
+import type {
+  NormalizedAbsence,
+  NormalizedCrewMember,
+  NormalizedDuty,
+  NormalizedFlight,
+  NormalizedRoster,
+  NormalizedSupplement,
+  NormalizedSupplementCategory,
+  NormalizedSupplementField,
+} from '@/src/core/rosterContract';
 import type { DashboardScheduleEvent } from './dashboardParser';
 
 export interface AimsSchedulerEvent {
@@ -11,6 +20,12 @@ export interface AimsSchedulerEvent {
   details?: string;
   location?: string;
   IsDeadhead?: boolean;
+  HotelInfo?: unknown;
+  HotelNo?: unknown;
+  Memo?: unknown;
+  Notification?: unknown;
+  RequiredRest?: unknown;
+  [key: string]: unknown;
 }
 
 export interface AimsSchedulerResponse {
@@ -18,10 +33,13 @@ export interface AimsSchedulerResponse {
   PeriodStart?: string;
   PeriodEnd?: string;
   RosterDateTime?: string;
+  [key: string]: unknown;
 }
 
 const ABSENCE_CODES = new Set<NormalizedAbsence['code']>(['SICK', 'UFF', 'VAC', 'CHLD']);
 const SECTOR_RE = /(\d{1,5})\s*-\s*([A-Z]{3,4})\s*\(([A]?)(\d{4})(⁺¹)?\)\s*-\s*([A-Z]{3,4})\s*\(([A]?)(\d{4})(⁺¹)?\)/g;
+const SENSITIVE_KEY_RE = /pass|pwd|token|auth|cookie|session|csrf|secret|verification/i;
+const FIELD_LIMIT = 500;
 
 /** AIMS-specific adapter. No AIMS DTO crosses this return boundary. */
 export function adaptAimsSchedulerResponse(payload: AimsSchedulerResponse): NormalizedRoster {
@@ -31,22 +49,53 @@ export function adaptAimsSchedulerResponse(payload: AimsSchedulerResponse): Norm
 
   const duties: NormalizedDuty[] = [];
   const absences: NormalizedAbsence[] = [];
+  const supplements: NormalizedSupplement[] = [];
 
   for (const event of payload.SchedulerEvents ?? []) {
     const eventDate = isoDatePart(event.start);
-    if (!eventDate) continue;
     const code = eventCode(event);
-    if (code && ABSENCE_CODES.has(code as NormalizedAbsence['code'])) {
+    if (eventDate && code && ABSENCE_CODES.has(code as NormalizedAbsence['code'])) {
       absences.push({ code: code as NormalizedAbsence['code'], date: eventDate });
-      continue;
     }
-    if (event.type !== 'Flight') continue;
-    const flights = parseFlightSectors(event);
-    if (!flights.length) continue;
-    duties.push({ date: flights[0].date, start: normalizeEventBoundary(event.start), end: normalizeEventBoundary(event.end), flights });
+
+    const flights = event.type === 'Flight' ? parseFlightSectors(event) : [];
+    if (flights.length) {
+      duties.push({
+        date: flights[0].date,
+        start: normalizeEventBoundary(event.start),
+        end: normalizeEventBoundary(event.end),
+        flights,
+      });
+    }
+
+    const fields = flattenSafeFields(event);
+    if (fields.length) {
+      const supplement: NormalizedSupplement = {
+        category: supplementCategory(event),
+        fields,
+      };
+      if (eventDate) supplement.date = eventDate;
+      if (flights[0]?.flightNumber) supplement.flightNumber = flights[0].flightNumber;
+      const title = supplementTitle(event);
+      if (title) supplement.title = title;
+      supplements.push(supplement);
+    }
   }
 
-  return { period: { start, end }, duties, absences };
+  const metadataSource: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(payload)) {
+    if (key === 'SchedulerEvents' || key === 'PeriodStart' || key === 'PeriodEnd' || SENSITIVE_KEY_RE.test(key)) continue;
+    metadataSource[key] = value;
+  }
+  const metadata = flattenSafeFields(metadataSource);
+
+  return {
+    period: { start, end },
+    duties,
+    absences,
+    metadata: metadata.length ? metadata : undefined,
+    supplements: supplements.length ? supplements : undefined,
+  };
 }
 
 export function decodeAimsSchedulerText(text: string): NormalizedRoster {
@@ -95,6 +144,8 @@ function parseFlightSectors(event: AimsSchedulerEvent): NormalizedFlight[] {
   const dutyDate = isoDatePart(event.start);
   if (!dutyDate) return [];
   const flights: NormalizedFlight[] = [];
+  const aircraftType = directString(event, ['aircraftType', 'AircraftType', 'aircraft', 'Aircraft', 'acType', 'ACType']);
+  const crew = normalizeEmbeddedCrew(event);
   SECTOR_RE.lastIndex = 0;
   let match: RegExpExecArray | null;
   while ((match = SECTOR_RE.exec(event.details ?? ''))) {
@@ -110,12 +161,100 @@ function parseFlightSectors(event: AimsSchedulerEvent): NormalizedFlight[] {
       departure: hhmmToTime(outHhmm),
       arrival: hhmmToTime(inHhmm),
       arrivalDate: arrivalDate !== date ? arrivalDate : undefined,
+      aircraftType,
       deadhead: Boolean(event.IsDeadhead),
       actualTimes: outPrefix === 'A' && inPrefix === 'A',
-      crew: [],
+      crew: crew.length ? crew : undefined,
     });
   }
   return flights;
+}
+
+function normalizeEmbeddedCrew(event: AimsSchedulerEvent): NormalizedCrewMember[] {
+  const candidates = ['crew', 'Crew', 'crewMembers', 'CrewMembers', 'crewList', 'CrewList'];
+  const raw = candidates.map(key => event[key]).find(Array.isArray);
+  if (!Array.isArray(raw)) return [];
+  const members: NormalizedCrewMember[] = [];
+  for (const item of raw) {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) continue;
+    const record = item as Record<string, unknown>;
+    const name = directString(record, ['name', 'Name', 'fullName', 'FullName', 'crewName', 'CrewName']);
+    if (!name) continue;
+    const position = directString(record, ['position', 'Position', 'rank', 'Rank', 'rosterRank', 'RosterRank']);
+    const roleText = `${directString(record, ['role', 'Role', 'crewRole', 'CrewRole']) ?? ''} ${position ?? ''}`.toLowerCase();
+    const role = /cabin|purser|flight attendant|\bfa\b|\bcc\b/.test(roleText)
+      ? 'Cabin'
+      : /captain|\bcpt\b|first officer|\bfo\b|pilot|flight deck/.test(roleText)
+        ? 'Flight deck'
+        : undefined;
+    if (!role) continue;
+    const member: NormalizedCrewMember = { name, role };
+    const id = directString(record, ['id', 'Id', 'staffId', 'StaffId', 'crewId', 'CrewId']);
+    if (id) member.id = id;
+    if (position) member.position = position;
+    members.push(member);
+  }
+  return members;
+}
+
+function supplementCategory(event: AimsSchedulerEvent): NormalizedSupplementCategory {
+  if (event.HotelInfo || meaningful(event.HotelNo)) return 'hotel';
+  if (meaningful(event.Memo)) return 'memo';
+  if (meaningful(event.Notification)) return 'notification';
+  if (meaningful(event.RequiredRest)) return 'rest';
+  const keys = Object.keys(event).join(' ');
+  if (/pickup|dropoff|transport|transfer|shuttle/i.test(keys)) return 'transport';
+  return 'event';
+}
+
+function supplementTitle(event: AimsSchedulerEvent): string | undefined {
+  const firstLine = typeof event.text === 'string' ? event.text.split(/\r?\n/, 1)[0]?.trim() : undefined;
+  return firstLine || event.type || event.location;
+}
+
+function flattenSafeFields(value: unknown): NormalizedSupplementField[] {
+  const fields: NormalizedSupplementField[] = [];
+  const visit = (current: unknown, path: string, depth: number) => {
+    if (fields.length >= FIELD_LIMIT || depth > 7 || current === null || current === undefined) return;
+    if (typeof current === 'string') {
+      if (path && current.length) fields.push({ label: path, value: current });
+      return;
+    }
+    if (typeof current === 'number') {
+      if (path && Number.isFinite(current)) fields.push({ label: path, value: current });
+      return;
+    }
+    if (typeof current === 'boolean') {
+      if (path) fields.push({ label: path, value: current });
+      return;
+    }
+    if (Array.isArray(current)) {
+      current.forEach((item, index) => visit(item, `${path}[${index}]`, depth + 1));
+      return;
+    }
+    if (typeof current === 'object') {
+      for (const [key, item] of Object.entries(current as Record<string, unknown>)) {
+        if (SENSITIVE_KEY_RE.test(key)) continue;
+        visit(item, path ? `${path}.${key}` : key, depth + 1);
+        if (fields.length >= FIELD_LIMIT) break;
+      }
+    }
+  };
+  visit(value, '', 0);
+  return fields;
+}
+
+function directString(record: Record<string, unknown>, keys: string[]): string | undefined {
+  for (const key of keys) {
+    const value = record[key];
+    if (typeof value === 'string' && value.trim()) return value.trim();
+    if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+  }
+  return undefined;
+}
+
+function meaningful(value: unknown): boolean {
+  return value !== undefined && value !== null && value !== false && value !== 0 && value !== '';
 }
 
 function eventCode(event: AimsSchedulerEvent): string | undefined {

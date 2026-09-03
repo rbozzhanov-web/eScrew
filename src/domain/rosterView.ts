@@ -1,11 +1,14 @@
 import type { Duty } from './types';
+import type { NormalizedRoster } from '@/src/core/rosterContract';
 import type { ParsedAirAstanaRoster } from '@/src/import/parseAirAstanaRoster';
 import { adaptPdfRoster } from '@/src/import/pdfAdapter';
 import { normalizedRosterToDuties } from '@/src/core/rosterCore';
 
-/** Compatibility entry point for the existing PDF flow. Source conversion happens before Core. */
-export function rosterToDuties(roster: ParsedAirAstanaRoster): Duty[] {
-  return normalizedRosterToDuties(adaptPdfRoster(roster));
+type RosterWithNormalized = ParsedAirAstanaRoster & { normalized?: NormalizedRoster };
+
+/** Compatibility entry point for PDF and normalized AIMS flows. */
+export function rosterToDuties(roster: RosterWithNormalized): Duty[] {
+  return normalizedRosterToDuties(roster.normalized ?? adaptPdfRoster(roster));
 }
 
 export function formatMinutes(minutes?: number): string {
