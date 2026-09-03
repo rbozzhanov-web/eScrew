@@ -5,8 +5,9 @@
  * to extract schedule information from the AIMS Dashboard API.
  */
 
-import { AimsExtractionEngine, type AimsExtractedRoster } from './engine';
+import { AimsExtractionEngine } from './engine';
 import { parseDashboardResponse, type DashboardRosterResponse } from './dashboardParser';
+import type { AimsExtractedRoster } from './types';
 
 /**
  * Example 1: Reading dashboard schedule from authenticated AIMS page
