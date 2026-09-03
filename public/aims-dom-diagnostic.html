@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <title>eScrew AIMS DOM Diagnostic</title>
+  <style>
+    :root{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,system-ui,sans-serif;color-scheme:light dark}
+    body{margin:0;padding:24px;background:#F2F6F6;color:#102326}
+    main{max-width:640px;margin:0 auto}
+    h1{font-size:28px;margin:10px 0 8px;letter-spacing:-.7px}
+    p,li{line-height:1.5}
+    .card{margin-top:16px;padding:18px;border-radius:22px;background:rgba(255,255,255,.84);box-shadow:0 14px 36px rgba(0,0,0,.08)}
+    button{display:block;box-sizing:border-box;width:100%;min-height:48px;border:0;border-radius:15px;padding:14px 16px;font:inherit;font-weight:700;text-align:center;background:#007F86;color:white}
+    .muted{color:#60777A;font-size:13px}
+    @media(prefers-color-scheme:dark){body{background:#081519;color:#F3FAFA}.card{background:rgba(21,44,50,.9)}.muted{color:#A8BABC}}
+  </style>
+</head>
+<body>
+<main>
+  <h1>AIMS DOM Diagnostic</h1>
+  <p class="muted">Desktop-only diagnostic for locating crew data already rendered by AIMS.</p>
+  <div class="card">
+    <strong>Set up once</strong>
+    <ol>
+      <li>Tap <strong>Copy AIMS DOM Diagnostic</strong>.</li>
+      <li>Create a browser bookmark named <strong>eScrew DOM Diagnostic</strong>.</li>
+      <li>Edit the bookmark and replace its URL with the copied code.</li>
+    </ol>
+    <button id="copy">Copy AIMS DOM Diagnostic</button>
+  </div>
+  <div class="card">
+    <strong>Run on desktop AIMS</strong>
+    <ol>
+      <li>Open AIMS and navigate to the flight/details screen where crew names are visibly shown.</li>
+      <li>Run <strong>eScrew DOM Diagnostic</strong>.</li>
+      <li>The diagnostic is copied to your clipboard. Paste that JSON into ChatGPT.</li>
+    </ol>
+    <p class="muted">The output contains only DOM structure, counts and pattern flags. It never emits visible text, crew names, staff IDs, form values, credentials, cookies, tokens, URLs, request bodies or session data.</p>
+  </div>
+</main>
+<script>
+(()=>{
+const source=String.raw`(()=>{
+const A='https://aims.airastana.com';
+if(location.origin!==A){alert('Open AIMS first, show the crew details, then run eScrew DOM Diagnostic.');return;}
+const SKIP=new Set(['SCRIPT','STYLE','NOSCRIPT','TEMPLATE','INPUT','TEXTAREA','SELECT','OPTION']);
+const ROLE_ALLOW=new Set(['dialog','table','row','grid','list','listitem','tabpanel','region']);
+const RANK_RE=/\b(?:CP|FO|PU|IS|FJ|FY|PS|LI)\b/i;
+const RANK_ID_RE=/\b(?:CP|FO|PU|IS|FJ|FY|PS|LI)\b[\s:|\-]{0,12}\d{1,6}\b/i;
+const CREW_RE=/\b(?:crew|captain|first officer|purser|cabin crew|flight deck|cabin attendant|cabin attendant crew|flight crew)\b/i;
+const FLIGHTISH_RE=/\b(?:KC)?\d{1,5}\b|\b[A-Z]{3,4}\s*(?:→|-|to)\s*[A-Z]{3,4}\b|\b\d{1,2}:\d{2}\b/i;
+const norm=s=>String(s||'').replace(/\s+/g,' ').trim();
+const bucket=n=>n===0?'0':n<=20?'1-20':n<=60?'21-60':n<=120?'61-120':n<=300?'121-300':'>300';
+const safeRole=e=>{const r=(e.getAttribute&&e.getAttribute('role')||'').toLowerCase();return ROLE_ALLOW.has(r)?r:undefined;};
+const nth=e=>{if(!e.parentElement)return 1;let n=0;for(const c of e.parentElement.children){if(c.tagName===e.tagName)n+=1;if(c===e)return n;}return 1;};
+const path=e=>{const parts=[];let x=e;while(x&&x.nodeType===1&&parts.length<7){const t=x.tagName.toLowerCase();parts.unshift(t+':nth-of-type('+nth(x)+')');x=x.parentElement;}return parts.join('>');};
+const personLike=t=>{const s=norm(t);if(s.length<5||s.length>90||FLIGHTISH_RE.test(s))return false;const words=s.match(/[A-Za-zÀ-ÖØ-öø-ÿĀ-žА-ЯЁа-яё'-]{2,}/g)||[];if(words.length<2||words.length>7)return false;const alpha=words.join('');if(alpha.length<5)return false;const title=words.filter(w=>/^[A-ZА-ЯЁ][a-zа-яё'-]+$/.test(w)).length;const upper=words.filter(w=>/^[A-ZА-ЯЁ][A-ZА-ЯЁ'-]{2,}$/.test(w)).length;return title>=2||upper>=2;};
+const sig=t=>{const s=norm(t);return{crewKeyword:CREW_RE.test(s),rankToken:RANK_RE.test(s),rankIdPattern:RANK_ID_RE.test(s),personLike:personLike(s),textLengthBucket:bucket(s.length)};};
+const structural=e=>{const role=safeRole(e);return e.tagName==='TABLE'||e.tagName==='TBODY'||e.tagName==='UL'||e.tagName==='OL'||role==='dialog'||role==='table'||role==='grid'||role==='list';};
+const rowLike=e=>e.tagName==='TR'||e.tagName==='LI'||safeRole(e)==='row'||safeRole(e)==='listitem';
+const nearestContainer=e=>{let x=e.parentElement;for(let i=0;x&&i<7;i++,x=x.parentElement){if(structural(x)){let rows=0;try{rows=[...x.querySelectorAll('tr,li,[role="row"],[role="listitem"]')].length;}catch{}return{tag:x.tagName.toLowerCase(),role:safeRole(x),path:path(x),rowCount:rows,childElementCount:x.children.length};}}return undefined;};
+const childTags=e=>{const out={};for(const c of e.children){const k=c.tagName.toLowerCase();out[k]=(out[k]||0)+1;}return out;};
+const docs=[];const seen=new Set();
+const walkDoc=(doc,depth,label)=>{if(!doc||seen.has(doc)||docs.length>=20)return;seen.add(doc);const entry={label,depth,elementsScanned:0,formControlsSkipped:0,iframeCount:0,inaccessibleIframes:0,candidates:[],containers:[]};docs.push(entry);
+let all=[];try{all=[...doc.querySelectorAll('*')];}catch{return;}
+entry.elementsScanned=all.length;
+for(const e of all){if(SKIP.has(e.tagName)){if(['INPUT','TEXTAREA','SELECT','OPTION'].includes(e.tagName))entry.formControlsSkipped+=1;continue;}const text=norm(e.textContent);if(!text)continue;const s=sig(text);const directish=rowLike(e)||e.children.length<=4;const interesting=directish&&(s.crewKeyword||s.rankIdPattern||s.rankToken||s.personLike);if(interesting&&entry.candidates.length<60){entry.candidates.push({tag:e.tagName.toLowerCase(),role:safeRole(e),path:path(e),childElementCount:e.children.length,childTags:childTags(e),rowLike:rowLike(e),signals:s,container:nearestContainer(e)});}if(structural(e)&&entry.containers.length<40){let rows=[];try{rows=[...e.querySelectorAll('tr,li,[role="row"],[role="listitem"]')].slice(0,80);}catch{}let crewKeywordRows=0,rankRows=0,rankIdRows=0,personLikeRows=0;for(const row of rows){const rs=sig(row.textContent);crewKeywordRows+=rs.crewKeyword?1:0;rankRows+=rs.rankToken?1:0;rankIdRows+=rs.rankIdPattern?1:0;personLikeRows+=rs.personLike?1:0;}if(rows.length>=2&&(crewKeywordRows||rankRows||rankIdRows||personLikeRows)){entry.containers.push({tag:e.tagName.toLowerCase(),role:safeRole(e),path:path(e),childElementCount:e.children.length,rowCount:rows.length,crewKeywordRows,rankRows,rankIdRows,personLikeRows,textLengthBucket:bucket(text.length)});}}
+}
+let frames=[];try{frames=[...doc.querySelectorAll('iframe')];}catch{}entry.iframeCount=frames.length;frames.forEach((fr,i)=>{try{const fd=fr.contentDocument;if(fd)walkDoc(fd,depth+1,label+'.frame'+(i+1));else entry.inaccessibleIframes+=1;}catch{entry.inaccessibleIframes+=1;}});
+};
+walkDoc(document,0,'main');
+const summary={version:4,note:'DOM structure/pattern diagnostic only. No visible text, names, staff IDs, form values, credentials, cookies, tokens, URLs, request bodies or session data are emitted.',documentCount:docs.length,documents:docs.map(d=>({label:d.label,depth:d.depth,elementsScanned:d.elementsScanned,formControlsSkipped:d.formControlsSkipped,iframeCount:d.iframeCount,inaccessibleIframes:d.inaccessibleIframes,candidateCount:d.candidates.length,containerCount:d.containers.length,candidates:d.candidates,containers:d.containers}))};
+const out=JSON.stringify(summary,null,2);
+try{navigator.clipboard.writeText(out).then(()=>alert('AIMS DOM diagnostic copied. Paste it into ChatGPT.')).catch(()=>prompt('Copy this diagnostic JSON:',out));}catch{prompt('Copy this diagnostic JSON:',out);}
+})()`;
+const bm='javascript:'+source.replace(/\s+/g,' '),button=document.getElementById('copy');
+button.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(bm);button.textContent='Copied';}catch{prompt('Copy this bookmark URL:',bm);}});
+})();
+</script>
+</body>
+</html>
