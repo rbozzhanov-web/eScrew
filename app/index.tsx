@@ -1,1 +1,1 @@
-export { default } from '@/src/components/MainScreen';
+export { default } from '@/src/components/MainScreenEntry';
