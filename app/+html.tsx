@@ -105,7 +105,7 @@ const AIMS_CLIPBOARD_BRIDGE = `
 `;
 
 const REGISTER_SW = `
-if('serviceWorker' in navigator){window.addEventListener('load',async()=>{try{const had=Boolean(navigator.serviceWorker.controller);let reloading=false;const r=await navigator.serviceWorker.register('sw.js',{scope:'./',updateViaCache:'none'});navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!had||reloading)return;reloading=true;window.location.reload()});const check=()=>{if(navigator.onLine)r.update().catch(()=>{})};check();window.addEventListener('online',check);window.addEventListener('pageshow',check);window.addEventListener('focus',check);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')check()})}catch{}})};
+if('serviceWorker' in navigator){window.addEventListener('load',async()=>{try{const had=Boolean(navigator.serviceWorker.controller);let updateInstalled=false;let reloading=false;const r=await navigator.serviceWorker.register('sw.js',{scope:'./',updateViaCache:'none'});r.addEventListener('updatefound',()=>{const w=r.installing;if(w)w.addEventListener('statechange',()=>{if(had&&w.state==='installed')updateInstalled=true})});navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!had||!updateInstalled||reloading)return;reloading=true;window.location.reload()});if(navigator.onLine)r.update().catch(()=>{});window.addEventListener('online',()=>r.update().catch(()=>{}))}catch{}})};
 `;
 
 export default function Root({ children }: { children: ReactNode }) {
