@@ -4,7 +4,7 @@ import MainScreenEntry from './MainScreenEntry';
 
 const SHORTCUT_RESULT_KEY = 'escrew.aims.shortcut.lastResult';
 
-type ShortcutNotice = 'success' | 'error';
+type ShortcutNotice = { kind: 'success' } | { kind: 'error'; message: string };
 
 const ACCENT = '#2D7DFF';
 
@@ -187,13 +187,15 @@ export default function MainScreenUi() {
       const result = window.sessionStorage?.getItem(SHORTCUT_RESULT_KEY);
       if (!result) return;
       window.sessionStorage.removeItem(SHORTCUT_RESULT_KEY);
-      setNotice(result === 'success' ? 'success' : 'error');
+      if (result === 'success') setNotice({ kind: 'success' });
+      else if (result.startsWith('error:')) setNotice({ kind: 'error', message: result.slice('error:'.length).trim() || 'Unknown Shortcut import error.' });
+      else setNotice({ kind: 'error', message: result });
     } catch {}
   }, []);
 
   useEffect(() => {
     if (!notice) return;
-    const timer = setTimeout(() => setNotice(undefined), 4800);
+    const timer = setTimeout(() => setNotice(undefined), notice.kind === 'error' ? 12000 : 4800);
     return () => clearTimeout(timer);
   }, [notice]);
 
@@ -217,12 +219,14 @@ export default function MainScreenUi() {
     };
   }, []);
 
+  const error = notice?.kind === 'error' ? notice.message : '';
+
   return <View style={styles.root}>
     <MainScreenEntry />
     {notice && <View pointerEvents="box-none" style={styles.noticeLayer}>
-      <Pressable onPress={() => setNotice(undefined)} style={[styles.notice, { backgroundColor: dark ? 'rgba(22,30,45,.97)' : 'rgba(255,255,255,.98)', borderColor: notice === 'success' ? (dark ? '#67A5FF' : ACCENT) : (dark ? '#E08383' : '#B84B52') }]}>
-        <Text style={[styles.noticeTitle, { color: dark ? '#F8FAFC' : '#0F172A' }]}>{notice === 'success' ? 'Roster updated' : 'Could not import roster'}</Text>
-        <Text style={[styles.noticeText, { color: dark ? '#98A2B3' : '#6B7280' }]}>{notice === 'success' ? 'AIMS roster imported with eScrew Capture.' : 'Open Crew Schedule and try Share → eScrew Capture again.'}</Text>
+      <Pressable onPress={() => setNotice(undefined)} style={[styles.notice, { backgroundColor: dark ? 'rgba(22,30,45,.97)' : 'rgba(255,255,255,.98)', borderColor: notice.kind === 'success' ? (dark ? '#67A5FF' : ACCENT) : (dark ? '#E08383' : '#B84B52') }]}>
+        <Text style={[styles.noticeTitle, { color: dark ? '#F8FAFC' : '#0F172A' }]}>{notice.kind === 'success' ? 'Roster updated' : 'Could not import roster'}</Text>
+        <Text selectable style={[styles.noticeText, { color: dark ? '#98A2B3' : '#6B7280' }]}>{notice.kind === 'success' ? 'AIMS roster imported with eScrew Capture.' : error}</Text>
       </Pressable>
     </View>}
   </View>;
