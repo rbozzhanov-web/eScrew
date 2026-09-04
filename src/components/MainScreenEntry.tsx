@@ -19,6 +19,7 @@ function consumeShortcutCapture() {
     const message = error instanceof Error ? error.message : String(error);
     window.sessionStorage?.setItem(RESULT_KEY, `error:${message}`);
     console.error('eScrew shortcut import failed:', error);
+    window.alert(`eScrew shortcut import failed:\n${message}`);
   }
 }
 
