@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View, useColorScheme } from 'react-native';
 import MainScreenEntry from './MainScreenEntry';
+import { rosterToDuties } from '@/src/domain/rosterView';
+import { stationLocalDateTimeMs } from '@/src/domain/stationTime';
+import type { Duty } from '@/src/domain/types';
+import { loadStoredRosters } from '@/src/storage/rosterStorage';
 
 const SHORTCUT_RESULT_KEY = 'escrew.aims.shortcut.lastResult';
 
@@ -47,39 +51,139 @@ function styleSecondary(button?: HTMLElement) {
   tintText(button, dark ? '#67A5FF' : ACCENT);
 }
 
-function makeFlightSheetScrollable(root: HTMLElement) {
-  const hints = [...root.querySelectorAll<HTMLElement>('*')]
-    .filter((element) => element.children.length === 0 && /swipe flight.*swipe down to close/i.test(element.textContent?.trim() ?? ''));
+function timedDuty(duty: Duty) {
+  if (!duty.date || !duty.sectors.length) return undefined;
+  const first = duty.sectors[0];
+  const last = duty.sectors[duty.sectors.length - 1];
+  const reportMs = stationLocalDateTimeMs(first.departure, duty.reportDate ?? duty.date, duty.reportTime);
+  const releaseMs = stationLocalDateTimeMs(last.arrival, duty.releaseDate ?? duty.date, duty.releaseTime);
+  if (reportMs === undefined || releaseMs === undefined) return undefined;
+  return { duty, reportMs, releaseMs };
+}
 
-  hints.forEach((hint) => {
-    const sheetContent = hint.parentElement ?? undefined;
+function focusedDuty(): Duty | undefined {
+  const timed = loadStoredRosters()
+    .flatMap((roster) => rosterToDuties(roster).map(timedDuty).filter((item): item is NonNullable<typeof item> => Boolean(item)))
+    .sort((a, b) => a.reportMs - b.reportMs);
+  const now = Date.now();
+  return timed.filter((item) => item.reportMs <= now && item.releaseMs >= now).sort((a, b) => b.reportMs - a.reportMs)[0]?.duty
+    ?? timed.find((item) => item.reportMs > now)?.duty
+    ?? timed.at(-1)?.duty;
+}
+
+function currentCrew() {
+  const duty = focusedDuty();
+  if (!duty) return [];
+  const seen = new Set<string>();
+  return duty.sectors.flatMap((sector) => sector.crew).filter((member) => {
+    const key = member.id || `${member.name}|${member.position ?? member.role ?? ''}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function replacePreviousFlightsWithCrew(root: HTMLElement) {
+  const previousTitle = leafWithText(root, ['PREVIOUS FLIGHTS']);
+  if (!previousTitle) return;
+  const previousSection = previousTitle.parentElement ?? undefined;
+  const host = previousSection?.parentElement ?? undefined;
+  if (!previousSection || !host) return;
+  setImportant(previousSection, 'display', 'none');
+
+  let crewSection = host.querySelector<HTMLElement>('[data-escrew-home-crew="1"]') ?? undefined;
+  if (!crewSection) {
+    crewSection = document.createElement('div');
+    crewSection.dataset.escrewHomeCrew = '1';
+    host.insertBefore(crewSection, previousSection.nextSibling);
+  }
+
+  const dark = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
+  const text = dark ? '#F3FAFA' : '#102326';
+  const muted = dark ? '#A8BABC' : '#60777A';
+  const line = dark ? 'rgba(174,214,216,.14)' : 'rgba(16,74,79,.11)';
+  const accent = dark ? '#67A5FF' : ACCENT;
+  const accentSoft = dark ? 'rgba(103,165,255,.12)' : 'rgba(45,125,255,.08)';
+  const crew = currentCrew();
+
+  crewSection.replaceChildren();
+  Object.assign(crewSection.style, { flex: '1 1 auto', minHeight: '0', display: 'flex', flexDirection: 'column', gap: '4px' });
+
+  const title = document.createElement('div');
+  title.textContent = `CREW ON THIS FLIGHT · ${crew.length}`;
+  Object.assign(title.style, { color: muted, fontSize: '11px', lineHeight: '16px', fontWeight: '700', letterSpacing: '.8px', paddingTop: '2px' });
+  crewSection.appendChild(title);
+
+  const list = document.createElement('div');
+  Object.assign(list.style, { minHeight: '0', overflowY: 'auto', overscrollBehaviorY: 'contain', WebkitOverflowScrolling: 'touch' } as CSSStyleDeclaration & Record<string, string>);
+  crewSection.appendChild(list);
+
+  if (!crew.length) {
+    const empty = document.createElement('div');
+    empty.textContent = 'Crew is not listed for this flight in the imported roster.';
+    Object.assign(empty.style, { color: muted, fontSize: '13px', lineHeight: '18px', padding: '12px 0' });
+    list.appendChild(empty);
+    return;
+  }
+
+  crew.forEach((member) => {
+    const row = document.createElement('div');
+    Object.assign(row.style, { minHeight: '48px', display: 'flex', alignItems: 'center', borderBottom: `1px solid ${line}` });
+
+    const avatar = document.createElement('div');
+    avatar.textContent = member.name?.trim()?.[0]?.toUpperCase() ?? '•';
+    Object.assign(avatar.style, { width: '32px', height: '32px', borderRadius: '16px', flex: '0 0 32px', marginRight: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: accentSoft, color: accent, fontSize: '12px', fontWeight: '800' });
+
+    const copy = document.createElement('div');
+    Object.assign(copy.style, { minWidth: '0', flex: '1 1 auto' });
+    const name = document.createElement('div');
+    name.textContent = member.name;
+    Object.assign(name.style, { color: text, fontSize: '14px', lineHeight: '18px', fontWeight: '600', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' });
+    const role = document.createElement('div');
+    role.textContent = member.position ?? member.role ?? '';
+    Object.assign(role.style, { color: muted, fontSize: '12px', lineHeight: '16px' });
+    copy.append(name, role);
+    row.append(avatar, copy);
+    list.appendChild(row);
+  });
+}
+
+function makeFlightSheetScrollable(root: HTMLElement) {
+  const flyingLabels = [...root.querySelectorAll<HTMLElement>('*')]
+    .filter((element) => element.children.length === 0 && /^Flying with · \d+$/.test(element.textContent?.trim() ?? ''));
+
+  flyingLabels.forEach((flyingWith) => {
+    const sheetContent = flyingWith.parentElement ?? undefined;
     if (!sheetContent) return;
+
+    const count = Number(flyingWith.textContent?.match(/(\d+)$/)?.[1] ?? '0');
     sheetContent.dataset.escrewFlightScroll = '1';
     setImportant(sheetContent, 'overflow-y', 'auto');
     setImportant(sheetContent, 'overflow-x', 'hidden');
     setImportant(sheetContent, 'overscroll-behavior-y', 'contain');
     setImportant(sheetContent, '-webkit-overflow-scrolling', 'touch');
+    setImportant(sheetContent, 'touch-action', 'pan-y');
+    setImportant(sheetContent, 'height', 'calc(78vh - 42px)');
+    setImportant(sheetContent, 'max-height', 'calc(78vh - 42px)');
     setImportant(sheetContent, 'min-height', '0px');
+    setImportant(sheetContent, 'flex', '0 1 auto');
 
-    const flyingWith = [...sheetContent.querySelectorAll<HTMLElement>('*')]
-      .find((element) => element.children.length === 0 && /^Flying with · \d+$/.test(element.textContent?.trim() ?? ''));
-    if (!flyingWith) return;
+    const crewRoot = flyingWith.nextElementSibling as HTMLElement | null;
+    if (!crewRoot) return;
+    crewRoot.dataset.escrewCrewScroller = '1';
+    setImportant(crewRoot, 'overflow-y', 'visible');
+    setImportant(crewRoot, 'overflow-x', 'visible');
+    setImportant(crewRoot, 'max-height', 'none');
+    setImportant(crewRoot, 'height', `${Math.max(1, count) * 50 + 14}px`);
+    setImportant(crewRoot, 'min-height', `${Math.max(1, count) * 50 + 14}px`);
+    setImportant(crewRoot, 'flex', '0 0 auto');
 
-    let node = flyingWith.nextElementSibling as HTMLElement | null;
-    if (!node) node = flyingWith.parentElement?.lastElementChild as HTMLElement | null;
-    if (!node) return;
-
-    const candidates = [node, ...node.querySelectorAll<HTMLElement>('*')];
-    candidates.forEach((candidate) => {
+    [...crewRoot.querySelectorAll<HTMLElement>('*')].forEach((candidate) => {
       const overflowY = window.getComputedStyle(candidate).overflowY;
       if (overflowY !== 'auto' && overflowY !== 'scroll') return;
-      candidate.dataset.escrewCrewScroller = '1';
       setImportant(candidate, 'overflow-y', 'visible');
-      setImportant(candidate, 'overflow-x', 'visible');
       setImportant(candidate, 'max-height', 'none');
       setImportant(candidate, 'height', 'auto');
-      setImportant(candidate, 'min-height', '0px');
-      setImportant(candidate, 'flex-shrink', '0');
     });
   });
 }
@@ -212,6 +316,7 @@ function enhanceUi() {
       setImportant(element, 'opacity', '.82');
     });
 
+  replacePreviousFlightsWithCrew(root);
   makeFlightSheetScrollable(root);
 }
 
