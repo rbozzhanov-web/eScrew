@@ -51,10 +51,17 @@ export interface NormalizedAbsence {
   date: string;
 }
 
+export interface NormalizedExpiry {
+  code: string;
+  description?: string;
+  date?: string;
+}
+
 export interface NormalizedRoster {
   period: { start: string; end: string };
   duties: NormalizedDuty[];
   absences?: NormalizedAbsence[];
   metadata?: NormalizedSupplementField[];
   supplements?: NormalizedSupplement[];
+  expiries?: NormalizedExpiry[];
 }
