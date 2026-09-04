@@ -47,46 +47,6 @@ function styleSecondary(button?: HTMLElement) {
   tintText(button, dark ? '#67A5FF' : ACCENT);
 }
 
-function makeFlightSheetScrollable(root: HTMLElement) {
-  const flyingLabels = [...root.querySelectorAll<HTMLElement>('*')]
-    .filter((element) => element.children.length === 0 && /^Flying with · \d+$/.test(element.textContent?.trim() ?? ''));
-
-  flyingLabels.forEach((flyingWith) => {
-    const sheetContent = flyingWith.parentElement ?? undefined;
-    if (!sheetContent) return;
-
-    const count = Number(flyingWith.textContent?.match(/(\d+)$/)?.[1] ?? '0');
-    sheetContent.dataset.escrewFlightScroll = '1';
-    setImportant(sheetContent, 'overflow-y', 'auto');
-    setImportant(sheetContent, 'overflow-x', 'hidden');
-    setImportant(sheetContent, 'overscroll-behavior-y', 'contain');
-    setImportant(sheetContent, '-webkit-overflow-scrolling', 'touch');
-    setImportant(sheetContent, 'touch-action', 'pan-y');
-    setImportant(sheetContent, 'height', 'calc(78vh - 42px)');
-    setImportant(sheetContent, 'max-height', 'calc(78vh - 42px)');
-    setImportant(sheetContent, 'min-height', '0px');
-    setImportant(sheetContent, 'flex', '0 1 auto');
-
-    const crewRoot = flyingWith.nextElementSibling as HTMLElement | null;
-    if (!crewRoot) return;
-    crewRoot.dataset.escrewCrewScroller = '1';
-    setImportant(crewRoot, 'overflow-y', 'visible');
-    setImportant(crewRoot, 'overflow-x', 'visible');
-    setImportant(crewRoot, 'max-height', 'none');
-    setImportant(crewRoot, 'height', `${Math.max(1, count) * 50 + 14}px`);
-    setImportant(crewRoot, 'min-height', `${Math.max(1, count) * 50 + 14}px`);
-    setImportant(crewRoot, 'flex', '0 0 auto');
-
-    [...crewRoot.querySelectorAll<HTMLElement>('*')].forEach((candidate) => {
-      const overflowY = window.getComputedStyle(candidate).overflowY;
-      if (overflowY !== 'auto' && overflowY !== 'scroll') return;
-      setImportant(candidate, 'overflow-y', 'visible');
-      setImportant(candidate, 'max-height', 'none');
-      setImportant(candidate, 'height', 'auto');
-    });
-  });
-}
-
 function enhanceUi() {
   if (typeof document === 'undefined') return;
   const root = document.getElementById('root');
@@ -207,15 +167,6 @@ function enhanceUi() {
     }
   }
 
-  [...root.querySelectorAll<HTMLElement>('*')]
-    .filter((element) => element.children.length === 0 && /^Flying with · \d+$/.test(element.textContent?.trim() ?? ''))
-    .forEach((element) => {
-      setImportant(element, 'font-size', '11px');
-      setImportant(element, 'letter-spacing', '.45px');
-      setImportant(element, 'opacity', '.82');
-    });
-
-  makeFlightSheetScrollable(root);
 }
 
 export default function MainScreenUi() {
