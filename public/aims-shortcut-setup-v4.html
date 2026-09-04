@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#081519" />
+  <title>eScrew Capture v4</title>
+  <style>
+    :root{color-scheme:light dark;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;background:#081519;color:#f3fafa}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:linear-gradient(180deg,#081519,#0d2025);padding:calc(24px + env(safe-area-inset-top)) 18px calc(28px + env(safe-area-inset-bottom))}.wrap{max-width:620px;margin:0 auto}.eyebrow{font-size:11px;letter-spacing:1.25px;font-weight:800;color:#7dcbd0}.title{font-size:34px;line-height:1.04;letter-spacing:-1.2px;margin:8px 0 10px}.lead{font-size:16px;line-height:1.45;color:#b7c8ca;margin:0 0 18px}.card{background:rgba(21,44,50,.88);border:1px solid rgba(174,214,216,.14);border-radius:24px;padding:18px;margin:12px 0;box-shadow:0 16px 40px rgba(0,0,0,.18)}.button{width:100%;border:0;border-radius:16px;padding:14px 16px;font-size:15px;font-weight:800;background:#35b8c0;color:#062326;margin-top:10px}.status{font-size:13px;color:#9db3b5;text-align:center;min-height:18px;margin-top:8px}.code{width:100%;min-height:240px;resize:vertical;border-radius:16px;border:1px solid rgba(174,214,216,.14);background:#061114;color:#dff7f8;padding:12px;font:11px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace}.muted{color:#9db3b5;font-size:13px;line-height:1.45}.ok{color:#7ee0e6;font-weight:800}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="eyebrow">eSCREW · iPHONE</div>
+    <h1 class="title">eScrew Capture v4</h1>
+    <p class="lead">Обновление транспорта Shortcut. v4 возвращает ростер через URL-safe base64 с проверкой длины, чтобы Safari/Shortcuts не повреждали JSON.</p>
+    <section class="card">
+      <p class="muted">Замени только JavaScript внутри существующего действия <b>Run JavaScript on Web Page</b>. Остальные шаги Shortcut не меняются.</p>
+      <button class="button" id="copy" type="button">Скопировать JavaScript v4</button>
+      <div class="status" id="status">Загрузка…</div>
+    </section>
+    <section class="card">
+      <textarea class="code" id="code" readonly></textarea>
+      <p class="muted">Экспортируются только SchedulerEvents, crew/member tree, hotels, hours и период ростера. Cookies, session, auth headers, CSRF, passwords, request body, AIMS Data и токены не экспортируются.</p>
+    </section>
+  </main>
+<script>
+const code = document.getElementById('code');
+const status = document.getElementById('status');
+let shortcutScript = '';
+fetch('./escrew-capture-v4.js', { cache: 'no-store' })
+  .then((response) => { if (!response.ok) throw new Error('load failed'); return response.text(); })
+  .then((text) => { shortcutScript = text; code.value = text; status.textContent = 'JavaScript v4 готов.'; })
+  .catch(() => { status.textContent = 'Не удалось загрузить JavaScript v4.'; });
+document.getElementById('copy').addEventListener('click', async () => {
+  if (!shortcutScript) return;
+  try {
+    await navigator.clipboard.writeText(shortcutScript);
+    status.textContent = 'JavaScript v4 скопирован.';
+  } catch {
+    code.focus(); code.select(); document.execCommand('copy');
+    status.textContent = 'JavaScript v4 скопирован.';
+  }
+});
+</script>
+</body>
+</html>
