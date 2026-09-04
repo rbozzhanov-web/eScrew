@@ -1,8 +1,6 @@
 import { ScrollViewStyleReset, useServerDocumentContext } from 'expo-router/html';
 import type { ReactNode } from 'react';
 
-const APP_VERSION = process.env.EXPO_PUBLIC_ESCREW_VERSION ?? '';
-
 const APP_SHELL_CSS = `
 html,body,#root{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:none;touch-action:manipulation}
 html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",system-ui,sans-serif}
@@ -16,7 +14,6 @@ body{background:#F6F7FA;color:#0F172A;-webkit-tap-highlight-color:transparent;-w
 
 const VISUAL_SKIN = `
 (()=>{
-  const appVersion=${JSON.stringify(APP_VERSION)};
   const root=()=>document.getElementById('root');
   const set=(el,name,value)=>{
     if(el.style.getPropertyValue(name)===value&&el.style.getPropertyPriority(name)==='important')return;
@@ -80,24 +77,10 @@ const VISUAL_SKIN = `
     }
   };
 
-  const applyVersion=()=>{
-    const r=root();if(!r||!appVersion||appVersion==='unknown')return;
-    if(r.querySelector('[data-escrew-version]'))return;
-    const privacy=[...r.querySelectorAll('*')].find(el=>el instanceof HTMLElement&&el.textContent==='Privacy');
-    const card=privacy&&privacy.parentElement;
-    if(!card)return;
-    const marker=document.createElement('div');
-    marker.setAttribute('data-escrew-version','');
-    marker.textContent='PR '+appVersion;
-    Object.assign(marker.style,{fontSize:'9px',lineHeight:'11px',fontWeight:'600',opacity:'.32',textAlign:'right',marginTop:'2px',letterSpacing:'.2px'});
-    card.appendChild(marker);
-  };
-
   const apply=()=>{
     const r=root();if(!r)return;
     skinElement(r);
     r.querySelectorAll('*').forEach(skinElement);
-    applyVersion();
   };
 
   const start=()=>{
@@ -115,76 +98,6 @@ const VISUAL_SKIN = `
     }
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
-})();
-`;
-
-const AIMS_CLIPBOARD_BRIDGE = `
-(()=>{
-  const AIMS='https://aims.airastana.com/';
-  const ORIGIN='https://aims.airastana.com';
-  const TYPE='escrew:aims-scheduler-events';
-  const MARKER='escrew:aims-safari-capture';
-  const MAX_AGE=2*60*60*1000;
-  const standalone=(typeof window.matchMedia==='function'&&window.matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
-  if(!standalone)return;
-  const nativeOpen=window.open.bind(window);
-  const isiOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-  const readMarker=()=>{try{return Number(localStorage.getItem(MARKER)||0);}catch{return 0;}};
-  const writeMarker=()=>{try{localStorage.setItem(MARKER,String(Date.now()));}catch{}};
-  const clearMarker=()=>{try{localStorage.removeItem(MARKER);}catch{}};
-  const missing='No copied AIMS roster found yet. Return to Safari, run the eScrew AIMS capture, load My Schedule, tap “Copy roster to eScrew”, then return here and tap AIMS again.';
-  const deliverText=(text)=>{
-    let data;
-    try{data=JSON.parse(text);}catch{}
-    const payload=data&&data.payload;
-    if(!data||data.type!==TYPE||!payload||typeof payload.PeriodStart!=='string'||typeof payload.PeriodEnd!=='string'||!Array.isArray(payload.SchedulerEvents))return false;
-    clearMarker();
-    window.dispatchEvent(new MessageEvent('message',{origin:ORIGIN,data}));
-    return true;
-  };
-  const requestIOSPaste=()=>{
-    const area=document.createElement('textarea');
-    area.setAttribute('aria-hidden','true');
-    area.setAttribute('autocomplete','off');
-    area.setAttribute('autocapitalize','off');
-    area.setAttribute('spellcheck','false');
-    area.setAttribute('inputmode','none');
-    Object.assign(area.style,{position:'fixed',left:'50%',top:'50%',width:'1px',height:'1px',padding:'0',border:'0',opacity:'0',pointerEvents:'none',zIndex:'-1'});
-    let finished=false;
-    const cleanup=()=>{if(finished)return;finished=true;try{area.blur();}catch{}try{area.remove();}catch{}};
-    const accept=(text)=>{
-      if(finished)return;
-      if(deliverText(text)){cleanup();return;}
-      cleanup();
-      window.alert(missing);
-    };
-    area.addEventListener('paste',(event)=>{
-      const text=event.clipboardData&&event.clipboardData.getData('text/plain');
-      if(text){event.preventDefault();accept(text);return;}
-      setTimeout(()=>accept(area.value),0);
-    },{once:true});
-    area.addEventListener('input',()=>setTimeout(()=>accept(area.value),0),{once:true});
-    document.body.appendChild(area);
-    area.focus({preventScroll:true});
-    area.select();
-    try{document.execCommand('paste');}catch{cleanup();window.alert(missing);}
-    setTimeout(cleanup,30000);
-  };
-  const openSafari=()=>{
-    writeMarker();
-    if(isiOS){window.location.href='x-safari-'+AIMS;return;}
-    nativeOpen(AIMS,'_blank','noopener,noreferrer');
-  };
-  window.open=(url,target,features)=>{
-    const href=typeof url==='string'?url:String(url??'');
-    if(!href.startsWith(AIMS))return nativeOpen(url,target,features);
-    const started=readMarker();
-    if(!started||Date.now()-started>MAX_AGE){openSafari();return window;}
-    if(isiOS){requestIOSPaste();return window;}
-    if(!navigator.clipboard||typeof navigator.clipboard.readText!=='function'){window.alert(missing);return window;}
-    navigator.clipboard.readText().then(text=>{if(!deliverText(text))window.alert(missing);}).catch(()=>window.alert(missing));
-    return window;
-  };
 })();
 `;
 
@@ -207,7 +120,6 @@ export default function Root({ children }: { children: ReactNode }) {
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
     <style dangerouslySetInnerHTML={{__html:APP_SHELL_CSS}} />
-    <script dangerouslySetInnerHTML={{__html:AIMS_CLIPBOARD_BRIDGE}} />
     <ScrollViewStyleReset />{headNodes}
   </head><body {...bodyAttributes}>{children}{bodyNodes}<script dangerouslySetInnerHTML={{__html:VISUAL_SKIN}} /><script dangerouslySetInnerHTML={{__html:REGISTER_SW}} /></body></html>;
 }
