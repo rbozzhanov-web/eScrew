@@ -27,44 +27,20 @@
       <div class="step"><div class="n">2</div><p>В деталях включи <b>Показывать на странице экспорта / Show in Share Sheet</b> и оставь входной тип <b>Safari webpages</b>.</p></div>
       <div class="step"><div class="n">3</div><p>Добавь действие <b>Run JavaScript on Web Page / Выполнить JavaScript на веб‑странице</b> и вставь код ниже.</p></div>
       <div class="step"><div class="n">4</div><p>Добавь следом действие <b>Open URLs / Открыть URL</b>. В качестве URL выбери результат предыдущего JavaScript‑действия.</p></div>
-      <div class="step"><div class="n">5</div><p>Готово. В eScrew нажимаешь AIMS, ждёшь Crew Schedule, затем <b>Поделиться → eScrew Capture</b>.</p></div>
+      <div class="step"><div class="n">5</div><p>Готово. В eScrew нажимаешь AIMS, открываешь Crew Schedule, затем <b>Поделиться → eScrew Capture</b>.</p></div>
       <a href="shortcuts://create-shortcut"><button class="button" type="button">Открыть создание Shortcut</button></a>
-      <button class="button secondary" id="copy" type="button">Скопировать JavaScript</button>
+      <button class="button secondary" id="copy" type="button">Скопировать JavaScript v3</button>
       <div class="status" id="status"></div>
     </section>
 
     <section class="card">
       <h2>JavaScript для Shortcut</h2>
       <textarea class="code" id="code" readonly></textarea>
-      <p class="muted">Скрипт берёт только ростер, crew/member tree, hotel и hours. Cookies, session, auth headers, CSRF, passwords, request Data и токены он не читает.</p>
+      <p class="muted">v3 читает встроенные данные Crew Schedule из DOM самой страницы, а не JavaScript‑переменные AIMS. Скрипт экспортирует только ростер, crew/member tree, hotel и hours. Cookies, session, auth headers, CSRF, passwords, request Data и токены не экспортируются.</p>
     </section>
   </main>
 <script>
 const shortcutScript = String.raw`(() => {
-  const findCrewScheduleWindow = (start) => {
-    const seen = new Set();
-    const visit = (win) => {
-      if (!win || seen.has(win)) return undefined;
-      seen.add(win);
-      try {
-        const root = win.initialResult;
-        if (win.location.pathname === '/eCrew/CrewSchedule' && root && typeof root === 'object') return win;
-      } catch {}
-      try {
-        for (let i = 0; i < win.frames.length; i += 1) {
-          const found = visit(win.frames[i]);
-          if (found) return found;
-        }
-      } catch {}
-      return undefined;
-    };
-    return visit(start);
-  };
-
-  const sourceWindow = findCrewScheduleWindow(window);
-  const root = sourceWindow?.initialResult;
-  if (!root || typeof root !== 'object') throw new Error('Crew Schedule data is not ready. Keep Crew Schedule visible, wait a moment, then run eScrew Capture again.');
-
   const findById = (value, id) => {
     if (Array.isArray(value)) {
       for (const item of value) { const found = findById(item, id); if (found) return found; }
@@ -76,58 +52,170 @@ const shortcutScript = String.raw`(() => {
     return undefined;
   };
 
-  const eventKeys = [
-    'start','end','report','debrief','type','text','details','location','IsDeadhead',
-    'HotelInfo','HotelNo','Memo','Notification','RequiredRest','NoContact','ReplaceGDO',
-    'WillingToFly','barHidden','calendar','charterer','color','date_sort','delay','id',
-    'invert_times','legs','open','resource','sort','ver','aircraftType','AircraftType',
-    'aircraft','Aircraft','acType','ACType'
-  ];
-  const events = (Array.isArray(root.SchedulerEvents) ? root.SchedulerEvents : []).map((event) => {
-    const out = {};
-    if (!event || typeof event !== 'object') return out;
-    for (const key of eventKeys) if (Object.prototype.hasOwnProperty.call(event, key)) out[key] = event[key];
-    return out;
-  });
+  const balancedJson = (source, start) => {
+    let depth = 0, quoted = false, escaped = false;
+    for (let i = start; i < source.length; i += 1) {
+      const ch = source[i];
+      if (quoted) {
+        if (escaped) escaped = false;
+        else if (ch === '\\') escaped = true;
+        else if (ch === '"') quoted = false;
+        continue;
+      }
+      if (ch === '"') { quoted = true; continue; }
+      if (ch === '{') depth += 1;
+      else if (ch === '}') {
+        depth -= 1;
+        if (depth === 0) return source.slice(start, i + 1);
+      }
+    }
+    return '';
+  };
 
-  const membersElement = findById(root.elementList, 'members');
-  const memberGroups = (membersElement && Array.isArray(membersElement.data) ? membersElement.data : []).map((group) => [
-    typeof group.value === 'string' ? group.value : '',
-    (Array.isArray(group.data) ? group.data : []).map((member) => [
-      typeof member.value2 === 'string' ? member.value2 : '',
-      (typeof member.value3 === 'string' || typeof member.value3 === 'number') ? member.value3 : '',
-      typeof member.value4 === 'string' ? member.value4 : '',
-      typeof member.value5 === 'string' ? member.value5 : ''
-    ])
-  ]);
+  const parseInitialResult = (source) => {
+    const marker = /var\s+initialResult\s*=/m.exec(source);
+    if (!marker) return undefined;
+    const start = source.indexOf('{', marker.index + marker[0].length);
+    if (start < 0) return undefined;
+    const json = balancedJson(source, start);
+    if (!json) return undefined;
+    try {
+      const parsed = JSON.parse(json);
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : undefined;
+    } catch { return undefined; }
+  };
 
-  const hotelsElement = findById(root.elementList, 'hotels');
-  const hotels = (hotelsElement && Array.isArray(hotelsElement.data) ? hotelsElement.data : []).map((row) => [
-    typeof row.port === 'string' ? row.port : '',
-    typeof row.phones === 'string' ? row.phones : '',
-    typeof row.addresses === 'string' ? row.addresses : '',
-    typeof row.locators === 'string' ? row.locators : ''
-  ]);
+  const documentSource = (doc) => {
+    try {
+      const scripts = Array.from(doc.scripts || []).map((script) => script.textContent || '').join('\n');
+      if (/var\s+initialResult\s*=/.test(scripts)) return scripts;
+    } catch {}
+    try { return doc.documentElement ? doc.documentElement.innerHTML : ''; }
+    catch { return ''; }
+  };
 
-  const hoursElement = findById(root.elementList, 'hours');
-  const totals = (hoursElement && Array.isArray(hoursElement.data) ? hoursElement.data : []).map((row) => [
-    typeof row.desc === 'string' ? row.desc : '',
-    typeof row.hours === 'string' ? row.hours : ''
-  ]);
+  const collectDocuments = () => {
+    const docs = [], seen = new Set();
+    const visit = (doc) => {
+      if (!doc || seen.has(doc)) return;
+      seen.add(doc); docs.push(doc);
+      let frames = [];
+      try { frames = Array.from(doc.querySelectorAll('iframe,frame')); } catch {}
+      for (const frame of frames) {
+        try { if (frame.contentDocument) visit(frame.contentDocument); } catch {}
+      }
+    };
+    visit(document);
+    return docs;
+  };
 
-  let periodStart = '';
-  let periodEnd = '';
-  try {
-    periodStart = sourceWindow.localStorage.getItem('PeriodStart') || '';
-    periodEnd = sourceWindow.localStorage.getItem('PeriodEnd') || '';
-  } catch {}
-  if (!periodStart || !periodEnd) throw new Error('AIMS roster period is not ready yet.');
-  if (!events.length) throw new Error('AIMS SchedulerEvents are not ready yet.');
+  const quotedAssignment = (source, key) => {
+    const prefixes = ["localStorage['" + key + "']", 'localStorage["' + key + '"]'];
+    for (const prefix of prefixes) {
+      const pos = source.indexOf(prefix);
+      if (pos < 0) continue;
+      const equals = source.indexOf('=', pos + prefix.length);
+      if (equals < 0) continue;
+      let i = equals + 1;
+      while (i < source.length && /\s/.test(source[i])) i += 1;
+      const quote = source[i];
+      if (quote !== "'" && quote !== '"') continue;
+      let out = '', escaped = false;
+      for (i += 1; i < source.length; i += 1) {
+        const ch = source[i];
+        if (escaped) { out += ch; escaped = false; continue; }
+        if (ch === '\\') { escaped = true; continue; }
+        if (ch === quote) return out;
+        out += ch;
+      }
+    }
+    return '';
+  };
 
-  const payload = { v: 1, p: [periodStart, periodEnd], e: events, m: memberGroups, h: hotels, t: totals };
-  const encoded = encodeURIComponent(JSON.stringify(payload));
-  if (encoded.length > 90000) throw new Error('Roster capture is unexpectedly large. Use the existing Web Archive import once.');
-  completion('https://rbozzhanov-web.github.io/eScrew/#aims-shortcut=' + encoded);
+  const readPeriod = (source, root, doc, key) => {
+    const direct = root && typeof root[key] === 'string' ? root[key] : '';
+    if (direct) return direct;
+    const embedded = quotedAssignment(source, key);
+    if (embedded) return embedded;
+    try { return doc.defaultView?.localStorage?.getItem(key) || ''; } catch { return ''; }
+  };
+
+  const findSource = () => {
+    let best;
+    for (const doc of collectDocuments()) {
+      const source = documentSource(doc);
+      if (!source || !/var\s+initialResult\s*=/.test(source)) continue;
+      const root = parseInitialResult(source);
+      if (!root) continue;
+      let score = 0;
+      try { if (/\/eCrew\/CrewSchedule\/?$/i.test(doc.location?.pathname || '')) score += 20; } catch {}
+      if (Array.isArray(root.SchedulerEvents)) score += 10 + Math.min(root.SchedulerEvents.length, 5);
+      if (root.elementList && typeof root.elementList === 'object') score += 6;
+      if (findById(root.elementList, 'members')) score += 3;
+      if (!best || score > best.score) best = { doc, source, root, score };
+    }
+    return best;
+  };
+
+  const capture = () => {
+    const found = findSource();
+    if (!found) return undefined;
+    const { doc, source, root } = found;
+    const rawEvents = Array.isArray(root.SchedulerEvents) ? root.SchedulerEvents : [];
+    if (!rawEvents.length) return undefined;
+
+    const eventKeys = [
+      'start','end','report','debrief','type','text','details','location','IsDeadhead',
+      'HotelInfo','HotelNo','Memo','Notification','RequiredRest','NoContact','ReplaceGDO',
+      'WillingToFly','barHidden','calendar','charterer','color','date_sort','delay','id',
+      'invert_times','legs','open','resource','sort','ver','aircraftType','AircraftType',
+      'aircraft','Aircraft','acType','ACType'
+    ];
+    const events = rawEvents.map((event) => {
+      const out = {};
+      if (!event || typeof event !== 'object') return out;
+      for (const key of eventKeys) if (Object.prototype.hasOwnProperty.call(event, key)) out[key] = event[key];
+      return out;
+    });
+
+    const membersElement = findById(root.elementList, 'members');
+    const memberGroups = (membersElement && Array.isArray(membersElement.data) ? membersElement.data : []).map((group) => [
+      typeof group.value === 'string' ? group.value : '',
+      (Array.isArray(group.data) ? group.data : []).map((member) => [
+        typeof member.value2 === 'string' ? member.value2 : '',
+        (typeof member.value3 === 'string' || typeof member.value3 === 'number') ? member.value3 : '',
+        typeof member.value4 === 'string' ? member.value4 : '',
+        typeof member.value5 === 'string' ? member.value5 : ''
+      ])
+    ]);
+
+    const hotelsElement = findById(root.elementList, 'hotels');
+    const hotels = (hotelsElement && Array.isArray(hotelsElement.data) ? hotelsElement.data : []).map((row) => [
+      typeof row.port === 'string' ? row.port : '',
+      typeof row.phones === 'string' ? row.phones : '',
+      typeof row.addresses === 'string' ? row.addresses : '',
+      typeof row.locators === 'string' ? row.locators : ''
+    ]);
+
+    const hoursElement = findById(root.elementList, 'hours');
+    const totals = (hoursElement && Array.isArray(hoursElement.data) ? hoursElement.data : []).map((row) => [
+      typeof row.desc === 'string' ? row.desc : '',
+      typeof row.hours === 'string' ? row.hours : ''
+    ]);
+
+    const periodStart = readPeriod(source, root, doc, 'PeriodStart');
+    const periodEnd = readPeriod(source, root, doc, 'PeriodEnd');
+    if (!periodStart || !periodEnd) return undefined;
+
+    const payload = { v: 1, p: [periodStart, periodEnd], e: events, m: memberGroups, h: hotels, t: totals };
+    const encoded = encodeURIComponent(JSON.stringify(payload));
+    if (encoded.length > 90000) throw new Error('Roster capture is unexpectedly large. Use Import saved roster in eScrew.');
+    return 'https://rbozzhanov-web.github.io/eScrew/#aims-shortcut=' + encoded;
+  };
+
+  const result = capture();
+  if (!result) throw new Error('Could not read embedded Crew Schedule data from this Safari page. Open Crew Schedule and run eScrew Capture from Share.');
+  completion(result);
 })();`;
 const code = document.getElementById('code');
 code.value = shortcutScript;
@@ -135,10 +223,10 @@ document.getElementById('copy').addEventListener('click', async () => {
   const status = document.getElementById('status');
   try {
     await navigator.clipboard.writeText(shortcutScript);
-    status.textContent = 'JavaScript скопирован.';
+    status.textContent = 'JavaScript v3 скопирован.';
   } catch {
     code.focus(); code.select(); document.execCommand('copy');
-    status.textContent = 'JavaScript скопирован.';
+    status.textContent = 'JavaScript v3 скопирован.';
   }
 });
 </script>
