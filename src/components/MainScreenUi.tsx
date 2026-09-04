@@ -115,7 +115,8 @@ function replacePreviousFlightsWithCrew(root: HTMLElement) {
   crewSection.appendChild(title);
 
   const list = document.createElement('div');
-  Object.assign(list.style, { minHeight: '0', overflowY: 'auto', overscrollBehaviorY: 'contain', WebkitOverflowScrolling: 'touch' } as CSSStyleDeclaration & Record<string, string>);
+  Object.assign(list.style, { minHeight: '0', overflowY: 'auto', overscrollBehaviorY: 'contain' });
+  list.style.setProperty('-webkit-overflow-scrolling', 'touch');
   crewSection.appendChild(list);
 
   if (!crew.length) {
