@@ -22,8 +22,8 @@ export async function parseRosterData(data:ArrayBuffer,name=''):Promise<ParsedAi
 
   const isWebArchive=header.startsWith('bplist00')||/\.webarchive$/i.test(name);
   throw new Error(isWebArchive
-    ? 'This Safari Web Archive does not contain a loaded AIMS Crew Schedule. Open Crew Schedule in AIMS, wait until it finishes loading, then copy it again as Web Archive.'
-    : 'Unsupported roster file. On iPhone: AIMS Crew Schedule → Share → Options → Web Archive → Copy. Then return to eScrew and paste it into AIMS.');
+    ? 'This Safari Web Archive does not contain a loaded AIMS Crew Schedule. Open Crew Schedule in AIMS, wait until it finishes loading, then save it again as Web Archive.'
+    : 'Unsupported roster file. On iPhone: AIMS Crew Schedule → Share → Options → Web Archive → Save to Files. Then return to eScrew → AIMS → Import Web Archive.');
 }
 
 /**
