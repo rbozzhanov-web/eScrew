@@ -35,7 +35,7 @@ type DialogProps = {
 
 const SPRING = { stiffness: 300, damping: 31, mass: 0.9, useNativeDriver: true } as const;
 const WEB_GLASS = Platform.OS === 'web'
-  ? ({ backdropFilter: 'blur(18px) saturate(1.18)', WebkitBackdropFilter: 'blur(18px) saturate(1.18)' } as any)
+  ? ({ backdropFilter: 'blur(28px) saturate(1.4)', WebkitBackdropFilter: 'blur(28px) saturate(1.4)' } as any)
   : undefined;
 const WEB_TRANSFORM_LAYER = Platform.OS === 'web'
   ? ({ willChange: 'transform', backfaceVisibility: 'hidden', transformStyle: 'preserve-3d' } as any)

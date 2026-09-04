@@ -20,7 +20,7 @@ export function openAimsWebArchiveFlow(): Promise<AimsWebArchiveResult | undefin
     const card = document.createElement('div');
     Object.assign(card.style, {
       width: 'min(100%, 620px)', borderRadius: '24px', padding: '18px',
-      background: dark ? '#152C32' : '#FFFFFF', color: dark ? '#F3FAFA' : '#102326',
+      background: dark ? '#182135' : '#FFFFFF', color: dark ? '#F5F7FA' : '#0F172A',
       boxShadow: '0 20px 60px rgba(0,0,0,.28)', fontFamily: '-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif',
       marginBottom: 'max(8px, env(safe-area-inset-bottom))',
     });
@@ -44,9 +44,9 @@ export function openAimsWebArchiveFlow(): Promise<AimsWebArchiveResult | undefin
     const importArchive = document.createElement('button');
     importArchive.textContent = 'Import Web Archive';
     Object.assign(importArchive.style, {
-      width: '100%', border: `1px solid ${dark ? 'rgba(174,214,216,.20)' : 'rgba(16,74,79,.14)'}`,
+      width: '100%', border: `1px solid ${dark ? '#232D40' : '#E9EDF2'}`,
       borderRadius: '14px', padding: '13px', fontSize: '15px', fontWeight: '800',
-      background: dark ? 'rgba(255,255,255,.08)' : '#EDF2F2', color: 'inherit', marginBottom: '8px',
+      background: dark ? '#131B2C' : '#F6F7FA', color: 'inherit', marginBottom: '8px',
     });
 
     const status = document.createElement('div');
