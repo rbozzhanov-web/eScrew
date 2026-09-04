@@ -1,0 +1,579 @@
+<title>Glass Manifest</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --bg:#F6F7FA;
+    --surface:rgba(255,255,255,.72);
+    --surface-strong:rgba(255,255,255,.88);
+    --surface-solid:#FFFFFF;
+    --text:#0F172A;
+    --muted:#687280;
+    --line:rgba(15,23,42,.09);
+    --line-strong:rgba(15,23,42,.14);
+    --accent:#2D7DFF;
+    --accent-soft:#E4EDFF;
+    --highlight:#A58B4F;
+    --danger:#E5484D;
+    --weekend:#9B613B;
+    --good:#2E9E6D;
+    --shadow: 0 10px 24px rgba(15,23,42,.10);
+    --shadow-lg: 0 20px 60px rgba(15,23,42,.16);
+    --blur-card: blur(24px) saturate(1.4);
+    --blur-tab: blur(32px) saturate(1.5);
+    --code-bg: rgba(15,23,42,.05);
+    --code-text: #0F172A;
+    --swatch-border: rgba(15,23,42,.08);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0B1220;
+      --surface:rgba(19,27,44,.72);
+      --surface-strong:rgba(24,33,53,.88);
+      --surface-solid:#131B2C;
+      --text:#F5F7FA;
+      --muted:#8B95A5;
+      --line:rgba(139,149,165,.18);
+      --line-strong:rgba(139,149,165,.28);
+      --accent:#4C8DFF;
+      --accent-soft:rgba(76,141,255,.16);
+      --highlight:#C9AC72;
+      --danger:#EB6F79;
+      --weekend:#D89A66;
+      --good:#4FBE8E;
+      --shadow: 0 10px 24px rgba(0,0,0,.35);
+      --shadow-lg: 0 24px 70px rgba(0,0,0,.5);
+      --code-bg: rgba(255,255,255,.06);
+      --code-text: #E7ECF3;
+      --swatch-border: rgba(255,255,255,.1);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0B1220;
+    --surface:rgba(19,27,44,.72);
+    --surface-strong:rgba(24,33,53,.88);
+    --surface-solid:#131B2C;
+    --text:#F5F7FA;
+    --muted:#8B95A5;
+    --line:rgba(139,149,165,.18);
+    --line-strong:rgba(139,149,165,.28);
+    --accent:#4C8DFF;
+    --accent-soft:rgba(76,141,255,.16);
+    --highlight:#C9AC72;
+    --danger:#EB6F79;
+    --weekend:#D89A66;
+    --good:#4FBE8E;
+    --shadow: 0 10px 24px rgba(0,0,0,.35);
+    --shadow-lg: 0 24px 70px rgba(0,0,0,.5);
+    --code-bg: rgba(255,255,255,.06);
+    --code-text: #E7ECF3;
+    --swatch-border: rgba(255,255,255,.1);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap{
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 56px 24px 120px;
+  }
+
+  h1,h2,h3{ font-family:'Manrope', 'IBM Plex Sans', sans-serif; text-wrap: balance; margin:0; }
+  code, .mono, .tag-mono{ font-family:'IBM Plex Mono', ui-monospace, monospace; }
+
+  /* ---------- masthead ---------- */
+  .masthead{
+    display:flex; flex-direction:column; gap:14px;
+    padding-bottom: 40px; margin-bottom: 48px;
+    border-bottom: 1px solid var(--line);
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--accent);
+  }
+  .masthead h1{
+    font-size: clamp(34px, 5vw, 50px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+  }
+  .masthead p{
+    max-width: 62ch;
+    font-size: 16px;
+    color: var(--muted);
+    margin: 0;
+  }
+  .source-strip{
+    display:flex; flex-wrap:wrap; gap: 8px 22px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .source-strip b{ color: var(--text); font-weight: 600; }
+
+  /* ---------- sections ---------- */
+  section{ margin-bottom: 64px; }
+  .section-head{
+    display:flex; align-items:baseline; gap: 12px;
+    margin-bottom: 22px;
+  }
+  .section-num{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 13px; color: var(--accent); font-weight: 600;
+    min-width: 28px;
+  }
+  section h2{
+    font-size: 22px; font-weight: 700; letter-spacing: -0.01em;
+  }
+  .section-sub{
+    color: var(--muted); font-size: 14.5px; max-width: 62ch;
+    margin: -12px 0 24px 40px;
+  }
+
+  /* ---------- color swatches ---------- */
+  .theme-pair{ display:grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 700px){ .theme-pair{ grid-template-columns: 1fr; } }
+  .theme-block{
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 18px;
+    background: var(--surface-solid);
+  }
+  .theme-block h3{
+    font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 14px;
+  }
+  .swatch-grid{ display:grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .swatch{
+    border-radius: 12px;
+    padding: 12px 12px 10px;
+    border: 1px solid var(--swatch-border);
+    min-height: 74px;
+    display:flex; flex-direction:column; justify-content:flex-end; gap:2px;
+  }
+  .swatch .name{ font-size: 12px; font-weight: 600; }
+  .swatch .hex{ font-family:'IBM Plex Mono', monospace; font-size: 11px; opacity: .85; }
+
+  /* the theme-block swatches render literal fixed colors regardless of page theme,
+     since they are demonstrating both palettes side by side */
+  .lp-bg{background:#F6F7FA;color:#0F172A;border-color:#E9EDF2;}
+  .lp-surface{background:#FFFFFF;color:#0F172A;border-color:#E9EDF2;}
+  .lp-text{background:#0F172A;color:#F6F7FA;}
+  .lp-muted{background:#687280;color:#fff;}
+  .lp-accent{background:#2D7DFF;color:#fff;}
+  .lp-highlight{background:#A58B4F;color:#fff;}
+  .lp-danger{background:#E5484D;color:#fff;}
+  .lp-border{background:#F6F7FA;color:#0F172A;border:1px solid #E9EDF2;}
+
+  .dp-bg{background:#0B1220;color:#F5F7FA;}
+  .dp-surface{background:#131B2C;color:#F5F7FA;}
+  .dp-text{background:#F5F7FA;color:#0B1220;}
+  .dp-muted{background:#8B95A5;color:#0B1220;}
+  .dp-accent{background:#4C8DFF;color:#0B1220;}
+  .dp-highlight{background:#C9AC72;color:#0B1220;}
+  .dp-danger{background:#EB6F79;color:#0B1220;}
+  .dp-border{background:#0B1220;color:#F5F7FA;border:1px solid #232D40;}
+
+  /* ---------- type specimen ---------- */
+  .type-list{ display:flex; flex-direction:column; }
+  .type-row{
+    display:grid; grid-template-columns: 150px 1fr;
+    gap: 20px; align-items: baseline;
+    padding: 18px 0; border-bottom: 1px solid var(--line);
+  }
+  .type-row:last-child{ border-bottom:none; }
+  .type-meta{ font-family:'IBM Plex Mono', monospace; font-size: 12px; color: var(--muted); line-height:1.6; }
+  .type-meta b{ color: var(--text); display:block; font-size:13px; margin-bottom:2px; font-family:'IBM Plex Sans',sans-serif; font-weight:600;}
+  .t-title{ font-family:'Manrope',sans-serif; font-size:28px; line-height:34px; font-weight:600; letter-spacing:-0.02em; }
+  .t-header{ font-family:'Manrope',sans-serif; font-size:17px; line-height:22px; font-weight:600; }
+  .t-body{ font-size:15px; line-height:22px; }
+  .t-caption{ font-size:13px; line-height:18px; color:var(--muted); }
+  .t-mono{ font-family:'IBM Plex Mono',monospace; font-size:18px; font-variant-numeric: tabular-nums; font-weight:600;}
+
+  /* ---------- glass demo strip ---------- */
+  .glass-stage{
+    position:relative;
+    border-radius: 24px;
+    padding: 28px;
+    overflow:hidden;
+    background:
+      radial-gradient(circle at 15% 20%, var(--accent-soft), transparent 55%),
+      radial-gradient(circle at 85% 80%, rgba(165,139,79,.18), transparent 50%),
+      var(--surface-solid);
+    border: 1px solid var(--line);
+  }
+  .glass-noise{
+    position:absolute; inset:0;
+    background-image: repeating-linear-gradient(120deg, var(--line) 0 2px, transparent 2px 26px);
+    opacity:.5;
+  }
+  .glass-row{ position:relative; display:flex; gap:16px; flex-wrap:wrap; }
+  .glass-card{
+    position:relative;
+    flex: 1 1 220px;
+    border-radius: 20px;
+    padding: 18px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+    backdrop-filter: var(--blur-card);
+    -webkit-backdrop-filter: var(--blur-card);
+  }
+  .glass-card.strong{ background: var(--surface-strong); }
+  .glass-card .k{ font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+  .glass-card .v{ font-family:'IBM Plex Mono',monospace; font-size:24px; font-weight:600; margin-top:6px; font-variant-numeric: tabular-nums;}
+  .glass-card .d{ font-size:12.5px; color:var(--muted); margin-top:4px; }
+
+  /* recipe cards under the glass stage */
+  .recipe-grid{ display:grid; grid-template-columns: repeat(3,1fr); gap:14px; margin-top:18px; }
+  @media (max-width: 700px){ .recipe-grid{ grid-template-columns: 1fr; } }
+  .recipe{
+    border:1px solid var(--line); border-radius:14px; padding:14px;
+    background: var(--surface-solid);
+  }
+  .recipe .name{ font-weight:600; font-size:13.5px; margin-bottom:6px; }
+  .recipe .params{ font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted); line-height:1.7; }
+  .recipe .params b{ color:var(--accent); }
+
+  /* ---------- component gallery ---------- */
+  .component-gallery{
+    border-radius:24px; border:1px solid var(--line);
+    padding: 26px;
+    background:
+      radial-gradient(circle at 80% 0%, var(--accent-soft), transparent 45%),
+      var(--bg);
+  }
+  .comp-row{ display:flex; gap:16px; flex-wrap:wrap; align-items:flex-start; margin-bottom:18px;}
+  .comp-row:last-child{ margin-bottom:0; }
+
+  .btn{
+    font-family:'IBM Plex Sans',sans-serif; font-weight:700; font-size:13px;
+    border-radius:14px; padding:11px 18px; border:1px solid transparent; cursor:default;
+  }
+  .btn-primary{ background:var(--accent); color:#fff; box-shadow: var(--shadow); }
+  .btn-ghost{ background:var(--surface); border-color:var(--line); color:var(--text); backdrop-filter:var(--blur-card); -webkit-backdrop-filter:var(--blur-card); }
+  .btn-danger{ background:transparent; border-color:var(--danger); color:var(--danger); }
+
+  .pill{
+    display:inline-flex; align-items:center; gap:6px;
+    font-family:'IBM Plex Mono',monospace; font-size:11.5px; font-weight:600;
+    padding:6px 12px; border-radius:999px; background:var(--accent-soft); color:var(--accent);
+  }
+  .pill.on-duty{ background: color-mix(in srgb, var(--good) 18%, transparent); color:var(--good); }
+  .pill::before{ content:''; width:6px; height:6px; border-radius:50%; background:currentColor; }
+
+  .demo-card{
+    border-radius:20px; border:1px solid var(--line); padding:16px;
+    background:var(--surface-solid); box-shadow: var(--shadow); min-width:220px; flex:1;
+  }
+  .demo-card .row-title{ font-family:'Manrope',sans-serif; font-weight:600; font-size:15px; }
+  .demo-card .row-sub{ font-size:12.5px; color:var(--muted); margin-top:2px; }
+
+  .avatar{
+    width:34px; height:34px; border-radius:17px; background:var(--accent-soft); color:var(--accent);
+    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:12px;
+  }
+
+  .tabbar-demo{
+    display:flex; gap:4px; padding:6px; border-radius:22px;
+    background:var(--surface); border:1px solid var(--line);
+    backdrop-filter: var(--blur-tab); -webkit-backdrop-filter: var(--blur-tab);
+    box-shadow: var(--shadow); width: fit-content;
+  }
+  .tabbar-demo .tab-item{
+    padding:10px 18px; border-radius:18px; font-size:11px; font-weight:600;
+    display:flex; flex-direction:column; align-items:center; gap:3px; color:var(--muted);
+  }
+  .tabbar-demo .tab-item.active{ background:var(--surface-strong); color:var(--text); box-shadow: 0 4px 12px rgba(0,0,0,.06); }
+
+  .sheet-demo{
+    border-radius: 24px 24px 8px 8px; border:1px solid var(--line); border-bottom:none;
+    background: var(--surface-strong); backdrop-filter: var(--blur-card); -webkit-backdrop-filter: var(--blur-card);
+    box-shadow: var(--shadow-lg); padding: 14px 20px 20px; width:100%; max-width:340px;
+  }
+  .sheet-demo .grab{ width:36px; height:5px; border-radius:3px; background:var(--line-strong); margin: 0 auto 12px; }
+  .sheet-demo .sheet-title{ font-family:'Manrope',sans-serif; font-weight:600; font-size:22px; }
+  .sheet-demo .sheet-meta{ font-size:12px; color:var(--muted); margin-top:2px; font-family:'IBM Plex Mono',monospace; }
+
+  /* ---------- code blocks ---------- */
+  .mech{
+    border:1px solid var(--line); border-radius:18px; overflow:hidden;
+    background: var(--surface-solid); margin-bottom:16px;
+  }
+  .mech-head{
+    display:flex; align-items:baseline; justify-content:space-between; gap:12px;
+    padding: 16px 20px 0;
+  }
+  .mech-head h3{ font-size:15px; font-weight:700; font-family:'IBM Plex Sans',sans-serif; }
+  .mech-head .file{ font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted); }
+  .mech p{ padding: 8px 20px 0; color:var(--muted); font-size:13.5px; max-width:70ch; }
+  pre{
+    margin: 14px 20px 18px;
+    padding: 14px 16px;
+    background: var(--code-bg);
+    border-radius: 12px;
+    overflow-x: auto;
+    font-family:'IBM Plex Mono',monospace;
+    font-size: 12.3px;
+    line-height: 1.65;
+    color: var(--code-text);
+  }
+  pre .c1{ color: var(--accent); }
+  pre .c2{ color: var(--highlight); }
+  pre .c3{ color: var(--muted); }
+
+  /* ---------- principles list ---------- */
+  .principles{ display:flex; flex-direction:column; gap:0; border-top:1px solid var(--line); }
+  .principle{
+    display:grid; grid-template-columns: 120px 1fr;
+    gap: 20px; padding: 16px 0; border-bottom:1px solid var(--line);
+  }
+  .principle .k{ font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--accent); font-weight:600; }
+  .principle .v{ font-size:14px; }
+  .principle .v b{ font-weight:600; }
+
+  footer{
+    margin-top: 60px; padding-top: 24px; border-top:1px solid var(--line);
+    font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted);
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;
+  }
+
+  @media (prefers-reduced-motion: no-preference){
+    .glass-card, .demo-card, .btn{ transition: transform .18s ease, box-shadow .18s ease; }
+  }
+</style>
+
+<div class="wrap">
+
+  <div class="masthead">
+    <div class="eyebrow">Design &amp; Engineering Reference · v1</div>
+    <h1>Glass Manifest</h1>
+    <p>The visual system and reusable engineering patterns behind eScrew, extracted for reuse in another product. Everything below is drawn directly from the shipped source — no invented values.</p>
+    <div class="source-strip">
+      <span><b>Stack</b> Expo Router + React Native Web, static export</span>
+      <span><b>Font</b> SF Pro / system, native</span>
+      <span><b>Material</b> Liquid glass — blur + translucency + shadow</span>
+    </div>
+  </div>
+
+  <section>
+    <div class="section-head"><span class="section-num">01</span><h2>Color tokens</h2></div>
+    <p class="section-sub">One token set, two resolved palettes. Every surface color carries alpha — the glass has nothing to blur without it.</p>
+
+    <div class="theme-pair">
+      <div class="theme-block">
+        <h3>Light</h3>
+        <div class="swatch-grid">
+          <div class="swatch lp-bg"><span class="name">background</span><span class="hex">#F6F7FA</span></div>
+          <div class="swatch lp-surface"><span class="name">surface</span><span class="hex">rgba(255,255,255,.72)</span></div>
+          <div class="swatch lp-text"><span class="name">text</span><span class="hex">#0F172A</span></div>
+          <div class="swatch lp-muted"><span class="name">muted</span><span class="hex">#687280</span></div>
+          <div class="swatch lp-accent"><span class="name">accent</span><span class="hex">#2D7DFF</span></div>
+          <div class="swatch lp-highlight"><span class="name">highlight</span><span class="hex">#A58B4F</span></div>
+          <div class="swatch lp-danger"><span class="name">danger</span><span class="hex">#E5484D</span></div>
+          <div class="swatch lp-border"><span class="name">line</span><span class="hex">rgba(15,23,42,.09)</span></div>
+        </div>
+      </div>
+      <div class="theme-block">
+        <h3>Dark</h3>
+        <div class="swatch-grid">
+          <div class="swatch dp-bg"><span class="name">background</span><span class="hex">#0B1220</span></div>
+          <div class="swatch dp-surface"><span class="name">surface</span><span class="hex">rgba(19,27,44,.72)</span></div>
+          <div class="swatch dp-text"><span class="name">text</span><span class="hex">#F5F7FA</span></div>
+          <div class="swatch dp-muted"><span class="name">muted</span><span class="hex">#8B95A5</span></div>
+          <div class="swatch dp-accent"><span class="name">accent</span><span class="hex">#4C8DFF</span></div>
+          <div class="swatch dp-highlight"><span class="name">highlight</span><span class="hex">#C9AC72</span></div>
+          <div class="swatch dp-danger"><span class="name">danger</span><span class="hex">#EB6F79</span></div>
+          <div class="swatch dp-border"><span class="name">line</span><span class="hex">rgba(139,149,165,.18)</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">02</span><h2>Type scale</h2></div>
+    <p class="section-sub">System font (SF Pro on Apple, falls back to Segoe/Roboto elsewhere) at four roles, plus a monospace face reserved strictly for numbers.</p>
+    <div class="type-list">
+      <div class="type-row">
+        <div class="type-meta"><b>Title</b>28 / 34<br>weight 600</div>
+        <div class="t-title">eScrew</div>
+      </div>
+      <div class="type-row">
+        <div class="type-meta"><b>Header</b>17 / 22<br>weight 600</div>
+        <div class="t-header">Rosters</div>
+      </div>
+      <div class="type-row">
+        <div class="type-meta"><b>Body</b>15 / 22<br>weight 400</div>
+        <div class="t-body">Save every stored roster to a file, or restore from one.</div>
+      </div>
+      <div class="type-row">
+        <div class="type-meta"><b>Caption</b>13 / 18<br>weight 400</div>
+        <div class="t-caption">NQZ · stored locally</div>
+      </div>
+      <div class="type-row">
+        <div class="type-meta"><b>Mono / numbers</b>18, tabular<br>weight 600</div>
+        <div class="t-mono">05:45:44</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">03</span><h2>Glass material</h2></div>
+    <p class="section-sub">Every elevated surface is translucent, blurred, and shadowed — never flat-opaque. The blur strength scales with how far the layer sits above its background.</p>
+
+    <div class="glass-stage">
+      <div class="glass-noise"></div>
+      <div class="glass-row">
+        <div class="glass-card">
+          <div class="k">Block hours</div>
+          <div class="v">47:40</div>
+          <div class="d">card · blur(24px) saturate(1.4)</div>
+        </div>
+        <div class="glass-card strong">
+          <div class="k">On duty</div>
+          <div class="v">05:52:55</div>
+          <div class="d">surface-strong · same blur, higher alpha</div>
+        </div>
+        <div class="glass-card">
+          <div class="k">Night hours</div>
+          <div class="v">10:40</div>
+          <div class="d">22% of block time</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="recipe-grid">
+      <div class="recipe">
+        <div class="name">Card / list elevation</div>
+        <div class="params">blur: <b>24px</b> saturate(1.4)<br>surface: 72% alpha<br>shadow: 0 10px 24px / .10</div>
+      </div>
+      <div class="recipe">
+        <div class="name">Tab bar</div>
+        <div class="params">blur: <b>32px</b> saturate(1.5)<br>strongest blur — sits above scrolling content<br>surface: 72% alpha</div>
+      </div>
+      <div class="recipe">
+        <div class="name">Sheet / dialog</div>
+        <div class="params">blur: <b>28px</b> saturate(1.4)<br>surface: 86% alpha (surface-strong)<br>shadow: 0 20px 60px / .16</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">04</span><h2>Components</h2></div>
+    <p class="section-sub">Rendered live from the tokens above — not screenshots.</p>
+
+    <div class="component-gallery">
+      <div class="comp-row">
+        <button class="btn btn-primary">Save backup</button>
+        <button class="btn btn-ghost">Restore backup</button>
+        <button class="btn btn-danger">⚠ Erase local roster data</button>
+        <span class="pill on-duty">On duty</span>
+        <span class="pill">KC001 · flight</span>
+      </div>
+      <div class="comp-row">
+        <div class="demo-card">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="avatar">A</div>
+            <div>
+              <div class="row-title">Aigerim Bekova</div>
+              <div class="row-sub">Captain</div>
+            </div>
+          </div>
+        </div>
+        <div class="tabbar-demo">
+          <div class="tab-item active">⌂<span>Home</span></div>
+          <div class="tab-item">✈︎<span>Roster</span></div>
+          <div class="tab-item">•••<span>More</span></div>
+        </div>
+      </div>
+      <div class="comp-row">
+        <div class="sheet-demo">
+          <div class="grab"></div>
+          <div class="sheet-title">NQZ → ALA</div>
+          <div class="sheet-meta">04 SEP · KC001 · REPORT 18:00</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">05</span><h2>Engineering mechanics</h2></div>
+    <p class="section-sub">The patterns that make the look and the app work, written to be dropped into a fresh React Native / Expo Web project.</p>
+
+    <div class="mech">
+      <div class="mech-head"><h3>Palette as a single memo, threaded by prop</h3><span class="file">MainScreen.tsx</span></div>
+      <p>No theme context, no styled-components. One <code>useMemo</code> keyed on <code>useColorScheme()</code> resolves the whole token object once per render; every component receives it as a plain <code>palette</code> prop. Simple to trace, easy to port.</p>
+      <pre>type Palette = { background:string; surface:string; surfaceStrong:string;
+  text:string; muted:string; line:string; accent:string; accentSoft:string;
+  gold:string; danger:string; weekend:string };
+
+<span class="c3">const dark = hydrated &amp;&amp; useColorScheme() === 'dark';</span>
+<span class="c3">const palette = useMemo(() =&gt; dark ? { <span class="c1">/* dark tokens */</span> } : { <span class="c1">/* light tokens */</span> }, [dark]);</span></pre>
+    </div>
+
+    <div class="mech">
+      <div class="mech-head"><h3>Cross-platform glass, without breaking native</h3><span class="file">MainScreen.tsx</span></div>
+      <p><code>backdrop-filter</code> has no React Native equivalent, so it's injected only on web via <code>Platform.select</code> and cast to <code>any</code> — spread straight into a StyleSheet entry. On iOS/Android the spread is <code>undefined</code> and silently no-ops.</p>
+      <pre><span class="c3">const WEB_GLASS = Platform.OS === 'web'
+  ? ({ backdropFilter: 'blur(24px) saturate(1.4)',
+       WebkitBackdropFilter: 'blur(24px) saturate(1.4)' } <span class="c1">as any</span>)
+  : undefined;</span>
+
+depthSurface: {
+  shadowColor: '#000', shadowOffset: { width: 0, height: 10 },
+  shadowOpacity: .1, shadowRadius: 24, elevation: 5,
+  <span class="c2">...WEB_GLASS</span>, <span class="c3">// blur only where it can render</span>
+}</pre>
+    </div>
+
+    <div class="mech">
+      <div class="mech-head"><h3>Sheet &amp; dialog primitives</h3><span class="file">IOSOverlay.tsx</span></div>
+      <p>Two reusable overlay components, <code>&lt;IOSSheet&gt;</code> and <code>&lt;IOSDialog&gt;</code>, built on RN's <code>Modal</code>. Both animate with <code>Animated.spring</code>/<code>Animated.timing</code> and mount/unmount via a small <code>visible → mounted</code> state machine so exit animations complete before unmount. The sheet adds a <code>PanResponder</code> for swipe-to-dismiss, with a <code>webScrollAtTop()</code> helper that inspects the DOM under the gesture to tell "user is scrolling a list" from "user is dragging the sheet" — needed because RN Web's own scroll and gesture systems don't arbitrate that for you.</p>
+      <pre><span class="c3">// gesture only claims the drag if the touched list is already at its scroll top</span>
+onMoveShouldSetPanResponder: (_, g) =&gt;
+  gestureStartedAtTop.current &amp;&amp; g.dy &gt; 4 &amp;&amp; Math.abs(g.dy) &gt; Math.abs(g.dx) * 1.15</pre>
+    </div>
+
+    <div class="mech">
+      <div class="mech-head"><h3>Local-only storage, explicit backup</h3><span class="file">storage/backup.ts</span></div>
+      <p>All data lives in <code>localStorage</code>, never a server. Export builds a <code>Blob</code>, points an off-screen anchor's <code>download</code> attribute at an object URL, and clicks it programmatically — the same primitive as any browser file download, no server round-trip. Restore reuses <code>expo-document-picker</code> and merges by a natural key (period start) rather than replacing wholesale.</p>
+      <pre><span class="c3">const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+const href = URL.createObjectURL(blob);
+const link = document.createElement('a');
+link.href = href; link.download = filename;
+document.body.appendChild(link); link.click(); link.remove();
+setTimeout(() =&gt; URL.revokeObjectURL(href), 1000);</span></pre>
+    </div>
+
+    <div class="mech">
+      <div class="mech-head"><h3>Build-time version stamp</h3><span class="file">package.json · scripts</span></div>
+      <p><code>EXPO_PUBLIC_*</code> vars are inlined by Metro at bundle time, not read at runtime — so the build script exports a fresh timestamp inline, right before the export command runs, and a plain component reads it off <code>process.env</code>.</p>
+      <pre><span class="c3">"build:web": "EXPO_PUBLIC_ESCREW_BUILT_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ) expo export --platform web --output-dir dist"</span></pre>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">06</span><h2>Carry-over principles</h2></div>
+    <div class="principles">
+      <div class="principle"><span class="k">material</span><span class="v">Glass is <b>additive</b> — get the flat palette and layout right first, then add blur/translucency/shadow as one final pass on top. Adding it earlier makes contrast bugs hard to see.</span></div>
+      <div class="principle"><span class="k">tokens</span><span class="v">One palette object, all colors sourced from it. Zero literal hex codes inside component styles — makes a full re-theme a one-file edit.</span></div>
+      <div class="principle"><span class="k">platform</span><span class="v">Web-only CSS (<code>backdrop-filter</code>, <code>calc()</code> heights) goes through <code>Platform.select</code>, cast <code>as any</code>, isolated in one named constant per effect — never inlined ad hoc.</span></div>
+      <div class="principle"><span class="k">numbers</span><span class="v">Anything a user reads as a number — times, hours, dates — gets a monospace font and <code>tabular-nums</code>, even inside an otherwise proportional UI.</span></div>
+      <div class="principle"><span class="k">privacy</span><span class="v">No credential, token, or session ever enters app state. Only the business data the user explicitly imports does — and it never leaves the device.</span></div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Extracted from eScrew · PR #91</span>
+    <span>For reuse in a new product — adapt the accent, keep the mechanics</span>
+  </footer>
+
+</div>
