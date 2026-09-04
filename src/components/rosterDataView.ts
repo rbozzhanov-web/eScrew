@@ -122,7 +122,9 @@ function presentEvent(supplement: NormalizedSupplement): { title: string; badge:
   const title = description || code || supplement.title || type || 'Roster event';
   const badge = eventBadge(type, code, supplement.category);
   const range = eventRange(supplement) ?? (details.includes('Full day') ? 'Full day' : undefined);
-  return { title, badge, detail: range, station: station || undefined };
+  const willingToFly = /standby/i.test(type) && field(supplement, 'WillingToFly') === 'true' ? 'Willing to fly' : undefined;
+  const detail = [range, willingToFly].filter(Boolean).join(' · ') || undefined;
+  return { title, badge, detail, station: station || undefined };
 }
 
 function eventBadge(type: string, code: string, category: NormalizedSupplement['category']): string {

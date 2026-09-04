@@ -5,6 +5,7 @@ import { IOSSheet } from './IOSOverlay';
 import { SwipeSurface } from './SwipeSurface';
 import { buildRosterTimeline, flightExtra, stayForSector, type RosterTimelineRow, type RosterWithNormalized } from './rosterDataView';
 import { listenForAimsRoster } from '@/src/aims/bridge';
+import type { NormalizedExpiry } from '@/src/core/rosterContract';
 import { exportRosterCalendar } from '@/src/domain/calendar';
 import { formatMinutes, rosterMonthLabel, rosterToDuties } from '@/src/domain/rosterView';
 import { stationLocalDateTimeMs } from '@/src/domain/stationTime';
@@ -342,14 +343,46 @@ function FlightFact({ label, value, palette }: { label: string; value: string; p
   return <View style={styles.flightFact}><Text style={[styles.flightFactLabel, { color: palette.muted }]}>{label}</Text><Text style={[styles.flightFactValue, { color: palette.text }]}>{value}</Text></View>;
 }
 
-function MoreScreen({ rosters, palette, onAimsSetup, onDeleteRoster, onErase }: { rosters: ParsedAirAstanaRoster[]; palette: Palette; onAimsSetup: () => void; onDeleteRoster: (periodStart: string) => void; onErase: () => void }) {
+function MoreScreen({ rosters, palette, onAimsSetup, onDeleteRoster, onErase }: { rosters: RosterWithNormalized[]; palette: Palette; onAimsSetup: () => void; onDeleteRoster: (periodStart: string) => void; onErase: () => void }) {
+  const expiries = rosters.at(-1)?.normalized?.expiries ?? [];
+  const sortedExpiries = useMemo(() => [...expiries].sort((a, b) => (a.date ?? '').localeCompare(b.date ?? '')), [expiries]);
   return <View style={styles.screen}>
     <Text style={[styles.sectionTitle, { color: palette.text }]}>More</Text>
     <Pressable onPress={onAimsSetup} style={[styles.settingsCard, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}><View style={styles.grow}><Text style={[styles.cardTitle, { color: palette.text }]}>Safari connector setup</Text><Text style={[styles.meta, { color: palette.muted }]}>One-time setup for sending roster data back to eScrew without sharing credentials or session data.</Text></View><Text style={[styles.chevron, { color: palette.muted }]}>›</Text></Pressable>
     <View style={[styles.libraryCard, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}><Text style={[styles.cardTitle, { color: palette.text }]}>Rosters</Text>{rosters.length ? <FlatList data={rosters} keyExtractor={(item) => item.period.start} style={styles.libraryList} showsVerticalScrollIndicator={false} renderItem={({ item }) => <View style={[styles.libraryRow, { borderColor: palette.line }]}><View style={styles.grow}><Text style={[styles.libraryMonth, { color: palette.text }]}>{rosterMonthLabel(item)}</Text><Text style={[styles.meta, { color: palette.muted }]}>{item.subject?.base ?? 'Roster'} · stored locally</Text></View><Pressable onPress={() => onDeleteRoster(item.period.start)} style={[styles.deleteRosterButton, { backgroundColor: palette.accentSoft }]}><Text style={[styles.deleteRosterText, { color: palette.danger }]}>Delete</Text></Pressable></View>} /> : <Text style={[styles.meta, { color: palette.muted }]}>No rosters stored</Text>}</View>
+    {sortedExpiries.length > 0 && <View style={[styles.libraryCard, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}><Text style={[styles.cardTitle, { color: palette.text }]}>Expiry Dates</Text><FlatList data={sortedExpiries} keyExtractor={(item, index) => `${item.code}-${index}`} style={styles.libraryList} showsVerticalScrollIndicator={false} renderItem={({ item }) => <ExpiryRow expiry={item} palette={palette} />} /></View>}
     <View style={[styles.infoCard, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}><Text style={[styles.cardTitle, { color: palette.text }]}>Privacy</Text><Text style={[styles.meta, { color: palette.muted }]}>Roster PDFs are parsed locally. AIMS sends roster data only; credentials and session data are not stored by eScrew.</Text></View>
     {rosters.length > 0 && <Pressable onPress={onErase} style={[styles.secondaryButton, { borderColor: palette.line }]}><Text style={[styles.secondaryText, { color: palette.text }]}>Erase local roster data</Text></Pressable>}
   </View>;
+}
+
+function ExpiryRow({ expiry, palette }: { expiry: NormalizedExpiry; palette: Palette }) {
+  const status = expiryStatus(expiry.date);
+  const color = status === 'expired' ? palette.danger : status === 'soon' ? palette.gold : palette.text;
+  return <View style={[styles.libraryRow, { borderColor: palette.line }]}>
+    <View style={styles.grow}>
+      <Text style={[styles.libraryMonth, { color: palette.text }]}>{expiry.code}</Text>
+      {expiry.description ? <Text numberOfLines={1} style={[styles.meta, { color: palette.muted }]}>{expiry.description}</Text> : null}
+    </View>
+    <Text style={[styles.expiryDate, { color }]}>{formatExpiryDate(expiry.date)}</Text>
+  </View>;
+}
+
+function expiryStatus(date?: string): 'expired' | 'soon' | 'ok' | undefined {
+  if (!date) return undefined;
+  const target = new Date(`${date}T00:00:00Z`).getTime();
+  if (!Number.isFinite(target)) return undefined;
+  const days = (target - Date.now()) / 86400000;
+  return days < 0 ? 'expired' : days <= 60 ? 'soon' : 'ok';
+}
+
+function formatExpiryDate(date?: string): string {
+  if (!date) return '—';
+  const [year, month, day] = date.split('-').map(Number);
+  const parsed = new Date(Date.UTC(year, (month ?? 1) - 1, day ?? 1));
+  if (!Number.isFinite(parsed.getTime())) return date;
+  const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  return `${String(parsed.getUTCDate()).padStart(2, '0')} ${months[parsed.getUTCMonth()]} ${parsed.getUTCFullYear()}`;
 }
 
 function useNow(): number { const [now, setNow] = useState(() => Date.now()); useEffect(() => { const timer = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(timer); }, []); return now; }
@@ -376,7 +409,7 @@ const styles = StyleSheet.create({
   summaryRow:{flexDirection:'row',gap:10}, summary:{flex:1,borderWidth:1,borderRadius:20,padding:14}, summaryValue:{fontSize:28,fontWeight:'700',marginTop:6,fontVariant:['tabular-nums']}, upNext:{flex:1,minHeight:0,gap:2}, upNextList:{flex:1}, upNextRow:{flexDirection:'row',alignItems:'center',gap:12,paddingVertical:11,borderBottomWidth:StyleSheet.hairlineWidth}, upNextDate:{fontSize:12,fontWeight:'700',letterSpacing:.4,width:54}, upNextRoute:{flex:1,fontSize:15,fontWeight:'600'}, upNextTimeBlock:{minWidth:72,alignItems:'flex-end'}, upNextTimeLabel:{fontSize:8,lineHeight:10,fontWeight:'700',letterSpacing:.45,marginBottom:1}, upNextTime:{fontSize:14,fontWeight:'600',fontVariant:['tabular-nums']},
   primaryButton:{height:50,borderRadius:16,alignItems:'center',justifyContent:'center'}, actionText:{color:'#fff',fontWeight:'700'}, titleRow:{flexDirection:'row',alignItems:'center',gap:8}, titleActions:{flexDirection:'row',gap:7}, compactButton:{height:38,minWidth:72,borderWidth:1,borderRadius:14,alignItems:'center',justifyContent:'center',paddingHorizontal:10}, compactText:{fontWeight:'700',fontSize:12}, monthNav:{height:40,flexDirection:'row',alignItems:'center',justifyContent:'space-between'}, monthNavText:{fontSize:12,fontWeight:'600'}, error:{fontSize:12},
   emptyCard:{borderWidth:1,borderRadius:20,padding:14}, innerWindow:{flex:1,minHeight:0,borderWidth:1,borderRadius:20,overflow:'hidden'}, listContent:{padding:8,gap:7,paddingBottom:18}, rosterCard:{borderWidth:1,borderRadius:16,padding:13}, flightCardTop:{flexDirection:'row',justifyContent:'space-between'}, flightNumber:{fontSize:11,fontWeight:'700'}, rosterRoute:{fontSize:20,fontWeight:'700',marginTop:4}, rosterEventTitle:{fontSize:18,lineHeight:22,fontWeight:'700',marginTop:4},
-  infoCard:{borderWidth:1,borderRadius:20,padding:14,gap:3}, cardTitle:{fontSize:15,fontWeight:'700'}, settingsCard:{minHeight:68,borderWidth:1,borderRadius:20,padding:14,flexDirection:'row',alignItems:'center'}, chevron:{fontSize:30}, secondaryButton:{height:48,borderWidth:1,borderRadius:15,alignItems:'center',justifyContent:'center'}, secondaryText:{fontWeight:'600'}, libraryCard:{borderWidth:1,borderRadius:20,padding:14,minHeight:88,maxHeight:190}, libraryList:{marginTop:5}, libraryRow:{minHeight:54,flexDirection:'row',alignItems:'center',gap:10,borderBottomWidth:StyleSheet.hairlineWidth}, libraryMonth:{fontSize:14,fontWeight:'700'}, deleteRosterButton:{minWidth:58,height:34,borderRadius:12,alignItems:'center',justifyContent:'center',paddingHorizontal:8}, deleteRosterText:{fontSize:11,fontWeight:'700'},
+  infoCard:{borderWidth:1,borderRadius:20,padding:14,gap:3}, cardTitle:{fontSize:15,fontWeight:'700'}, settingsCard:{minHeight:68,borderWidth:1,borderRadius:20,padding:14,flexDirection:'row',alignItems:'center'}, chevron:{fontSize:30}, secondaryButton:{height:48,borderWidth:1,borderRadius:15,alignItems:'center',justifyContent:'center'}, secondaryText:{fontWeight:'600'}, libraryCard:{borderWidth:1,borderRadius:20,padding:14,minHeight:88,maxHeight:190}, libraryList:{marginTop:5}, libraryRow:{minHeight:54,flexDirection:'row',alignItems:'center',gap:10,borderBottomWidth:StyleSheet.hairlineWidth}, libraryMonth:{fontSize:14,fontWeight:'700'}, deleteRosterButton:{minWidth:58,height:34,borderRadius:12,alignItems:'center',justifyContent:'center',paddingHorizontal:8}, deleteRosterText:{fontSize:11,fontWeight:'700'}, expiryDate:{fontSize:12,fontWeight:'700',fontVariant:['tabular-nums']},
   depthSurface:{shadowColor:'#000',shadowOffset:{width:0,height:10},shadowOpacity:.1,shadowRadius:24,elevation:5}, tabBar:{height:68,marginTop:8,marginBottom:4,borderWidth:1,borderRadius:22,flexDirection:'row'}, tabSelection:{position:'absolute',left:4,top:4,bottom:4,borderRadius:18,shadowColor:'#000',shadowOffset:{width:0,height:5},shadowOpacity:.08,shadowRadius:12,elevation:2}, tabItem:{flex:1,zIndex:1,alignItems:'center',justifyContent:'center',gap:2}, tabIconWrap:{minWidth:35,height:27,borderRadius:14,alignItems:'center',justifyContent:'center'}, tabIcon:{textAlign:'center'}, tabText:{fontSize:11,fontWeight:'600'},
   flightSheet:{width:'100%',maxWidth:620,maxHeight:'78%',alignSelf:'center',borderTopWidth:1,borderTopLeftRadius:28,borderTopRightRadius:28,paddingHorizontal:18,paddingBottom:12,overflow:'hidden'}, flightSheetContent:{minHeight:0,flexShrink:1}, sheetRoute:{fontSize:28,lineHeight:33,fontWeight:'700',marginTop:5}, swipeHint:{fontSize:10,marginTop:7}, flyingWith:{fontSize:12,fontWeight:'700',marginTop:12,marginBottom:7}, crewScroll:{minHeight:0,flexShrink:1}, crewList:{paddingBottom:12}, crewRow:{minHeight:50,flexDirection:'row',alignItems:'center'}, avatar:{width:34,height:34,borderRadius:17,alignItems:'center',justifyContent:'center',marginRight:11}, avatarText:{fontSize:12,fontWeight:'800'}, crewName:{fontSize:14,fontWeight:'600'},
   flightFacts:{flexDirection:'row',gap:6,borderTopWidth:StyleSheet.hairlineWidth,borderBottomWidth:StyleSheet.hairlineWidth,paddingVertical:10,marginTop:10}, flightFact:{flex:1,minWidth:0}, flightFactLabel:{fontSize:9,lineHeight:12,fontWeight:'700',letterSpacing:.45}, flightFactValue:{fontSize:16,lineHeight:20,fontWeight:'700',fontVariant:['tabular-nums'],marginTop:2}, stayCard:{borderWidth:1,borderRadius:16,padding:12,marginTop:12}, stayTitle:{fontSize:16,lineHeight:21,fontWeight:'700',marginTop:4}, stayMeta:{fontSize:11,lineHeight:15,marginTop:4},

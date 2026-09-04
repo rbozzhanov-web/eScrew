@@ -1,5 +1,5 @@
 import { projectNormalizedRoster, type ProjectedRoster } from '@/src/application/rosterProjection';
-import type { NormalizedCrewMember, NormalizedFlight, NormalizedRoster, NormalizedSupplement } from '@/src/core/rosterContract';
+import type { NormalizedCrewMember, NormalizedExpiry, NormalizedFlight, NormalizedRoster, NormalizedSupplement } from '@/src/core/rosterContract';
 import { adaptAimsSchedulerResponse, type AimsSchedulerResponse } from './adapter';
 
 type JsonRecord = Record<string, unknown>;
@@ -29,6 +29,7 @@ export function parseAimsCrewScheduleHtml(html: string): ProjectedRoster {
   attachMissingSectorEvents(normalized, schedulerEvents);
   attachCrew(normalized, findElementById(initialResult.elementList, 'members'));
   attachHotels(normalized, findElementById(initialResult.elementList, 'hotels'));
+  attachExpiries(normalized, findElementById(initialResult.elementList, 'expiries'));
 
   const projected = projectNormalizedRoster(normalized);
   const hours = findElementById(initialResult.elementList, 'hours');
@@ -136,6 +137,25 @@ function attachHotels(roster: NormalizedRoster, hotelsElement?: JsonRecord) {
   }
   if (!supplements.length) return;
   roster.supplements = [...(roster.supplements ?? []), ...supplements];
+}
+
+function attachExpiries(roster: NormalizedRoster, expiriesElement?: JsonRecord) {
+  const rows = expiriesElement && Array.isArray(expiriesElement.data) ? expiriesElement.data : [];
+  const expiries: NormalizedExpiry[] = [];
+  for (const row of rows) {
+    if (!isRecord(row)) continue;
+    const code = textValue(row.code).trim();
+    if (!code) continue;
+    const description = textValue(row.description).trim() || undefined;
+    const date = isoExpiryDate(textValue(row.expirydate));
+    expiries.push({ code, description, date });
+  }
+  if (expiries.length) roster.expiries = expiries;
+}
+
+function isoExpiryDate(value: string): string | undefined {
+  const match = /^(\d{4})\/(\d{2})\/(\d{2})$/.exec(value.trim());
+  return match ? `${match[1]}-${match[2]}-${match[3]}` : undefined;
 }
 
 function parseCrewGroup(value: string): { date: string; flightNumber: string; origin: string; destination: string } | undefined {
