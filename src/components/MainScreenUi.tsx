@@ -47,6 +47,43 @@ function styleSecondary(button?: HTMLElement) {
   tintText(button, dark ? '#67A5FF' : ACCENT);
 }
 
+function makeFlightSheetScrollable(root: HTMLElement) {
+  const hints = [...root.querySelectorAll<HTMLElement>('*')]
+    .filter((element) => element.children.length === 0 && /swipe flight.*swipe down to close/i.test(element.textContent?.trim() ?? ''));
+
+  hints.forEach((hint) => {
+    const sheetContent = hint.parentElement ?? undefined;
+    if (!sheetContent) return;
+    sheetContent.dataset.escrewFlightScroll = '1';
+    setImportant(sheetContent, 'overflow-y', 'auto');
+    setImportant(sheetContent, 'overflow-x', 'hidden');
+    setImportant(sheetContent, 'overscroll-behavior-y', 'contain');
+    setImportant(sheetContent, '-webkit-overflow-scrolling', 'touch');
+    setImportant(sheetContent, 'min-height', '0px');
+
+    const flyingWith = [...sheetContent.querySelectorAll<HTMLElement>('*')]
+      .find((element) => element.children.length === 0 && /^Flying with · \d+$/.test(element.textContent?.trim() ?? ''));
+    if (!flyingWith) return;
+
+    let node = flyingWith.nextElementSibling as HTMLElement | null;
+    if (!node) node = flyingWith.parentElement?.lastElementChild as HTMLElement | null;
+    if (!node) return;
+
+    const candidates = [node, ...node.querySelectorAll<HTMLElement>('*')];
+    candidates.forEach((candidate) => {
+      const overflowY = window.getComputedStyle(candidate).overflowY;
+      if (overflowY !== 'auto' && overflowY !== 'scroll') return;
+      candidate.dataset.escrewCrewScroller = '1';
+      setImportant(candidate, 'overflow-y', 'visible');
+      setImportant(candidate, 'overflow-x', 'visible');
+      setImportant(candidate, 'max-height', 'none');
+      setImportant(candidate, 'height', 'auto');
+      setImportant(candidate, 'min-height', '0px');
+      setImportant(candidate, 'flex-shrink', '0');
+    });
+  });
+}
+
 function enhanceUi() {
   if (typeof document === 'undefined') return;
   const root = document.getElementById('root');
@@ -174,6 +211,8 @@ function enhanceUi() {
       setImportant(element, 'letter-spacing', '.45px');
       setImportant(element, 'opacity', '.82');
     });
+
+  makeFlightSheetScrollable(root);
 }
 
 export default function MainScreenUi() {
