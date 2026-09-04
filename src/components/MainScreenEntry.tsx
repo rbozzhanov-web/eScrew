@@ -1,4 +1,5 @@
 import MainScreen from './MainScreen';
+import { installRosterDayColors } from './rosterDayColors';
 import { parseAimsShortcutCapture } from '@/src/aims/shortcutCapture';
 import { upsertStoredRoster } from '@/src/storage/rosterStorage';
 
@@ -24,5 +25,6 @@ function consumeShortcutCapture() {
 }
 
 consumeShortcutCapture();
+installRosterDayColors();
 
 export default MainScreen;
