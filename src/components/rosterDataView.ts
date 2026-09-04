@@ -75,7 +75,8 @@ export function flightExtra(roster: RosterWithNormalized | undefined, sector: Se
 export function stayForSector(roster: RosterWithNormalized | undefined, sector: Sector): StayInfo | undefined {
   const supplements = roster?.normalized?.supplements ?? [];
   const station = sector.arrival.toUpperCase();
-  const dated = supplements.find((item) => item.category === 'hotel' && item.date === sectorDate(roster?.normalized, sector));
+  const flightDate = sectorDate(roster?.normalized, sector);
+  const dated = supplements.find((item) => item.category === 'hotel' && item.date === flightDate && field(item, 'location')?.toUpperCase() === station);
   const directory = supplements.find((item) => item.category === 'hotel' && !item.date && field(item, 'port')?.toUpperCase() === station);
   if (!dated && !directory) return undefined;
 
