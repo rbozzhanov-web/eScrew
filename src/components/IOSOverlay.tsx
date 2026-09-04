@@ -44,6 +44,22 @@ const WEB_OPACITY_LAYER = Platform.OS === 'web'
   ? ({ willChange: 'opacity' } as any)
   : undefined;
 
+function webScrollAtTop(event: unknown, fallback: boolean): boolean {
+  if (Platform.OS !== 'web' || typeof window === 'undefined' || typeof HTMLElement === 'undefined') return fallback;
+  const candidate = (event as { target?: unknown; nativeEvent?: { target?: unknown } })?.target
+    ?? (event as { nativeEvent?: { target?: unknown } })?.nativeEvent?.target;
+  if (!(candidate instanceof HTMLElement)) return fallback;
+
+  let node: HTMLElement | null = candidate;
+  while (node) {
+    const overflowY = window.getComputedStyle(node).overflowY;
+    const scrollable = (overflowY === 'auto' || overflowY === 'scroll') && node.scrollHeight > node.clientHeight + 1;
+    if (scrollable) return node.scrollTop <= 1;
+    node = node.parentElement;
+  }
+  return fallback;
+}
+
 export function IOSSheet({ visible, onClose, children, style, handleColor, backdropOpacity = 0.46, scrollAtTop = true }: SheetProps) {
   const [mounted, setMounted] = useState(visible);
   const presentation = useRef(new Animated.Value(visible ? 1 : 0)).current;
@@ -103,8 +119,8 @@ export function IOSSheet({ visible, onClose, children, style, handleColor, backd
   }, [dragY, mounted, presentation, visible]);
 
   const responder = useMemo(() => PanResponder.create({
-    onStartShouldSetPanResponderCapture: () => {
-      gestureStartedAtTop.current = scrollAtTopRef.current;
+    onStartShouldSetPanResponderCapture: (event) => {
+      gestureStartedAtTop.current = webScrollAtTop(event, scrollAtTopRef.current);
       return false;
     },
     onMoveShouldSetPanResponder: (_, gesture) => gestureStartedAtTop.current && gesture.dy > 4 && Math.abs(gesture.dy) > Math.abs(gesture.dx) * 1.15,
