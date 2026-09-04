@@ -3,10 +3,10 @@ import { Platform, Pressable, StyleSheet, Text, View, useColorScheme } from 'rea
 import MainScreenEntry from './MainScreenEntry';
 
 const SHORTCUT_RESULT_KEY = 'escrew.aims.shortcut.lastResult';
-
 type ShortcutNotice = 'success' | 'error';
 
-const ACCENT = '#2D7DFF';
+let aimsLaunchPending = false;
+let aimsLaunchObserved = false;
 
 function leafWithText(root: HTMLElement, values: string[]): HTMLElement | undefined {
   return [...root.querySelectorAll<HTMLElement>('*')].find((element) => element.children.length === 0 && values.includes(element.textContent?.trim() ?? ''));
@@ -20,31 +20,22 @@ function interactiveAncestor(element?: HTMLElement): HTMLElement | undefined {
   return element?.parentElement ?? undefined;
 }
 
-function setImportant(element: HTMLElement | undefined, name: string, value: string) {
-  if (!element) return;
-  if (element.style.getPropertyValue(name) === value && element.style.getPropertyPriority(name) === 'important') return;
-  element.style.setProperty(name, value, 'important');
+function bindAimsLaunch(button?: HTMLElement) {
+  if (!button || button.dataset.escrewLaunchWatch) return;
+  button.dataset.escrewLaunchWatch = '1';
+  button.addEventListener('click', () => {
+    aimsLaunchPending = true;
+    aimsLaunchObserved = false;
+    requestAnimationFrame(enhanceUi);
+  }, true);
 }
 
-function tintText(element: HTMLElement | undefined, color: string) {
-  if (!element) return;
-  const leaves = [element, ...element.querySelectorAll<HTMLElement>('*')].filter((item) => item.children.length === 0);
-  leaves.forEach((item) => setImportant(item, 'color', color));
-}
-
-function stylePrimary(button?: HTMLElement) {
-  if (!button) return;
-  setImportant(button, 'background-color', ACCENT);
-  setImportant(button, 'border-color', ACCENT);
-  tintText(button, '#FFFFFF');
-}
-
-function styleSecondary(button?: HTMLElement) {
-  if (!button) return;
-  const dark = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
-  setImportant(button, 'background-color', dark ? 'rgba(103,165,255,.10)' : 'rgba(45,125,255,.07)');
-  setImportant(button, 'border-color', dark ? 'rgba(148,163,184,.18)' : '#E9EDF2');
-  tintText(button, dark ? '#67A5FF' : ACCENT);
+function setSpinnerVisible(container: HTMLElement | undefined, visible: boolean) {
+  if (!container) return;
+  container.querySelectorAll<HTMLElement>('[role="progressbar"]').forEach((spinner) => {
+    if (visible) spinner.style.removeProperty('display');
+    else spinner.style.setProperty('display', 'none', 'important');
+  });
 }
 
 function enhanceUi() {
@@ -52,82 +43,33 @@ function enhanceUi() {
   const root = document.getElementById('root');
   if (!root) return;
 
-  const headerAims = root.querySelector<HTMLElement>('[aria-label="Update roster from AIMS"], [aria-label="Import roster from AIMS"]')
-    ?? interactiveAncestor(leafWithText(root, ['A']));
-  if (headerAims) {
-    headerAims.dataset.escrewAimsTrigger = '1';
-    setImportant(headerAims, 'width', '72px');
-    setImportant(headerAims, 'height', '40px');
-    setImportant(headerAims, 'border-radius', '16px');
-    const glyph = leafWithText(headerAims, ['A']);
-    if (glyph) {
-      glyph.textContent = 'AIMS';
-      setImportant(glyph, 'font-size', '12px');
-      setImportant(glyph, 'letter-spacing', '.2px');
-    }
-  }
+  const headerAims = root.querySelector<HTMLElement>('[aria-label="Update roster from AIMS"], [aria-label="Import roster from AIMS"]') ?? undefined;
+  bindAimsLaunch(headerAims);
 
-  let homeAims = root.querySelector<HTMLElement>('[data-escrew-home-aims]') ?? undefined;
-  if (!homeAims) {
-    const label = leafWithText(root, ['Connect AIMS']);
-    homeAims = interactiveAncestor(label);
-    if (homeAims) {
-      homeAims.dataset.escrewHomeAims = '1';
-      if (label) label.textContent = 'Import from AIMS';
-    }
-  }
+  const homeAimsLabel = leafWithText(root, ['Connect AIMS', 'Import from AIMS']);
+  const homeAims = interactiveAncestor(homeAimsLabel);
+  if (homeAimsLabel?.textContent?.trim() === 'Connect AIMS') homeAimsLabel.textContent = 'Import from AIMS';
+  bindAimsLaunch(homeAims);
 
-  let homeFile = root.querySelector<HTMLElement>('[data-escrew-home-file]') ?? undefined;
-  if (!homeFile) {
-    const label = leafWithText(root, ['Import roster PDF']);
-    homeFile = interactiveAncestor(label);
-    if (homeFile) {
-      homeFile.dataset.escrewHomeFile = '1';
-      if (label) label.textContent = 'Import file';
-    }
-  }
+  const homeFileLabel = leafWithText(root, ['Import roster PDF', 'Import file']);
+  const homeFile = interactiveAncestor(homeFileLabel);
+  if (homeFileLabel?.textContent?.trim() === 'Import roster PDF') homeFileLabel.textContent = 'Import file';
 
-  if (homeAims && homeFile && homeAims.parentElement === homeFile.parentElement) {
-    homeAims.parentElement?.insertBefore(homeAims, homeFile);
-    stylePrimary(homeAims);
-    styleSecondary(homeFile);
+  if (homeAims && homeFile && homeAims.parentElement === homeFile.parentElement && homeFile.nextElementSibling === homeAims) {
+    homeAims.parentElement.insertBefore(homeAims, homeFile);
   }
 
   const homeIntro = leafWithText(root, ['Choose how to add your Air Astana crew schedule.']);
-  if (homeIntro) homeIntro.textContent = 'Import from AIMS, then tap Share → eScrew Capture.';
+  if (homeIntro) homeIntro.textContent = 'Open AIMS, then Share → eScrew Capture.';
 
   for (const oldLabel of ['Add PDF', 'PDF']) {
     const label = leafWithText(root, [oldLabel]);
-    const button = interactiveAncestor(label);
-    if (!button) continue;
-    button.dataset.escrewRosterFile = '1';
     if (label) label.textContent = 'Import file';
-    setImportant(button, 'min-width', '84px');
-    styleSecondary(button);
   }
 
-  const rosterFile = root.querySelector<HTMLElement>('[data-escrew-roster-file]') ?? undefined;
-  if (rosterFile) {
-    const actions = rosterFile.parentElement ?? undefined;
-    const hasRoster = Boolean(actions && [...actions.querySelectorAll<HTMLElement>('*')].some((element) => element.children.length === 0 && ['Calendar', 'Added', 'Retry'].includes(element.textContent?.trim() ?? '')));
-    if (actions && hasRoster && !actions.querySelector('[data-escrew-roster-aims]')) {
-      const aimsButton = rosterFile.cloneNode(true) as HTMLElement;
-      aimsButton.removeAttribute('data-escrew-roster-file');
-      aimsButton.dataset.escrewRosterAims = '1';
-      const label = [...aimsButton.querySelectorAll<HTMLElement>('*')].find((element) => element.children.length === 0);
-      if (label) label.textContent = 'AIMS';
-      setImportant(aimsButton, 'min-width', '64px');
-      stylePrimary(aimsButton);
-      const trigger = () => root.querySelector<HTMLElement>('[data-escrew-aims-trigger]')?.click();
-      aimsButton.addEventListener('click', (event) => { event.preventDefault(); event.stopPropagation(); trigger(); });
-      aimsButton.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); trigger(); } });
-      actions.insertBefore(aimsButton, rosterFile);
-    }
-    if (actions && !hasRoster) {
-      const existingAimsLabel = [...actions.querySelectorAll<HTMLElement>('*')].find((element) => element.children.length === 0 && element.textContent?.trim() === 'AIMS');
-      stylePrimary(interactiveAncestor(existingAimsLabel));
-    }
-  }
+  const rosterAimsLabel = leafWithText(root, ['AIMS']);
+  const rosterAims = interactiveAncestor(rosterAimsLabel);
+  if (rosterAims && rosterAims !== headerAims) bindAimsLaunch(rosterAims);
 
   const emptyRoster = leafWithText(root, ['Add a roster from PDF or AIMS to begin.']);
   if (emptyRoster) emptyRoster.textContent = 'Start with AIMS, or import a saved roster file.';
@@ -147,12 +89,22 @@ function enhanceUi() {
     if (element) element.textContent = to;
   });
 
-  let shortcutTitle = leafWithText(root, ['Safari connector setup', 'eScrew Capture Shortcut']);
+  const statusTitle = leafWithText(root, ['Opening AIMS', 'Importing roster…', 'Roster updated', 'AIMS closed', 'Could not import roster']);
+  const statusCard = statusTitle?.parentElement?.parentElement ?? undefined;
+  const terminalState = statusTitle && ['Roster updated', 'AIMS closed', 'Could not import roster'].includes(statusTitle.textContent?.trim() ?? '');
+  if (terminalState) {
+    aimsLaunchPending = false;
+    aimsLaunchObserved = false;
+  }
+  const showAimsSpinner = !aimsLaunchPending || aimsLaunchObserved;
+  setSpinnerVisible(headerAims, showAimsSpinner);
+  setSpinnerVisible(statusCard, showAimsSpinner);
+
+  const shortcutTitle = leafWithText(root, ['Safari connector setup', 'eScrew Capture Shortcut']);
   if (shortcutTitle) {
     shortcutTitle.textContent = 'eScrew Capture Shortcut';
     const card = interactiveAncestor(shortcutTitle);
     if (card) {
-      card.dataset.escrewShortcutSetup = '1';
       const oldDetail = [...card.querySelectorAll<HTMLElement>('*')].find((element) => element.children.length === 0 && element.textContent?.trim() === 'One-time setup for sending roster data back to eScrew without sharing credentials or session data.');
       if (oldDetail) oldDetail.textContent = 'Set up · How it works';
       if (!card.dataset.escrewShortcutBound) {
@@ -166,14 +118,6 @@ function enhanceUi() {
       }
     }
   }
-
-  [...root.querySelectorAll<HTMLElement>('*')]
-    .filter((element) => element.children.length === 0 && /^Flying with · \d+$/.test(element.textContent?.trim() ?? ''))
-    .forEach((element) => {
-      setImportant(element, 'font-size', '11px');
-      setImportant(element, 'letter-spacing', '.45px');
-      setImportant(element, 'opacity', '.82');
-    });
 }
 
 export default function MainScreenUi() {
@@ -205,22 +149,28 @@ export default function MainScreenUi() {
       queued = true;
       requestAnimationFrame(() => { queued = false; enhanceUi(); });
     };
+    const observeLaunch = () => {
+      if (!aimsLaunchPending) return;
+      aimsLaunchObserved = true;
+      apply();
+    };
     enhanceUi();
     const observer = new MutationObserver(apply);
     const root = document.getElementById('root');
     if (root) observer.observe(root, { subtree: true, childList: true, attributes: true, attributeFilter: ['style', 'aria-label'] });
-    const media = window.matchMedia?.('(prefers-color-scheme: dark)');
-    media?.addEventListener?.('change', apply);
+    window.addEventListener('blur', observeLaunch);
+    document.addEventListener('visibilitychange', observeLaunch);
     return () => {
       observer.disconnect();
-      media?.removeEventListener?.('change', apply);
+      window.removeEventListener('blur', observeLaunch);
+      document.removeEventListener('visibilitychange', observeLaunch);
     };
   }, []);
 
   return <View style={styles.root}>
     <MainScreenEntry />
     {notice && <View pointerEvents="box-none" style={styles.noticeLayer}>
-      <Pressable onPress={() => setNotice(undefined)} style={[styles.notice, { backgroundColor: dark ? 'rgba(22,30,45,.97)' : 'rgba(255,255,255,.98)', borderColor: notice === 'success' ? (dark ? '#67A5FF' : ACCENT) : (dark ? '#E08383' : '#B84B52') }]}>
+      <Pressable onPress={() => setNotice(undefined)} style={[styles.notice, { backgroundColor: dark ? 'rgba(22,30,45,.97)' : 'rgba(255,255,255,.98)', borderColor: notice === 'success' ? (dark ? '#67A5FF' : '#2D7DFF') : (dark ? '#E08383' : '#B84B52') }]}>
         <Text style={[styles.noticeTitle, { color: dark ? '#F8FAFC' : '#0F172A' }]}>{notice === 'success' ? 'Roster updated' : 'Could not import roster'}</Text>
         <Text style={[styles.noticeText, { color: dark ? '#98A2B3' : '#6B7280' }]}>{notice === 'success' ? 'AIMS roster imported with eScrew Capture.' : 'Open Crew Schedule and try Share → eScrew Capture again.'}</Text>
       </Pressable>
