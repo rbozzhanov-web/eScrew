@@ -34,9 +34,6 @@ type DialogProps = {
 };
 
 const SPRING = { stiffness: 300, damping: 31, mass: 0.9, useNativeDriver: true } as const;
-const WEB_GLASS = Platform.OS === 'web'
-  ? ({ backdropFilter: 'blur(18px) saturate(1.18)', WebkitBackdropFilter: 'blur(18px) saturate(1.18)' } as any)
-  : undefined;
 const WEB_TRANSFORM_LAYER = Platform.OS === 'web'
   ? ({ willChange: 'transform', backfaceVisibility: 'hidden', transformStyle: 'preserve-3d' } as any)
   : undefined;
@@ -163,7 +160,7 @@ export function IOSSheet({ visible, onClose, children, style, handleColor, backd
       >
         <View
           onLayout={(event) => { sheetHeight.current = event.nativeEvent.layout.height; }}
-          style={[styles.sheetBase, WEB_GLASS, style]}
+          style={[styles.sheetBase, style]}
           {...responder.panHandlers}
         >
           <View style={styles.grabberTouch}>
@@ -225,7 +222,7 @@ export function IOSDialog({ visible, onClose, children, style, backdropOpacity =
     <View style={[styles.fill, styles.dialogHost]}>
       <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.dim, WEB_OPACITY_LAYER, { opacity: dimOpacity }]} />
       {dismissOnBackdrop && <Pressable style={StyleSheet.absoluteFill} onPress={dismiss} accessibilityRole="button" accessibilityLabel="Close dialog" />}
-      <Animated.View accessibilityViewIsModal style={[WEB_GLASS, WEB_TRANSFORM_LAYER, style, { opacity: presentation, transform: [{ translateY }, { scale }] }]}>
+      <Animated.View accessibilityViewIsModal style={[WEB_TRANSFORM_LAYER, style, { opacity: presentation, transform: [{ translateY }, { scale }] }]}>
         {content}
       </Animated.View>
     </View>
