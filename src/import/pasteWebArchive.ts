@@ -31,7 +31,11 @@ export function openAimsWebArchiveFlow(): Promise<AimsWebArchiveResult | undefin
 
     const help = document.createElement('div');
     help.textContent = 'Open Crew Schedule, then Share → Options → Web Archive → Save to Files. Return to eScrew and choose that Web Archive.';
-    Object.assign(help.style, { fontSize: '14px', lineHeight: '20px', opacity: '.72', marginBottom: '14px' });
+    Object.assign(help.style, { fontSize: '14px', lineHeight: '20px', opacity: '.72', marginBottom: '8px' });
+
+    const helpPeriod = document.createElement('div');
+    helpPeriod.textContent = 'Web Archive only ever captures the period currently open in AIMS. For a different month, generate the PDF "Personal Crew Schedule Report" for that period instead — you can import that file the same way, below.';
+    Object.assign(helpPeriod.style, { fontSize: '13px', lineHeight: '18px', opacity: '.6', marginBottom: '14px' });
 
     const openAims = document.createElement('button');
     openAims.textContent = 'Open AIMS Crew Schedule';
@@ -42,7 +46,7 @@ export function openAimsWebArchiveFlow(): Promise<AimsWebArchiveResult | undefin
     openAims.onclick = () => window.open('https://aims.airastana.com/eCrew/CrewSchedule', 'escrew-aims');
 
     const importArchive = document.createElement('button');
-    importArchive.textContent = 'Import Web Archive';
+    importArchive.textContent = 'Import Web Archive or PDF';
     Object.assign(importArchive.style, {
       width: '100%', border: `1px solid ${dark ? '#232D40' : '#E9EDF2'}`,
       borderRadius: '14px', padding: '13px', fontSize: '15px', fontWeight: '800',
@@ -64,7 +68,7 @@ export function openAimsWebArchiveFlow(): Promise<AimsWebArchiveResult | undefin
     overlay.onclick = (event) => { if (event.target === overlay) { cleanup(); resolve(undefined); } };
 
     importArchive.onclick = async () => {
-      status.textContent = 'Choose the saved Web Archive…';
+      status.textContent = 'Choose the saved Web Archive or PDF…';
       try {
         const roster = await pickAndParseRoster();
         if (!roster) {
@@ -78,7 +82,7 @@ export function openAimsWebArchiveFlow(): Promise<AimsWebArchiveResult | undefin
       }
     };
 
-    card.append(title, help, openAims, importArchive, status, cancel);
+    card.append(title, help, helpPeriod, openAims, importArchive, status, cancel);
     overlay.append(card);
     document.body.append(overlay);
   });
