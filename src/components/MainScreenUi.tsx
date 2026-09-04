@@ -1,10 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View, useColorScheme } from 'react-native';
 import MainScreenEntry from './MainScreenEntry';
-import { rosterToDuties } from '@/src/domain/rosterView';
-import { stationLocalDateTimeMs } from '@/src/domain/stationTime';
-import type { Duty } from '@/src/domain/types';
-import { loadStoredRosters } from '@/src/storage/rosterStorage';
 
 const SHORTCUT_RESULT_KEY = 'escrew.aims.shortcut.lastResult';
 
@@ -49,104 +45,6 @@ function styleSecondary(button?: HTMLElement) {
   setImportant(button, 'background-color', dark ? 'rgba(103,165,255,.10)' : 'rgba(45,125,255,.07)');
   setImportant(button, 'border-color', dark ? 'rgba(148,163,184,.18)' : '#E9EDF2');
   tintText(button, dark ? '#67A5FF' : ACCENT);
-}
-
-function timedDuty(duty: Duty) {
-  if (!duty.date || !duty.sectors.length) return undefined;
-  const first = duty.sectors[0];
-  const last = duty.sectors[duty.sectors.length - 1];
-  const reportMs = stationLocalDateTimeMs(first.departure, duty.reportDate ?? duty.date, duty.reportTime);
-  const releaseMs = stationLocalDateTimeMs(last.arrival, duty.releaseDate ?? duty.date, duty.releaseTime);
-  if (reportMs === undefined || releaseMs === undefined) return undefined;
-  return { duty, reportMs, releaseMs };
-}
-
-function focusedDuty(): Duty | undefined {
-  const timed = loadStoredRosters()
-    .flatMap((roster) => rosterToDuties(roster).map(timedDuty).filter((item): item is NonNullable<typeof item> => Boolean(item)))
-    .sort((a, b) => a.reportMs - b.reportMs);
-  const now = Date.now();
-  return timed.filter((item) => item.reportMs <= now && item.releaseMs >= now).sort((a, b) => b.reportMs - a.reportMs)[0]?.duty
-    ?? timed.find((item) => item.reportMs > now)?.duty
-    ?? timed.at(-1)?.duty;
-}
-
-function currentCrew() {
-  const duty = focusedDuty();
-  if (!duty) return [];
-  const seen = new Set<string>();
-  return duty.sectors.flatMap((sector) => sector.crew).filter((member) => {
-    const key = member.id || `${member.name}|${member.position ?? member.role ?? ''}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-}
-
-function replacePreviousFlightsWithCrew(root: HTMLElement) {
-  const previousTitle = leafWithText(root, ['PREVIOUS FLIGHTS']);
-  if (!previousTitle) return;
-  const previousSection = previousTitle.parentElement ?? undefined;
-  const host = previousSection?.parentElement ?? undefined;
-  if (!previousSection || !host) return;
-  setImportant(previousSection, 'display', 'none');
-
-  let crewSection = host.querySelector<HTMLElement>('[data-escrew-home-crew="1"]') ?? undefined;
-  if (!crewSection) {
-    crewSection = document.createElement('div');
-    crewSection.dataset.escrewHomeCrew = '1';
-    host.insertBefore(crewSection, previousSection.nextSibling);
-  }
-
-  const dark = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
-  const text = dark ? '#F3FAFA' : '#102326';
-  const muted = dark ? '#A8BABC' : '#60777A';
-  const line = dark ? 'rgba(174,214,216,.14)' : 'rgba(16,74,79,.11)';
-  const accent = dark ? '#67A5FF' : ACCENT;
-  const accentSoft = dark ? 'rgba(103,165,255,.12)' : 'rgba(45,125,255,.08)';
-  const crew = currentCrew();
-
-  crewSection.replaceChildren();
-  Object.assign(crewSection.style, { flex: '1 1 auto', minHeight: '0', maxHeight: '34vh', display: 'flex', flexDirection: 'column', gap: '4px', overflow: 'hidden' });
-
-  const title = document.createElement('div');
-  title.textContent = `CREW ON THIS FLIGHT · ${crew.length}`;
-  Object.assign(title.style, { color: muted, fontSize: '11px', lineHeight: '16px', fontWeight: '700', letterSpacing: '.8px', paddingTop: '2px', flex: '0 0 auto' });
-  crewSection.appendChild(title);
-
-  const list = document.createElement('div');
-  Object.assign(list.style, { minHeight: '0', flex: '1 1 auto', overflowY: 'auto', overflowX: 'hidden', overscrollBehaviorY: 'contain', touchAction: 'pan-y' });
-  list.style.setProperty('-webkit-overflow-scrolling', 'touch');
-  crewSection.appendChild(list);
-
-  if (!crew.length) {
-    const empty = document.createElement('div');
-    empty.textContent = 'Crew is not listed for this flight in the imported roster.';
-    Object.assign(empty.style, { color: muted, fontSize: '13px', lineHeight: '18px', padding: '12px 0' });
-    list.appendChild(empty);
-    return;
-  }
-
-  crew.forEach((member) => {
-    const row = document.createElement('div');
-    Object.assign(row.style, { minHeight: '48px', display: 'flex', alignItems: 'center', borderBottom: `1px solid ${line}` });
-
-    const avatar = document.createElement('div');
-    avatar.textContent = member.name?.trim()?.[0]?.toUpperCase() ?? '•';
-    Object.assign(avatar.style, { width: '32px', height: '32px', borderRadius: '16px', flex: '0 0 32px', marginRight: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: accentSoft, color: accent, fontSize: '12px', fontWeight: '800' });
-
-    const copy = document.createElement('div');
-    Object.assign(copy.style, { minWidth: '0', flex: '1 1 auto' });
-    const name = document.createElement('div');
-    name.textContent = member.name;
-    Object.assign(name.style, { color: text, fontSize: '14px', lineHeight: '18px', fontWeight: '600', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' });
-    const role = document.createElement('div');
-    role.textContent = member.position ?? member.role ?? '';
-    Object.assign(role.style, { color: muted, fontSize: '12px', lineHeight: '16px' });
-    copy.append(name, role);
-    row.append(avatar, copy);
-    list.appendChild(row);
-  });
 }
 
 function makeFlightSheetScrollable(root: HTMLElement) {
@@ -317,7 +215,6 @@ function enhanceUi() {
       setImportant(element, 'opacity', '.82');
     });
 
-  replacePreviousFlightsWithCrew(root);
   makeFlightSheetScrollable(root);
 }
 
