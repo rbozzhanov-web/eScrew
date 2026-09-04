@@ -340,6 +340,7 @@ function MoreScreen({ rosters, palette, onRestoreBackup, onDeleteRoster, onErase
       setBackupBusy(false);
     }
   };
+  const backupThenClose = () => { handleExport(); setConfirmErase(false); };
   const confirmAndErase = () => { setConfirmErase(false); onErase(); };
 
   return <View style={styles.screen}>
@@ -376,9 +377,9 @@ function MoreScreen({ rosters, palette, onRestoreBackup, onDeleteRoster, onErase
 
     <IOSDialog visible={confirmErase} onClose={() => setConfirmErase(false)} style={[styles.confirmDialog, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}>
       <Text style={[styles.cardTitle, { color: palette.text }]}>Erase all local roster data?</Text>
-      <Text style={[styles.meta, { color: palette.muted, marginTop: 6 }]}>This removes every imported roster and expiry record from this device. Consider saving a backup first. This cannot be undone.</Text>
+      <Text style={[styles.meta, { color: palette.muted, marginTop: 6 }]}>This removes every imported roster and expiry record from this device. This cannot be undone — back up first if you want to keep a copy.</Text>
       <View style={styles.confirmActions}>
-        <Pressable onPress={() => setConfirmErase(false)} style={[styles.confirmCancel, { backgroundColor: palette.surface, borderColor: palette.line }]}><Text style={[styles.compactText, { color: palette.text }]}>Cancel</Text></Pressable>
+        <Pressable onPress={backupThenClose} style={[styles.confirmCancel, { backgroundColor: palette.surface, borderColor: palette.line }]}><Text style={[styles.compactText, { color: palette.text }]}>Backup</Text></Pressable>
         <Pressable onPress={confirmAndErase} style={[styles.confirmErase, { backgroundColor: palette.danger }]}><Text style={[styles.compactText, { color: '#fff' }]}>Erase</Text></Pressable>
       </View>
     </IOSDialog>
