@@ -107,15 +107,15 @@ function replacePreviousFlightsWithCrew(root: HTMLElement) {
   const crew = currentCrew();
 
   crewSection.replaceChildren();
-  Object.assign(crewSection.style, { flex: '1 1 auto', minHeight: '0', display: 'flex', flexDirection: 'column', gap: '4px' });
+  Object.assign(crewSection.style, { flex: '1 1 auto', minHeight: '0', maxHeight: '34vh', display: 'flex', flexDirection: 'column', gap: '4px', overflow: 'hidden' });
 
   const title = document.createElement('div');
   title.textContent = `CREW ON THIS FLIGHT · ${crew.length}`;
-  Object.assign(title.style, { color: muted, fontSize: '11px', lineHeight: '16px', fontWeight: '700', letterSpacing: '.8px', paddingTop: '2px' });
+  Object.assign(title.style, { color: muted, fontSize: '11px', lineHeight: '16px', fontWeight: '700', letterSpacing: '.8px', paddingTop: '2px', flex: '0 0 auto' });
   crewSection.appendChild(title);
 
   const list = document.createElement('div');
-  Object.assign(list.style, { minHeight: '0', overflowY: 'auto', overscrollBehaviorY: 'contain' });
+  Object.assign(list.style, { minHeight: '0', flex: '1 1 auto', overflowY: 'auto', overflowX: 'hidden', overscrollBehaviorY: 'contain', touchAction: 'pan-y' });
   list.style.setProperty('-webkit-overflow-scrolling', 'touch');
   crewSection.appendChild(list);
 
