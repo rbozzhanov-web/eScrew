@@ -24,6 +24,9 @@ function decodeBase64UrlPayload(encoded: string): string {
 
 function decodeShortcutPayload(encoded: string): string {
   if (encoded.startsWith(B64_PREFIX)) return decodeBase64UrlPayload(encoded);
+  // iOS Shortcuts may hand Safari an already percent-decoded fragment. In that case,
+  // decoding it a second time can corrupt otherwise valid JSON containing percent escapes.
+  if (encoded.trimStart().startsWith('{')) return encoded;
   return decodeURIComponent(encoded);
 }
 
