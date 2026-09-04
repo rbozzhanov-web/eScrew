@@ -236,7 +236,7 @@ function enhanceUi() {
   }
 
   const homeIntro = leafWithText(root, ['Choose how to add your Air Astana crew schedule.']);
-  if (homeIntro) homeIntro.textContent = 'Import from AIMS, then tap Share → eScrew Capture.';
+  if (homeIntro) homeIntro.textContent = 'Open Crew Schedule in AIMS, or import a saved Web Archive.';
 
   for (const oldLabel of ['Add PDF', 'PDF']) {
     const label = leafWithText(root, [oldLabel]);
@@ -276,7 +276,7 @@ function enhanceUi() {
 
   const replacements: Array<[string, string]> = [
     ['Waiting for roster from AIMS', 'Opening AIMS'],
-    ['Sign in to AIMS if needed, then send your roster back to eScrew.', 'In Crew Schedule, tap Share → eScrew Capture.'],
+    ['Sign in to AIMS if needed, then send your roster back to eScrew.', 'Sign in to AIMS, then Share → Options → Web Archive → Save to Files.'],
     ['Importing roster', 'Importing roster…'],
     ['Saving the roster to eScrew…', 'Finishing your roster update…'],
     ['Your saved roster is now up to date.', 'Your roster is ready.'],
@@ -367,7 +367,7 @@ export default function MainScreenUi() {
     {notice && <View pointerEvents="box-none" style={styles.noticeLayer}>
       <Pressable onPress={() => setNotice(undefined)} style={[styles.notice, { backgroundColor: dark ? 'rgba(22,30,45,.97)' : 'rgba(255,255,255,.98)', borderColor: notice === 'success' ? (dark ? '#67A5FF' : ACCENT) : (dark ? '#E08383' : '#B84B52') }]}>
         <Text style={[styles.noticeTitle, { color: dark ? '#F8FAFC' : '#0F172A' }]}>{notice === 'success' ? 'Roster updated' : 'Could not import roster'}</Text>
-        <Text style={[styles.noticeText, { color: dark ? '#98A2B3' : '#6B7280' }]}>{notice === 'success' ? 'AIMS roster imported with eScrew Capture.' : 'Open Crew Schedule and try Share → eScrew Capture again.'}</Text>
+        <Text style={[styles.noticeText, { color: dark ? '#98A2B3' : '#6B7280' }]}>{notice === 'success' ? 'AIMS roster imported.' : 'Open Crew Schedule and try importing again.'}</Text>
       </Pressable>
     </View>}
   </View>;

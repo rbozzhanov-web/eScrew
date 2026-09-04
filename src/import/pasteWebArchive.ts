@@ -1,12 +1,12 @@
 import { Platform } from 'react-native';
-import { parseRosterData } from './pickRoster';
+import { pickAndParseRoster } from './pickRoster';
 import type { ParsedAirAstanaRoster } from './parseAirAstanaRoster';
 
-export type PasteWebArchiveResult = { roster: ParsedAirAstanaRoster; name: string };
+export type AimsWebArchiveResult = { roster: ParsedAirAstanaRoster };
 
-export function pasteWebArchiveFromClipboard(): Promise<PasteWebArchiveResult | undefined> {
+export function openAimsWebArchiveFlow(): Promise<AimsWebArchiveResult | undefined> {
   if (Platform.OS !== 'web' || typeof document === 'undefined') {
-    return Promise.reject(new Error('Web Archive paste is available in the web app.'));
+    return Promise.reject(new Error('AIMS Web Archive import is available in the web app.'));
   }
 
   return new Promise((resolve) => {
@@ -26,11 +26,11 @@ export function pasteWebArchiveFromClipboard(): Promise<PasteWebArchiveResult | 
     });
 
     const title = document.createElement('div');
-    title.textContent = 'AIMS Web Archive';
+    title.textContent = 'Import from AIMS';
     Object.assign(title.style, { fontSize: '20px', fontWeight: '800', marginBottom: '6px' });
 
     const help = document.createElement('div');
-    help.textContent = '1. Open AIMS Crew Schedule. 2. Share → Options → Web Archive → Copy. 3. Return here, tap the field and choose Paste.';
+    help.textContent = 'Open Crew Schedule, then Share → Options → Web Archive → Save to Files. Return to eScrew and choose that Web Archive.';
     Object.assign(help.style, { fontSize: '14px', lineHeight: '20px', opacity: '.72', marginBottom: '14px' });
 
     const openAims = document.createElement('button');
@@ -41,57 +41,45 @@ export function pasteWebArchiveFromClipboard(): Promise<PasteWebArchiveResult | 
     });
     openAims.onclick = () => window.open('https://aims.airastana.com/eCrew/CrewSchedule', 'escrew-aims');
 
-    const target = document.createElement('div');
-    target.contentEditable = 'true';
-    target.setAttribute('role', 'textbox');
-    target.setAttribute('aria-label', 'Paste copied AIMS Web Archive');
-    target.textContent = 'Tap here, then Paste';
-    Object.assign(target.style, {
-      minHeight: '92px', borderRadius: '16px', border: `1px solid ${dark ? 'rgba(174,214,216,.22)' : 'rgba(16,74,79,.16)'}`,
-      background: dark ? '#081519' : '#F2F6F6', padding: '16px', outline: 'none', fontSize: '15px', lineHeight: '22px',
-      WebkitUserSelect: 'text', userSelect: 'text', overflow: 'auto',
+    const importArchive = document.createElement('button');
+    importArchive.textContent = 'Import Web Archive';
+    Object.assign(importArchive.style, {
+      width: '100%', border: `1px solid ${dark ? 'rgba(174,214,216,.20)' : 'rgba(16,74,79,.14)'}`,
+      borderRadius: '14px', padding: '13px', fontSize: '15px', fontWeight: '800',
+      background: dark ? 'rgba(255,255,255,.08)' : '#EDF2F2', color: 'inherit', marginBottom: '8px',
     });
 
     const status = document.createElement('div');
-    Object.assign(status.style, { minHeight: '20px', fontSize: '13px', lineHeight: '18px', opacity: '.72', marginTop: '10px' });
+    Object.assign(status.style, { minHeight: '20px', fontSize: '13px', lineHeight: '18px', opacity: '.72', marginTop: '4px' });
 
     const cancel = document.createElement('button');
     cancel.textContent = 'Cancel';
     Object.assign(cancel.style, {
       width: '100%', border: '0', borderRadius: '14px', padding: '13px', fontSize: '15px', fontWeight: '700',
-      background: dark ? 'rgba(255,255,255,.08)' : '#EDF2F2', color: 'inherit', marginTop: '8px',
+      background: 'transparent', color: 'inherit', marginTop: '2px', opacity: '.74',
     });
 
     const cleanup = () => overlay.remove();
     cancel.onclick = () => { cleanup(); resolve(undefined); };
     overlay.onclick = (event) => { if (event.target === overlay) { cleanup(); resolve(undefined); } };
-    target.addEventListener('focus', () => {
-      if (target.textContent === 'Tap here, then Paste') target.textContent = '';
-    });
 
-    target.addEventListener('paste', async (event) => {
-      event.preventDefault();
-      status.textContent = 'Reading Web Archive…';
+    importArchive.onclick = async () => {
+      status.textContent = 'Choose the saved Web Archive…';
       try {
-        const items = Array.from(event.clipboardData?.items ?? []);
-        const files = Array.from(event.clipboardData?.files ?? []);
-        const itemFile = items.map((item) => item.kind === 'file' ? item.getAsFile() : null).find(Boolean) ?? undefined;
-        const file = files[0] ?? itemFile;
-        if (!file) {
-          throw new Error('Safari did not provide a Web Archive file. In Share → Options choose Web Archive before Copy, then try again.');
+        const roster = await pickAndParseRoster();
+        if (!roster) {
+          status.textContent = '';
+          return;
         }
-        const data = await file.arrayBuffer();
-        const roster = await parseRosterData(data, file.name || 'AIMS.webarchive');
         cleanup();
-        resolve({ roster, name: file.name || 'AIMS.webarchive' });
+        resolve({ roster });
       } catch (error) {
         status.textContent = error instanceof Error ? error.message : String(error);
       }
-    });
+    };
 
-    card.append(title, help, openAims, target, status, cancel);
+    card.append(title, help, openAims, importArchive, status, cancel);
     overlay.append(card);
     document.body.append(overlay);
-    window.setTimeout(() => target.focus(), 40);
   });
 }

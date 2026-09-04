@@ -1,4 +1,4 @@
-import { pasteWebArchiveFromClipboard } from './pasteWebArchive';
+import { openAimsWebArchiveFlow } from './pasteWebArchive';
 import { upsertStoredRoster } from '@/src/storage/rosterStorage';
 
 let installed = false;
@@ -22,7 +22,7 @@ export function installAimsWebArchivePaste() {
     event.stopImmediatePropagation();
     active = true;
     try {
-      const result = await pasteWebArchiveFromClipboard();
+      const result = await openAimsWebArchiveFlow();
       if (!result) return;
       upsertStoredRoster(result.roster);
       window.sessionStorage?.setItem('escrew.aims.shortcut.lastResult', 'success');
