@@ -1,6 +1,7 @@
 import MainScreen from './MainScreen';
 import { installRosterDayColors } from './rosterDayColors';
 import { parseAimsShortcutCapture } from '@/src/aims/shortcutCapture';
+import { installAimsWebArchivePaste } from '@/src/import/aimsPasteEntry';
 import { upsertStoredRoster } from '@/src/storage/rosterStorage';
 
 const HASH_PREFIX = '#aims-shortcut=';
@@ -49,5 +50,6 @@ function consumeShortcutCapture() {
 
 consumeShortcutCapture();
 installRosterDayColors();
+installAimsWebArchivePaste();
 
 export default MainScreen;
