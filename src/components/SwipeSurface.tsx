@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, type ReactNode } from 'react';
+import { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, type ReactNode } from 'react';
 import { Animated, Easing, PanResponder, Platform, type LayoutChangeEvent, type StyleProp, type ViewStyle } from 'react-native';
 import { swipeAxis, type SwipeAxis } from '@/src/domain/gesture';
 import { softHaptic } from './haptics';
@@ -13,6 +13,11 @@ type Props = {
   dominance?: number;
 };
 
+export type SwipeSurfaceHandle = {
+  /** Plays the same page-turn animation a swipe gesture triggers, for a button-driven change. -1 = content exits left (advance), 1 = content exits right (go back). */
+  play: (direction: -1 | 1, callback: () => void) => void;
+};
+
 const RETURN_SPRING = { stiffness: 255, damping: 29, mass: 0.92, useNativeDriver: true } as const;
 const ENTRY_SPRING = { stiffness: 275, damping: 31, mass: 0.9, useNativeDriver: true } as const;
 const PAGE_EASING = Easing.bezier(0.22, 0.78, 0, 1);
@@ -20,7 +25,7 @@ const WEB_COMPOSITE = Platform.OS === 'web'
   ? ({ willChange: 'transform', backfaceVisibility: 'hidden', transformStyle: 'preserve-3d' } as any)
   : undefined;
 
-export function SwipeSurface({ children, style, onSwipeLeft, onSwipeRight, onSwipeDown, threshold = 52, dominance = 1.25 }: Props) {
+export const SwipeSurface = forwardRef<SwipeSurfaceHandle, Props>(function SwipeSurface({ children, style, onSwipeLeft, onSwipeRight, onSwipeDown, threshold = 52, dominance = 1.25 }, ref) {
   const translation = useRef(new Animated.ValueXY()).current;
   const activeAxis = useRef<SwipeAxis | undefined>(undefined);
   const size = useRef({ width: 360, height: 640 });
@@ -68,6 +73,10 @@ export function SwipeSurface({ children, style, onSwipeLeft, onSwipeRight, onSwi
       });
     });
   }, [settle, translation]);
+
+  useImperativeHandle(ref, () => ({
+    play: (direction, callback) => completeHorizontal(direction, callback),
+  }), [completeHorizontal]);
 
   const completeDown = useCallback((callback: () => void) => {
     if (transitioning.current) return;
@@ -148,4 +157,4 @@ export function SwipeSurface({ children, style, onSwipeLeft, onSwipeRight, onSwi
   >
     {children}
   </Animated.View>;
-}
+});
