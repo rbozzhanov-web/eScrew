@@ -10,16 +10,20 @@ export async function pickAndParseRoster():Promise<ParsedAirAstanaRoster|undefin
   if(Platform.OS!=='web')throw new Error('Use the eScrew web/PWA build for local roster-file import.');
   const asset=result.assets[0];
   const data=asset.file?await asset.file.arrayBuffer():await(await fetch(asset.uri)).arrayBuffer();
+  return parseRosterData(data,asset.name??'');
+}
+
+export async function parseRosterData(data:ArrayBuffer,name=''):Promise<ParsedAirAstanaRoster>{
   const header=new TextDecoder('ascii').decode(data.slice(0,8));
   if(header.startsWith('%PDF-'))return parseAirAstanaRoster(await extractPdfPagesWeb(data));
 
   const text=decodeSavedAimsPage(data);
   if(/CrewSchedule|initialResult|\/eCrew\/CrewSchedule/i.test(text))return parseAimsCrewScheduleHtml(text);
 
-  const isWebArchive=header.startsWith('bplist00')||/\.webarchive$/i.test(asset.name??'');
+  const isWebArchive=header.startsWith('bplist00')||/\.webarchive$/i.test(name);
   throw new Error(isWebArchive
-    ? 'This Safari Web Archive does not contain a loaded AIMS Crew Schedule. Open Crew Schedule in AIMS, wait until it finishes loading, then save it again as Web Archive.'
-    : 'Unsupported roster file. On iPhone: AIMS Crew Schedule → Share → Options → Web Archive → Done → Save to Files. Then return to eScrew and choose that .webarchive file.');
+    ? 'This Safari Web Archive does not contain a loaded AIMS Crew Schedule. Open Crew Schedule in AIMS, wait until it finishes loading, then copy it again as Web Archive.'
+    : 'Unsupported roster file. On iPhone: AIMS Crew Schedule → Share → Options → Web Archive → Copy. Then return to eScrew and paste it into AIMS.');
 }
 
 /**
