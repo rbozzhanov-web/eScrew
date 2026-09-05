@@ -1,9 +1,8 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, FlatList, Platform, Pressable, ScrollView, StyleSheet, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, Animated, FlatList, Platform, Pressable, ScrollView, StyleSheet, Text, View, useColorScheme, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IOSDialog, IOSSheet } from './IOSOverlay';
 import { SwipeSurface, type SwipeSurfaceHandle } from './SwipeSurface';
-import { TabPager, TAB_PAGER_SPRING, type TabPagerHandle } from './TabPager';
 import { buildRosterTimeline, flightExtra, stayForSector, type RosterTimelineRow, type RosterWithNormalized } from './rosterDataView';
 import type { NormalizedExpiry } from '@/src/core/rosterContract';
 import { exportRosterCalendar } from '@/src/domain/calendar';
@@ -49,6 +48,11 @@ const WEB_TAB_GLASS = Platform.OS === 'web'
 const todayGlow = (palette: Palette) => ({
   shadowColor: palette.accent, shadowOffset: { width: 0, height: 8 }, shadowOpacity: .32, shadowRadius: 20, elevation: 8, ...WEB_GLASS,
 });
+// Matches styles.listContent (padding:8, gap:7) — used by getItemLayout to compute an
+// authoritative scroll offset before rows are actually measured.
+const LIST_TOP_PADDING = 8;
+const LIST_ROW_GAP = 7;
+const ROW_HEIGHT_ESTIMATE = { flight: 96, event: 80 } as const;
 function heroTint(palette: Palette) {
   return Platform.OS === 'web'
     ? ({ backgroundImage: `linear-gradient(135deg, ${palette.accentSoft} 0%, ${palette.surfaceStrong} 60%)` } as any)
@@ -77,7 +81,7 @@ export default function MainScreen() {
   const [importError, setImportError] = useState<string>();
   const [tabBarWidth, setTabBarWidth] = useState(0);
   const tabSelection = useRef(new Animated.Value(0)).current;
-  const tabPagerRef = useRef<TabPagerHandle>(null);
+  const tabSwipeRef = useRef<SwipeSurfaceHandle>(null);
   const rosterFocus = useRef<RosterFocusHandle>({ focusToday: () => undefined }).current;
 
   useEffect(() => {
@@ -88,7 +92,8 @@ export default function MainScreen() {
 
   useEffect(() => {
     Animated.spring(tabSelection, {
-      toValue: TABS.indexOf(tab), ...TAB_PAGER_SPRING, isInteraction: false,
+      toValue: TABS.indexOf(tab), stiffness: 300, damping: 32, mass: 0.9,
+      useNativeDriver: true, isInteraction: false,
     }).start();
   }, [tab, tabSelection]);
 
@@ -159,13 +164,22 @@ export default function MainScreen() {
     setActiveMonth(next.period.start);
     setSelectedFlight(undefined);
   }, [roster, rosters]);
-  const prepareTabChange = useCallback((next: string) => {
+  const changeTab = useCallback((direction: -1 | 1) => {
+    const next = TABS[TABS.indexOf(tab) + direction];
+    if (!next) return;
     if (next === 'Roster') rosterFocus.focusToday();
     setSelectedFlight(undefined);
-  }, [rosterFocus]);
-  const commitTabChange = useCallback((next: string) => {
-    setTab(next as Tab);
-  }, []);
+    setTab(next);
+  }, [tab, rosterFocus]);
+  const goToTab = useCallback((target: Tab) => {
+    if (target === tab) return;
+    const direction = TABS.indexOf(target) > TABS.indexOf(tab) ? -1 : 1;
+    setSelectedFlight(undefined);
+    tabSwipeRef.current?.play(direction, () => {
+      if (target === 'Roster') rosterFocus.focusToday();
+      setTab(target);
+    });
+  }, [tab, rosterFocus]);
   const eraseAll = useCallback(() => {
     clearStoredRosters();
     setRosters([]);
@@ -185,24 +199,27 @@ export default function MainScreen() {
 
       {importError && <ImportErrorBanner message={importError} palette={palette} onDismiss={() => setImportError(undefined)} />}
 
-      <TabPager
-        ref={tabPagerRef}
-        activeTab={tab}
-        style={styles.viewport}
-        onBeforeChange={prepareTabChange}
-        onChange={commitTabChange}
-        pages={[
-          { key: 'Home', content: <Home allDuties={allDuties} fallbackRoster={roster} rosters={rosters} palette={palette} onImport={importRoster} importing={importing} /> },
-          { key: 'Roster', content: <RosterScreen roster={roster} rosters={rosters} duties={duties} selectedSector={selectedSector} palette={palette} importing={importing} onImport={importRoster} onSelect={setSelectedFlight} onMonth={changeMonth} rosterFocus={rosterFocus} /> },
-          { key: 'More', content: <MoreScreen rosters={rosters} palette={palette} onRestoreBackup={restoreFromBackup} onDeleteRoster={deleteRoster} onErase={eraseAll} /> },
-        ]}
-      />
+      <SwipeSurface ref={tabSwipeRef} style={styles.viewport} onSwipeLeft={tab === 'More' ? undefined : () => changeTab(1)} onSwipeRight={tab === 'Home' ? undefined : () => changeTab(-1)}>
+        {/* All three tabs stay mounted permanently and are shown/hidden via opacity rather than
+            conditional rendering — swapping tabs would otherwise force a full mount of the
+            destination screen (FlatList layout, etc.) synchronously at the animation handoff,
+            which is heavy enough to visibly stall the in-flight page-turn spring. */}
+        <View style={[styles.tabPane, tab !== 'Home' && styles.tabPaneHidden]} pointerEvents={tab === 'Home' ? 'auto' : 'none'}>
+          <Home allDuties={allDuties} fallbackRoster={roster} rosters={rosters} palette={palette} onImport={importRoster} importing={importing} />
+        </View>
+        <View style={[styles.tabPane, tab !== 'Roster' && styles.tabPaneHidden]} pointerEvents={tab === 'Roster' ? 'auto' : 'none'}>
+          <RosterScreen roster={roster} rosters={rosters} duties={duties} selectedSector={selectedSector} palette={palette} importing={importing} onImport={importRoster} onSelect={setSelectedFlight} onMonth={changeMonth} rosterFocus={rosterFocus} />
+        </View>
+        <View style={[styles.tabPane, tab !== 'More' && styles.tabPaneHidden]} pointerEvents={tab === 'More' ? 'auto' : 'none'}>
+          <MoreScreen rosters={rosters} palette={palette} onRestoreBackup={restoreFromBackup} onDeleteRoster={deleteRoster} onErase={eraseAll} />
+        </View>
+      </SwipeSurface>
 
       <View onLayout={(event) => { const nextWidth = event.nativeEvent.layout.width; if (Math.abs(nextWidth - tabBarWidth) > 0.5) setTabBarWidth(nextWidth); }} style={[styles.depthSurface, styles.tabBar, { backgroundColor: palette.surface, borderColor: palette.line }]}>
         {tabBarWidth > 0 && <Animated.View pointerEvents="none" style={[styles.tabSelection, { width: Math.max(0, tabStep - 8), backgroundColor: palette.surfaceStrong, transform: [{ translateX: tabIndicatorX }] }]} />}
         {TABS.map((item) => {
           const active = item === tab;
-          return <Pressable key={item} onPress={() => tabPagerRef.current?.goTo(item)} style={styles.tabItem} accessibilityRole="tab" accessibilityState={{ selected: active }}>
+          return <Pressable key={item} onPress={() => goToTab(item)} style={styles.tabItem} accessibilityRole="tab" accessibilityState={{ selected: active }}>
             <View style={styles.tabIconWrap}><Text style={[styles.tabIcon, { color: active ? palette.accent : palette.muted, fontSize: TAB_ICONS[item].size, lineHeight: TAB_ICONS[item].size + 3, marginTop: TAB_ICONS[item].nudge, fontWeight: TAB_ICONS[item].weight }]}>{TAB_ICONS[item].glyph}</Text></View>
             <Text style={[styles.tabText, { color: active ? palette.text : palette.muted }]}>{item}</Text>
           </Pressable>;
@@ -286,12 +303,32 @@ function RosterScreenImpl({ roster, rosters, duties, selectedSector, palette, im
   const selectedRow = selectedIndex >= 0 ? flights[selectedIndex] : undefined;
   const monthSwipeRef = useRef<SwipeSurfaceHandle>(null);
   const listRef = useRef<FlatList<RosterTimelineRow>>(null);
+  const rowHeights = useRef(new Map<string, number>()).current;
   const today = localTodayIso();
   const todayIndex = useMemo(() => {
     let idx = timeline.findIndex((row) => row.sortKey.slice(0, 10) === today);
     if (idx === -1) idx = timeline.findIndex((row) => row.sortKey.slice(0, 10) > today);
     return idx;
   }, [timeline, today]);
+  // Without this, scrollToIndex/initialScrollIndex have to guess an offset (via
+  // averageItemLength), render near it, measure, and correct — a multi-step process that
+  // reliably lands a few rows short of the target instead of putting it at the top. Caching
+  // each row's real measured height (falling back to a per-kind estimate before it's been
+  // measured) gives FlatList an authoritative offset up front, so it can jump there in one
+  // step, and accuracy only improves as more rows get measured.
+  const heightFor = useCallback((row: RosterTimelineRow | undefined) => {
+    if (!row) return ROW_HEIGHT_ESTIMATE.flight;
+    return rowHeights.get(row.key) ?? ROW_HEIGHT_ESTIMATE[row.kind];
+  }, [rowHeights]);
+  const getItemLayout = useCallback((data: ArrayLike<RosterTimelineRow> | null | undefined, index: number) => {
+    let offset = LIST_TOP_PADDING;
+    for (let i = 0; i < index; i++) offset += heightFor(data?.[i]) + LIST_ROW_GAP;
+    return { length: heightFor(data?.[index]), offset, index };
+  }, [heightFor]);
+  const measureRow = useCallback((key: string, height: number) => {
+    if (rowHeights.get(key) === height) return;
+    rowHeights.set(key, height);
+  }, [rowHeights]);
   const focusToday = useCallback(() => {
     if (todayIndex < 0) return;
     listRef.current?.scrollToIndex({ index: todayIndex, animated: false, viewPosition: 0 });
@@ -316,30 +353,36 @@ function RosterScreenImpl({ roster, rosters, duties, selectedSector, palette, im
       contentContainerStyle={styles.listContent}
       showsVerticalScrollIndicator={false}
       initialScrollIndex={todayIndex > 0 ? todayIndex : undefined}
+      getItemLayout={getItemLayout}
       onScrollToIndexFailed={(info) => {
         listRef.current?.scrollToOffset({ offset: info.averageItemLength * info.index, animated: false });
         requestAnimationFrame(() => listRef.current?.scrollToIndex({ index: info.index, animated: false }));
       }}
-      renderItem={({ item }) => item.kind === 'flight' ? <FlightRosterCard duty={item.duty} sector={item.sector} selected={selectedSector?.id === item.sector.id} isToday={item.sortKey.slice(0, 10) === today} palette={palette} onPress={() => onSelect(item.sector.id)} /> : <RosterEventCard item={item} isToday={item.sortKey.slice(0, 10) === today} palette={palette} />}
+      renderItem={({ item }) => {
+        const onLayout = (event: LayoutChangeEvent) => measureRow(item.key, event.nativeEvent.layout.height);
+        return item.kind === 'flight'
+          ? <FlightRosterCard duty={item.duty} sector={item.sector} selected={selectedSector?.id === item.sector.id} isToday={item.sortKey.slice(0, 10) === today} palette={palette} onPress={() => onSelect(item.sector.id)} onLayout={onLayout} />
+          : <RosterEventCard item={item} isToday={item.sortKey.slice(0, 10) === today} palette={palette} onLayout={onLayout} />;
+      }}
     /></View></SwipeSurface>}
     {selectedRow && <FlightDetail row={selectedRow} roster={roster} palette={palette} onClose={() => onSelect(undefined)} onPrevious={selectedIndex > 0 ? () => onSelect(flights[selectedIndex - 1].sector.id) : undefined} onNext={selectedIndex < flights.length - 1 ? () => onSelect(flights[selectedIndex + 1].sector.id) : undefined} />}
   </View>;
 }
 const RosterScreen = memo(RosterScreenImpl);
 
-function FlightRosterCard({ duty, sector, selected, isToday, palette, onPress }: { duty: Duty; sector: Sector; selected: boolean; isToday: boolean; palette: Palette; onPress: () => void }) {
+function FlightRosterCard({ duty, sector, selected, isToday, palette, onPress, onLayout }: { duty: Duty; sector: Sector; selected: boolean; isToday: boolean; palette: Palette; onPress: () => void; onLayout: (event: LayoutChangeEvent) => void }) {
   const dateMeta = rosterDateMeta(duty);
-  return <Pressable onPress={onPress} style={[styles.rosterCard, isToday && styles.rosterCardToday, { backgroundColor: selected || isToday ? palette.accentSoft : palette.surfaceStrong, borderColor: isToday ? palette.accent : palette.line, ...(isToday ? todayGlow(palette) : null) }]}>
+  return <Pressable onPress={onPress} onLayout={onLayout} style={[styles.rosterCard, isToday && styles.rosterCardToday, { backgroundColor: selected || isToday ? palette.accentSoft : palette.surfaceStrong, borderColor: isToday ? palette.accent : palette.line, ...(isToday ? todayGlow(palette) : null) }]}>
     <View style={styles.flightCardTop}><Text style={[styles.label, { color: isToday ? palette.accent : dateMeta.weekend ? palette.weekend : palette.muted }]}>{dateMeta.label}{isToday ? ' · TODAY' : ''}</Text><Text style={[styles.flightNumber, { color: palette.muted }]}>{sector.flightNumber}{sector.deadhead ? ' · DHC' : ''}</Text></View>
     <Text style={[styles.rosterRoute, { color: palette.text }]}>{sector.departure} → {sector.arrival}</Text>
     <Text style={[styles.meta, { color: palette.muted }]}>{sector.departureTime} – {sector.arrivalTime} · Report {duty.reportTime}</Text>
   </Pressable>;
 }
 
-function RosterEventCard({ item, isToday, palette }: { item: Extract<RosterTimelineRow, { kind: 'event' }>; isToday: boolean; palette: Palette }) {
+function RosterEventCard({ item, isToday, palette, onLayout }: { item: Extract<RosterTimelineRow, { kind: 'event' }>; isToday: boolean; palette: Palette; onLayout: (event: LayoutChangeEvent) => void }) {
   const dateMeta = eventDateMeta(item.date);
   const detail = [item.detail, item.station].filter(Boolean).join(' · ');
-  return <View style={[styles.rosterCard, isToday && styles.rosterCardToday, { backgroundColor: isToday ? palette.accentSoft : palette.surfaceStrong, borderColor: isToday ? palette.accent : palette.line, ...(isToday ? todayGlow(palette) : null) }]}>
+  return <View onLayout={onLayout} style={[styles.rosterCard, isToday && styles.rosterCardToday, { backgroundColor: isToday ? palette.accentSoft : palette.surfaceStrong, borderColor: isToday ? palette.accent : palette.line, ...(isToday ? todayGlow(palette) : null) }]}>
     <View style={styles.flightCardTop}><Text style={[styles.label, { color: isToday ? palette.accent : dateMeta.weekend ? palette.weekend : palette.muted }]}>{dateMeta.label}{isToday ? ' · TODAY' : ''}</Text><Text style={[styles.flightNumber, { color: palette.muted }]}>{item.badge}</Text></View>
     <Text numberOfLines={2} style={[styles.rosterEventTitle, { color: palette.text }]}>{item.title}</Text>
     {detail ? <Text style={[styles.meta, { color: palette.muted }]}>{detail}</Text> : null}
@@ -433,7 +476,7 @@ function MoreScreenImpl({ rosters, palette, onRestoreBackup, onDeleteRoster, onE
         {sortedExpiries.length === 0 && <Text style={[styles.meta, { color: palette.muted, marginTop: 8 }]}>No expiry data in the imported roster.</Text>}
       </View>
 
-      <View style={[styles.infoCard, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}><Text style={[styles.cardTitle, { color: palette.text }]}>Privacy</Text><Text style={[styles.meta, { color: palette.muted }]}>Roster PDFs are parsed locally. AIMS sends roster data only; credentials and session data are not stored by eScrew. Weather sends only an airport code to Open-Meteo — no roster or crew data. Current update: PR #99.</Text></View>
+      <View style={[styles.infoCard, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}><Text style={[styles.cardTitle, { color: palette.text }]}>Privacy</Text><Text style={[styles.meta, { color: palette.muted }]}>Roster PDFs are parsed locally. AIMS sends roster data only; credentials and session data are not stored by eScrew. Weather sends only an airport code to Open-Meteo — no roster or crew data.</Text></View>
 
       <VersionFooter palette={palette} />
     </ScrollView>
