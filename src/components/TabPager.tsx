@@ -38,9 +38,9 @@ export const TabPager = forwardRef<TabPagerHandle, Props>(function TabPager({ ac
     setTransition(undefined);
   }, [translation]);
 
-  const targetFor = useCallback((from: string, direction: -1 | 1) => {
+  const targetFor = useCallback((from: string, pageOffset: -1 | 1) => {
     const index = pages.findIndex((page) => page.key === from);
-    return pages[index + direction]?.key;
+    return pages[index + pageOffset]?.key;
   }, [pages]);
 
   const finish = useCallback((next: Transition, velocity = 0) => {
@@ -85,10 +85,13 @@ export const TabPager = forwardRef<TabPagerHandle, Props>(function TabPager({ ac
     },
     onPanResponderMove: (_, gesture) => {
       if (finishing.current) return;
+      // The visual direction follows the finger, while the page offset is its inverse:
+      // swipe left reveals the next tab; swipe right reveals the previous tab.
       const direction: -1 | 1 = gesture.dx < 0 ? -1 : 1;
+      const pageOffset: -1 | 1 = direction === -1 ? 1 : -1;
       let next = transitionRef.current;
       if (!next && Math.abs(gesture.dx) > 1) {
-        const target = targetFor(activeTab, direction);
+        const target = targetFor(activeTab, pageOffset);
         if (!target) return;
         next = { from: activeTab, to: target, direction };
         onBeforeChange?.(target);
