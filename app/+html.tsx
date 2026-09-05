@@ -10,6 +10,7 @@ body{background:#F6F7FA;color:#0F172A;-webkit-tap-highlight-color:transparent;-w
 #root *{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",system-ui,sans-serif!important}
 ::selection{background:rgba(45,125,255,.18)}
 @media(prefers-color-scheme:dark){body{background:#0B1220;color:#F8FAFC}}
+body.escrew-suspend-glass{--escrew-blur-glass:none;--escrew-blur-tab:none}
 `;
 
 const REGISTER_SW = `
