@@ -14,6 +14,8 @@ import { pickAndParseRoster } from '@/src/import/pickRoster';
 import type { ParsedAirAstanaRoster } from '@/src/import/parseAirAstanaRoster';
 import { exportBackup, restoreBackup } from '@/src/storage/backup';
 import { clearStoredRosters, loadStoredRosters, removeStoredRoster, upsertStoredRoster } from '@/src/storage/rosterStorage';
+import { useAirportWeather } from '@/src/weather/weatherService';
+import { weatherIcon, windDirectionLabel } from '@/src/weather/weatherCodes';
 
 type Tab = 'Home' | 'Roster' | 'More';
 const TABS: Tab[] = ['Home', 'Roster', 'More'];
@@ -247,6 +249,7 @@ function Home({ allDuties, fallbackRoster, rosters, palette, onImport, importing
       <View style={[styles.timeDivider, { backgroundColor: palette.line }]} />
       <View style={styles.timeRow}><TimeCell label="REPORT" value={duty.reportTime} palette={palette} /><TimeCell label={`DEP · ${first.departure}`} value={first.departureTime} palette={palette} /><TimeCell label={`ARR · ${last.arrival}`} value={last.arrivalTime} palette={palette} /><TimeCell label="RELEASE" value={duty.releaseTime} palette={palette} /></View>
       <Text style={[styles.heroFoot, { color: palette.muted }]}>{dutyMinutes !== undefined ? `Duty ${formatMinutes(dutyMinutes)} · ` : ''}{duty.sectors.length} sector{duty.sectors.length === 1 ? '' : 's'}</Text>
+      <WeatherChip code={last.arrival} palette={palette} />
     </View>
     <Text style={[styles.label, { color: palette.muted }]}>{rosterMonthLabel(roster)}</Text>
     <View style={styles.summaryRow}><Summary title="BLOCK HOURS" value={formatMinutes(block)} detail={`${operatingCount(roster)} sectors flown`} palette={palette} /><Summary title="NIGHT HOURS" value={formatMinutes(night)} detail={nightShare === undefined ? 'reported by the roster' : `${nightShare}% of block time`} palette={palette} /></View>
@@ -317,6 +320,7 @@ function FlightDetail({ row, roster, palette, onClose, onPrevious, onNext }: { r
       <Text style={[styles.label, { color: palette.muted }]}>{row.duty.dateLabel} · {row.sector.flightNumber}{row.sector.deadhead ? ' · DHC' : ''}</Text>
       <Text style={[styles.sheetRoute, { color: palette.text }]}>{row.sector.departure} → {row.sector.arrival}</Text>
       {status ? <Text style={[styles.meta, { color: palette.muted }]}>{status}</Text> : null}
+      <WeatherChip code={row.sector.arrival} palette={palette} />
       <View style={[styles.flightFacts, { borderColor: palette.line }]}><FlightFact label="REPORT" value={row.duty.reportTime} palette={palette} /><FlightFact label="DEP" value={row.sector.departureTime} palette={palette} /><FlightFact label="ARR" value={row.sector.arrivalTime} palette={palette} /><FlightFact label="RELEASE" value={row.duty.releaseTime} palette={palette} /></View>
     </View>
     <FlatList
@@ -388,7 +392,7 @@ function MoreScreen({ rosters, palette, onRestoreBackup, onDeleteRoster, onErase
         {sortedExpiries.length === 0 && <Text style={[styles.meta, { color: palette.muted, marginTop: 8 }]}>No expiry data in the imported roster.</Text>}
       </View>
 
-      <View style={[styles.infoCard, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}><Text style={[styles.cardTitle, { color: palette.text }]}>Privacy</Text><Text style={[styles.meta, { color: palette.muted }]}>Roster PDFs are parsed locally. AIMS sends roster data only; credentials and session data are not stored by eScrew.</Text></View>
+      <View style={[styles.infoCard, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}><Text style={[styles.cardTitle, { color: palette.text }]}>Privacy</Text><Text style={[styles.meta, { color: palette.muted }]}>Roster PDFs are parsed locally. AIMS sends roster data only; credentials and session data are not stored by eScrew. Weather sends only an airport code to Open-Meteo — no roster or crew data.</Text></View>
 
       <VersionFooter palette={palette} />
     </ScrollView>
@@ -470,6 +474,16 @@ function rosterDateMeta(duty: Duty): { label: string; weekend: boolean } { if (!
 function eventDateMeta(value: string): { label: string; weekend: boolean } { const [year, month, day] = value.split('-').map(Number); const date = new Date(Date.UTC(year, month - 1, day)); if (!Number.isFinite(date.getTime()) || date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return { label: value, weekend: false }; const weekdayIndex = date.getUTCDay(); const weekday = ['SUN','MON','TUE','WED','THU','FRI','SAT'][weekdayIndex]; const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC']; return { label: `${String(day).padStart(2, '0')} ${months[month - 1]} · ${weekday}`, weekend: weekdayIndex === 0 || weekdayIndex === 6 }; }
 function routeChain(duty: Duty): string { return [duty.sectors[0]?.departure, ...duty.sectors.map((sector) => sector.arrival)].filter(Boolean).join(' → '); }
 function TimeCell({ label, value, palette }: { label: string; value: string; palette: Palette }) { return <View style={styles.timeCell}><Text numberOfLines={1} style={[styles.timeLabel, { color: palette.muted }]}>{label}</Text><Text style={[styles.timeValue, { color: palette.text }]}>{value}</Text></View>; }
+function WeatherChip({ code, palette }: { code: string; palette: Palette }) {
+  const weather = useAirportWeather(code);
+  if (!weather) return null;
+  const { icon, label } = weatherIcon(weather.weatherCode, weather.isDay);
+  return <View style={styles.weatherRow}>
+    <Text style={styles.weatherIcon}>{icon}</Text>
+    <Text style={[styles.weatherTemp, { color: palette.text }]}>{weather.temp}°</Text>
+    <Text numberOfLines={1} style={[styles.weatherMeta, { color: palette.muted }]}>{code} · {label} · {windDirectionLabel(weather.windDeg)} {weather.windSpeed}kt · {weather.pressure}hPa</Text>
+  </View>;
+}
 function CrewRow({ member, palette }: { member: CrewMember; palette: Palette }) { return <View style={[styles.crewRow, { borderBottomWidth: StyleSheet.hairlineWidth, borderColor: palette.line }]}><View style={[styles.avatar, { backgroundColor: palette.accentSoft }]}><Text style={[styles.avatarText, { color: palette.accent }]}>{member.name?.trim()?.[0]?.toUpperCase() ?? '•'}</Text></View><View style={styles.grow}><Text numberOfLines={1} style={[styles.crewName, { color: palette.text }]}>{member.name}</Text><Text style={[styles.meta, { color: palette.muted }]}>{member.position ?? member.role}</Text></View></View>; }
 function Summary({ title, value, detail, palette }: { title: string; value: string; detail: string; palette: Palette }) { return <View style={[styles.summary, styles.depthSurface, { backgroundColor: palette.surface, borderColor: palette.line }]}><Text style={[styles.label, { color: palette.muted }]}>{title}</Text><Text style={[styles.summaryValue, { color: palette.text }]}>{value}</Text><Text style={[styles.meta, { color: palette.muted }]}>{detail}</Text></View>; }
 function PrimaryButton({ title, onPress, loading, palette }: { title: string; onPress: () => void; loading: boolean; palette: Palette }) { return <Pressable onPress={onPress} disabled={loading} style={[styles.primaryButton, { backgroundColor: palette.accent }]}>{loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.actionText}>{title}</Text>}</Pressable>; }
@@ -482,7 +496,7 @@ const styles = StyleSheet.create({
   aimsStatus:{minHeight:66,borderWidth:1,borderRadius:20,padding:12,marginBottom:8,flexDirection:'row',alignItems:'center',gap:10}, aimsStatusIcon:{width:28,height:28,alignItems:'center',justifyContent:'center'}, aimsStatusGlyph:{fontSize:18,fontWeight:'800'}, aimsStatusTitle:{fontSize:14,lineHeight:18,fontWeight:'700'}, statusDismiss:{width:24,height:34,alignItems:'center',justifyContent:'center'}, statusDismissText:{fontSize:22,lineHeight:24},
   viewport:{flex:1,minHeight:0}, screen:{flex:1,paddingTop:8,gap:12}, grow:{flex:1,minWidth:0}, sectionTitle:{fontSize:28,lineHeight:34,fontWeight:'700',letterSpacing:-.8}, intro:{fontSize:15,lineHeight:22}, label:{fontSize:11,fontWeight:'700',letterSpacing:.9}, meta:{fontSize:13,lineHeight:18},
   dutyHead:{flexDirection:'row',alignItems:'center',justifyContent:'space-between'}, heroCard:{borderWidth:1,borderRadius:22,padding:13}, heroRoute:{fontSize:27,lineHeight:32,fontWeight:'700',letterSpacing:-.7}, heroTopRow:{flexDirection:'row',alignItems:'flex-start',justifyContent:'space-between',gap:10}, heroRouteFlex:{flex:1}, flightBadgeRow:{flexDirection:'row',flexWrap:'wrap',gap:6,marginTop:8}, flightBadge:{borderRadius:10,paddingHorizontal:9,paddingVertical:4}, flightBadgeText:{fontSize:12,fontWeight:'800',letterSpacing:.3,...MONO_FONT},
-  countdownPill:{borderRadius:13,paddingHorizontal:10,paddingVertical:5,alignItems:'center'}, countdown:{fontSize:16,fontWeight:'800',fontVariant:['tabular-nums'],...MONO_FONT}, countdownLabel:{fontSize:9,fontWeight:'700',letterSpacing:.6,marginTop:1}, timeDivider:{height:StyleSheet.hairlineWidth,marginVertical:8}, timeRow:{flexDirection:'row',alignItems:'flex-start',gap:6}, timeCell:{flex:1,minWidth:0}, timeLabel:{fontSize:10,lineHeight:13,fontWeight:'700',letterSpacing:.3}, timeValue:{fontSize:18,lineHeight:22,fontWeight:'700',marginTop:2,fontVariant:['tabular-nums'],...MONO_FONT}, heroFoot:{fontSize:12,fontWeight:'600',marginTop:8},
+  countdownPill:{borderRadius:13,paddingHorizontal:10,paddingVertical:5,alignItems:'center'}, countdown:{fontSize:16,fontWeight:'800',fontVariant:['tabular-nums'],...MONO_FONT}, countdownLabel:{fontSize:9,fontWeight:'700',letterSpacing:.6,marginTop:1}, timeDivider:{height:StyleSheet.hairlineWidth,marginVertical:8}, timeRow:{flexDirection:'row',alignItems:'flex-start',gap:6}, timeCell:{flex:1,minWidth:0}, timeLabel:{fontSize:10,lineHeight:13,fontWeight:'700',letterSpacing:.3}, timeValue:{fontSize:18,lineHeight:22,fontWeight:'700',marginTop:2,fontVariant:['tabular-nums'],...MONO_FONT}, heroFoot:{fontSize:12,fontWeight:'600',marginTop:8}, weatherRow:{flexDirection:'row',alignItems:'center',gap:6,marginTop:8}, weatherIcon:{fontSize:16}, weatherTemp:{fontSize:14,fontWeight:'800',...MONO_FONT}, weatherMeta:{flex:1,fontSize:11.5,fontWeight:'600'},
   summaryRow:{flexDirection:'row',gap:10}, summary:{flex:1,borderWidth:1,borderRadius:20,padding:14}, summaryValue:{fontSize:28,fontWeight:'700',marginTop:6,fontVariant:['tabular-nums'],...MONO_FONT}, upNext:{flex:1,minHeight:0,gap:2,...Platform.select({web:{maxHeight:'34vh' as any},default:{}})}, upNextList:{flex:1},
   primaryButton:{height:50,borderRadius:16,alignItems:'center',justifyContent:'center'}, actionText:{color:'#fff',fontWeight:'700'}, titleRow:{flexDirection:'row',alignItems:'center',gap:8}, titleActions:{flexDirection:'row',gap:7}, compactButton:{height:38,minWidth:72,borderWidth:1,borderRadius:14,alignItems:'center',justifyContent:'center',paddingHorizontal:10}, compactText:{fontWeight:'700',fontSize:12}, monthNav:{height:40,flexDirection:'row',alignItems:'center',justifyContent:'space-between'}, monthNavText:{fontSize:12,fontWeight:'600'}, monthSwipeWrap:{flex:1,minHeight:0},
   emptyCard:{borderWidth:1,borderRadius:20,padding:14}, innerWindow:{flex:1,minHeight:0,borderWidth:1,borderRadius:20,overflow:'hidden'}, listContent:{padding:8,gap:7,paddingBottom:18}, rosterCard:{borderWidth:1,borderRadius:16,padding:13}, flightCardTop:{flexDirection:'row',justifyContent:'space-between'}, flightNumber:{fontSize:11,fontWeight:'700'}, rosterRoute:{fontSize:20,fontWeight:'700',marginTop:4}, rosterEventTitle:{fontSize:18,lineHeight:22,fontWeight:'700',marginTop:4},
