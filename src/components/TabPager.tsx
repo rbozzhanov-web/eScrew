@@ -27,9 +27,9 @@ const RETURN_SPRING = { stiffness: 255, damping: 29, mass: 0.92, useNativeDriver
 export const TabPager = forwardRef<TabPagerHandle, Props>(function TabPager({ activeTab, pages, style, onBeforeChange, onChange }, ref) {
   const translation = useRef(new Animated.Value(0)).current;
   const width = useRef(360);
-  const transitionRef = useRef<Transition>();
+  const transitionRef = useRef<Transition | undefined>(undefined);
   const finishing = useRef(false);
-  const [transition, setTransition] = useState<Transition>();
+  const [transition, setTransition] = useState<Transition | undefined>(undefined);
 
   const clear = useCallback(() => {
     translation.setValue(0);
