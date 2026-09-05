@@ -434,7 +434,7 @@ function MoreScreenImpl({ rosters, palette, onRestoreBackup, onDeleteRoster, onE
         {sortedExpiries.length === 0 && <Text style={[styles.meta, { color: palette.muted, marginTop: 8 }]}>No expiry data in the imported roster.</Text>}
       </View>
 
-      <View style={[styles.infoCard, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}><Text style={[styles.cardTitle, { color: palette.text }]}>Privacy</Text><Text style={[styles.meta, { color: palette.muted }]}>Roster PDFs are parsed locally. AIMS sends roster data only; credentials and session data are not stored by eScrew. Weather sends only an airport code to Open-Meteo â no roster or crew data.</Text></View>
+      <View style={[styles.infoCard, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}><Text style={[styles.cardTitle, { color: palette.text }]}>Privacy</Text><Text style={[styles.meta, { color: palette.muted }]}>Roster PDFs are parsed locally. AIMS sends roster data only; credentials and session data are not stored by eScrew. Weather sends only an airport code to Open-Meteo â no roster or crew data. Current update: PR #99.</Text></View>
 
       <VersionFooter palette={palette} />
     </ScrollView>
