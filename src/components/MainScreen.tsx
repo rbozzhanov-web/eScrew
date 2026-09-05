@@ -2,7 +2,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Animated, FlatList, Platform, Pressable, ScrollView, StyleSheet, Text, View, useColorScheme, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IOSDialog, IOSSheet } from './IOSOverlay';
-import { SwipeSurface, type SwipeSurfaceHandle } from './SwipeSurface';
+import { PAGE_SPRING, SwipeSurface, type SwipeSurfaceHandle } from './SwipeSurface';
 import { buildRosterTimeline, flightExtra, stayForSector, type RosterTimelineRow, type RosterWithNormalized } from './rosterDataView';
 import type { NormalizedExpiry } from '@/src/core/rosterContract';
 import { exportRosterCalendar } from '@/src/domain/calendar';
@@ -90,12 +90,17 @@ export default function MainScreen() {
     setActiveMonth(stored.at(-1)?.period.start);
   }, []);
 
-  useEffect(() => {
-    Animated.spring(tabSelection, {
-      toValue: TABS.indexOf(tab), stiffness: 300, damping: 32, mass: 0.9,
-      useNativeDriver: true, isInteraction: false,
-    }).start();
-  }, [tab, tabSelection]);
+  // Springs the indicator to whatever tab is now active. Called imperatively at the same
+  // moment a tab change is *initiated* (see goToTab/changeTab below), so the indicator starts
+  // moving on the same tick as the content's exit animation rather than waiting for the
+  // animation's completion callback to commit `tab` and this effect to catch up a frame later.
+  // Kept as an effect too, as a fallback for paths that jump tabs directly via setTab (import,
+  // erase) without going through goToTab/changeTab — redundant, harmless re-triggers for the
+  // paths that already animated it imperatively (a spring already at its toValue is a no-op).
+  const animateIndicator = useCallback((target: Tab) => {
+    Animated.spring(tabSelection, { toValue: TABS.indexOf(target), ...PAGE_SPRING, isInteraction: false }).start();
+  }, [tabSelection]);
+  useEffect(() => { animateIndicator(tab); }, [tab, animateIndicator]);
 
   const roster = rosters.find((item) => item.period.start === activeMonth) ?? rosters.at(-1);
   const duties = useMemo(() => roster ? rosterToDuties(roster) : [], [roster]);
@@ -169,17 +174,19 @@ export default function MainScreen() {
     if (!next) return;
     if (next === 'Roster') rosterFocus.focusToday();
     setSelectedFlight(undefined);
+    animateIndicator(next);
     setTab(next);
-  }, [tab, rosterFocus]);
+  }, [tab, rosterFocus, animateIndicator]);
   const goToTab = useCallback((target: Tab) => {
     if (target === tab) return;
     const direction = TABS.indexOf(target) > TABS.indexOf(tab) ? -1 : 1;
     setSelectedFlight(undefined);
+    animateIndicator(target);
     tabSwipeRef.current?.play(direction, () => {
       if (target === 'Roster') rosterFocus.focusToday();
       setTab(target);
     });
-  }, [tab, rosterFocus]);
+  }, [tab, rosterFocus, animateIndicator]);
   const eraseAll = useCallback(() => {
     clearStoredRosters();
     setRosters([]);
@@ -304,6 +311,7 @@ function RosterScreenImpl({ roster, rosters, duties, selectedSector, palette, im
   const monthSwipeRef = useRef<SwipeSurfaceHandle>(null);
   const listRef = useRef<FlatList<RosterTimelineRow>>(null);
   const rowHeights = useRef(new Map<string, number>()).current;
+  const offsetsCache = useRef<{ timeline: RosterTimelineRow[]; offsets: number[] } | null>(null);
   const today = localTodayIso();
   const todayIndex = useMemo(() => {
     let idx = timeline.findIndex((row) => row.sortKey.slice(0, 10) === today);
@@ -320,15 +328,32 @@ function RosterScreenImpl({ roster, rosters, duties, selectedSector, palette, im
     if (!row) return ROW_HEIGHT_ESTIMATE.flight;
     return rowHeights.get(row.key) ?? ROW_HEIGHT_ESTIMATE[row.kind];
   }, [rowHeights]);
-  const getItemLayout = useCallback((data: ArrayLike<RosterTimelineRow> | null | undefined, index: number) => {
+  // Offsets are cached per `timeline` array and only rebuilt (once, O(n)) when a row's height
+  // actually changes — otherwise every one of FlatList's frequent getItemLayout calls would
+  // redo the prefix-sum loop from scratch.
+  const buildOffsets = useCallback(() => {
+    const offsets: number[] = [];
     let offset = LIST_TOP_PADDING;
-    for (let i = 0; i < index; i++) offset += heightFor(data?.[i]) + LIST_ROW_GAP;
-    return { length: heightFor(data?.[index]), offset, index };
-  }, [heightFor]);
+    for (const row of timeline) { offsets.push(offset); offset += heightFor(row) + LIST_ROW_GAP; }
+    offsetsCache.current = { timeline, offsets };
+    return offsets;
+  }, [timeline, heightFor]);
+  const getItemLayout = useCallback((data: ArrayLike<RosterTimelineRow> | null | undefined, index: number) => {
+    const cached = offsetsCache.current;
+    const offsets = cached && cached.timeline === timeline ? cached.offsets : buildOffsets();
+    return { length: heightFor(data?.[index]), offset: offsets[index] ?? 0, index };
+  }, [timeline, heightFor, buildOffsets]);
   const measureRow = useCallback((key: string, height: number) => {
     if (rowHeights.get(key) === height) return;
     rowHeights.set(key, height);
+    offsetsCache.current = null;
   }, [rowHeights]);
+  // Measured heights are keyed by row (not by month), so switching months would otherwise
+  // keep accumulating entries for every row ever seen across the whole session.
+  useEffect(() => {
+    rowHeights.clear();
+    offsetsCache.current = null;
+  }, [roster?.period.start, rowHeights]);
   const focusToday = useCallback(() => {
     if (todayIndex < 0) return;
     listRef.current?.scrollToIndex({ index: todayIndex, animated: false, viewPosition: 0 });
