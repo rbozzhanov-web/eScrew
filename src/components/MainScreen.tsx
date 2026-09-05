@@ -38,6 +38,15 @@ const WEB_GLASS = Platform.OS === 'web'
 const WEB_TAB_GLASS = Platform.OS === 'web'
   ? ({ backdropFilter: 'blur(32px) saturate(1.5)', WebkitBackdropFilter: 'blur(32px) saturate(1.5)' } as any)
   : undefined;
+/**
+ * All shadow* props must live in the same style object — react-native-web derives a single
+ * boxShadow per object, so splitting shadowColor into a separate object in the style array
+ * (rather than merging shadow properties key-by-key) makes the later object's missing
+ * offset/radius/opacity silently zero out the shadow instead of merging with the earlier one.
+ */
+const todayGlow = (palette: Palette) => ({
+  shadowColor: palette.accent, shadowOffset: { width: 0, height: 8 }, shadowOpacity: .32, shadowRadius: 20, elevation: 8, ...WEB_GLASS,
+});
 function heroTint(palette: Palette) {
   return Platform.OS === 'web'
     ? ({ backgroundImage: `linear-gradient(135deg, ${palette.accentSoft} 0%, ${palette.surfaceStrong} 60%)` } as any)
@@ -319,7 +328,7 @@ const RosterScreen = memo(RosterScreenImpl);
 
 function FlightRosterCard({ duty, sector, selected, isToday, palette, onPress }: { duty: Duty; sector: Sector; selected: boolean; isToday: boolean; palette: Palette; onPress: () => void }) {
   const dateMeta = rosterDateMeta(duty);
-  return <Pressable onPress={onPress} style={[styles.rosterCard, isToday && styles.rosterCardToday, { backgroundColor: selected ? palette.accentSoft : palette.surfaceStrong, borderColor: isToday ? palette.accent : palette.line }]}>
+  return <Pressable onPress={onPress} style={[styles.rosterCard, isToday && styles.rosterCardToday, { backgroundColor: selected || isToday ? palette.accentSoft : palette.surfaceStrong, borderColor: isToday ? palette.accent : palette.line, ...(isToday ? todayGlow(palette) : null) }]}>
     <View style={styles.flightCardTop}><Text style={[styles.label, { color: isToday ? palette.accent : dateMeta.weekend ? palette.weekend : palette.muted }]}>{dateMeta.label}{isToday ? ' · TODAY' : ''}</Text><Text style={[styles.flightNumber, { color: palette.muted }]}>{sector.flightNumber}{sector.deadhead ? ' · DHC' : ''}</Text></View>
     <Text style={[styles.rosterRoute, { color: palette.text }]}>{sector.departure} → {sector.arrival}</Text>
     <Text style={[styles.meta, { color: palette.muted }]}>{sector.departureTime} – {sector.arrivalTime} · Report {duty.reportTime}</Text>
@@ -329,7 +338,7 @@ function FlightRosterCard({ duty, sector, selected, isToday, palette, onPress }:
 function RosterEventCard({ item, isToday, palette }: { item: Extract<RosterTimelineRow, { kind: 'event' }>; isToday: boolean; palette: Palette }) {
   const dateMeta = eventDateMeta(item.date);
   const detail = [item.detail, item.station].filter(Boolean).join(' · ');
-  return <View style={[styles.rosterCard, isToday && styles.rosterCardToday, { backgroundColor: palette.surfaceStrong, borderColor: isToday ? palette.accent : palette.line }]}>
+  return <View style={[styles.rosterCard, isToday && styles.rosterCardToday, { backgroundColor: isToday ? palette.accentSoft : palette.surfaceStrong, borderColor: isToday ? palette.accent : palette.line, ...(isToday ? todayGlow(palette) : null) }]}>
     <View style={styles.flightCardTop}><Text style={[styles.label, { color: isToday ? palette.accent : dateMeta.weekend ? palette.weekend : palette.muted }]}>{dateMeta.label}{isToday ? ' · TODAY' : ''}</Text><Text style={[styles.flightNumber, { color: palette.muted }]}>{item.badge}</Text></View>
     <Text numberOfLines={2} style={[styles.rosterEventTitle, { color: palette.text }]}>{item.title}</Text>
     {detail ? <Text style={[styles.meta, { color: palette.muted }]}>{detail}</Text> : null}
