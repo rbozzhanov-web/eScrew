@@ -3,7 +3,7 @@ import { ActivityIndicator, Animated, FlatList, Platform, Pressable, ScrollView,
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IOSDialog, IOSSheet } from './IOSOverlay';
 import { SwipeSurface, type SwipeSurfaceHandle } from './SwipeSurface';
-import { TabPager, TAB_PAGER_SPRING, type TabPagerHandle } from './TabPager';
+import { TabPager, type TabPagerHandle } from './TabPager';
 import { buildRosterTimeline, flightExtra, stayForSector, type RosterTimelineRow, type RosterWithNormalized } from './rosterDataView';
 import type { NormalizedExpiry } from '@/src/core/rosterContract';
 import { exportRosterCalendar } from '@/src/domain/calendar';
@@ -76,7 +76,7 @@ export default function MainScreen() {
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState<string>();
   const [tabBarWidth, setTabBarWidth] = useState(0);
-  const tabSelection = useRef(new Animated.Value(0)).current;
+  const tabProgress = useRef(new Animated.Value(TABS.indexOf(tab))).current;
   const tabPagerRef = useRef<TabPagerHandle>(null);
   const rosterFocus = useRef<RosterFocusHandle>({ focusToday: () => undefined }).current;
 
@@ -86,18 +86,14 @@ export default function MainScreen() {
     setActiveMonth(stored.at(-1)?.period.start);
   }, []);
 
-  useEffect(() => {
-    Animated.spring(tabSelection, {
-      toValue: TABS.indexOf(tab), ...TAB_PAGER_SPRING, isInteraction: false,
-    }).start();
-  }, [tab, tabSelection]);
-
   const roster = rosters.find((item) => item.period.start === activeMonth) ?? rosters.at(-1);
   const duties = useMemo(() => roster ? rosterToDuties(roster) : [], [roster]);
   const selectedSector = duties.flatMap((duty) => duty.sectors).find((sector) => sector.id === selectedFlight);
   const allDuties = useMemo<RosterDuty[]>(() => rosters.flatMap((item) => rosterToDuties(item).map((duty) => ({ roster: item, duty }))), [rosters]);
   const tabStep = tabBarWidth / TABS.length;
-  const tabIndicatorX = Animated.multiply(tabSelection, tabStep);
+  // Same source `tabProgress` that TabPager animates for the page itself, so the indicator
+  // can never start or settle a frame off from the page it's tracking.
+  const tabIndicatorX = Animated.multiply(tabProgress, tabStep);
 
   const importRoster = useCallback(async () => {
     setImportError(undefined);
@@ -188,6 +184,7 @@ export default function MainScreen() {
       <TabPager
         ref={tabPagerRef}
         activeTab={tab}
+        progress={tabProgress}
         style={styles.viewport}
         onBeforeChange={prepareTabChange}
         onChange={commitTabChange}
@@ -433,7 +430,7 @@ function MoreScreenImpl({ rosters, palette, onRestoreBackup, onDeleteRoster, onE
         {sortedExpiries.length === 0 && <Text style={[styles.meta, { color: palette.muted, marginTop: 8 }]}>No expiry data in the imported roster.</Text>}
       </View>
 
-      <View style={[styles.infoCard, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}><Text style={[styles.cardTitle, { color: palette.text }]}>Privacy</Text><Text style={[styles.meta, { color: palette.muted }]}>Roster PDFs are parsed locally. AIMS sends roster data only; credentials and session data are not stored by eScrew. Weather sends only an airport code to Open-Meteo — no roster or crew data. Current update: PR #99.</Text></View>
+      <View style={[styles.infoCard, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}><Text style={[styles.cardTitle, { color: palette.text }]}>Privacy</Text><Text style={[styles.meta, { color: palette.muted }]}>Roster PDFs are parsed locally. AIMS sends roster data only; credentials and session data are not stored by eScrew. Weather sends only an airport code to Open-Meteo — no roster or crew data.</Text></View>
 
       <VersionFooter palette={palette} />
     </ScrollView>
