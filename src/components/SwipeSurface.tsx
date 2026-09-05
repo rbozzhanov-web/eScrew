@@ -19,7 +19,9 @@ export type SwipeSurfaceHandle = {
 };
 
 const RETURN_SPRING = { stiffness: 255, damping: 29, mass: 0.92, useNativeDriver: true } as const;
-const PAGE_SPRING = { stiffness: 340, damping: 32, mass: 0.82, useNativeDriver: true } as const;
+// Slightly slower than the return spring, with near-critical damping: this softens the
+// initial horizontal acceleration without introducing a bounce or a timing/easing handoff.
+const PAGE_SPRING = { stiffness: 300, damping: 32, mass: 0.9, useNativeDriver: true } as const;
 const WEB_COMPOSITE = Platform.OS === 'web'
   ? ({ willChange: 'transform', backfaceVisibility: 'hidden', transformStyle: 'preserve-3d' } as any)
   : undefined;
