@@ -1,5 +1,5 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, FlatList, Platform, Pressable, ScrollView, StyleSheet, Text, View, useColorScheme, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
+import { ActivityIndicator, Animated, FlatList, Platform, Pressable, ScrollView, StyleSheet, Text, View, useColorScheme, useWindowDimensions, type LayoutChangeEvent, type ListRenderItem } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IOSDialog, IOSSheet } from './IOSOverlay';
 import { PAGE_SPRING, SwipeSurface, type SwipeSurfaceHandle } from './SwipeSurface';
@@ -250,6 +250,7 @@ function HomeImpl({ allDuties, fallbackRoster, rosters, palette, onImport, impor
   const focus = useMemo(() => pickFocusDuty(timeline, now), [timeline, now]);
   const roster = focus?.roster ?? fallbackRoster;
   const duty = focus?.duty;
+  const renderCrewRow: ListRenderItem<CrewMember> = useCallback(({ item }) => <CrewRow member={item} palette={palette} />, [palette]);
 
   if (!roster || !duty) return <View style={styles.screen}>
     <Text style={[styles.sectionTitle, { color: palette.text }]}>Your roster, simplified.</Text>
@@ -294,7 +295,7 @@ function HomeImpl({ allDuties, fallbackRoster, rosters, palette, onImport, impor
     <View style={styles.upNext}>
       <Text style={[styles.label, { color: palette.muted }]}>CREW ON THIS FLIGHT · {crew.length}</Text>
       {crew.length > 0
-        ? <FlatList data={crew} keyExtractor={(item) => item.id} showsVerticalScrollIndicator={false} style={styles.upNextList} renderItem={({ item }) => <CrewRow member={item} palette={palette} />} />
+        ? <FlatList data={crew} keyExtractor={(item) => item.id} showsVerticalScrollIndicator={false} style={styles.upNextList} renderItem={renderCrewRow} />
         : <Text style={[styles.meta, { color: palette.muted, marginTop: 4 }]}>Crew is not listed for this flight in the imported roster.</Text>}
     </View>
   </View>;
@@ -358,6 +359,16 @@ function RosterScreenImpl({ roster, rosters, duties, selectedSector, palette, im
     if (todayIndex < 0) return;
     listRef.current?.scrollToIndex({ index: todayIndex, animated: false, viewPosition: 0 });
   }, [todayIndex]);
+  // A fresh renderItem closure on every render (the previous inline-in-JSX form) defeats
+  // FlatList's ability to skip re-rendering unchanged rows, since it can't tell the function
+  // is "the same" renderer across renders — costly with a large roster. Stabilized here so it
+  // only changes when something a row actually depends on changes.
+  const renderTimelineRow: ListRenderItem<RosterTimelineRow> = useCallback(({ item }) => {
+    const onLayout = (event: LayoutChangeEvent) => measureRow(item.key, event.nativeEvent.layout.height);
+    return item.kind === 'flight'
+      ? <FlightRosterCard duty={item.duty} sector={item.sector} selected={selectedSector?.id === item.sector.id} isToday={item.sortKey.slice(0, 10) === today} palette={palette} onPress={() => onSelect(item.sector.id)} onLayout={onLayout} />
+      : <RosterEventCard item={item} isToday={item.sortKey.slice(0, 10) === today} palette={palette} onLayout={onLayout} />;
+  }, [selectedSector, today, palette, onSelect, measureRow]);
   useEffect(() => {
     rosterFocus.focusToday = focusToday;
   }, [focusToday, rosterFocus]);
@@ -383,12 +394,7 @@ function RosterScreenImpl({ roster, rosters, duties, selectedSector, palette, im
         listRef.current?.scrollToOffset({ offset: info.averageItemLength * info.index, animated: false });
         requestAnimationFrame(() => listRef.current?.scrollToIndex({ index: info.index, animated: false }));
       }}
-      renderItem={({ item }) => {
-        const onLayout = (event: LayoutChangeEvent) => measureRow(item.key, event.nativeEvent.layout.height);
-        return item.kind === 'flight'
-          ? <FlightRosterCard duty={item.duty} sector={item.sector} selected={selectedSector?.id === item.sector.id} isToday={item.sortKey.slice(0, 10) === today} palette={palette} onPress={() => onSelect(item.sector.id)} onLayout={onLayout} />
-          : <RosterEventCard item={item} isToday={item.sortKey.slice(0, 10) === today} palette={palette} onLayout={onLayout} />;
-      }}
+      renderItem={renderTimelineRow}
     /></View></SwipeSurface>}
     {selectedRow && <FlightDetail row={selectedRow} roster={roster} palette={palette} onClose={() => onSelect(undefined)} onPrevious={selectedIndex > 0 ? () => onSelect(flights[selectedIndex - 1].sector.id) : undefined} onNext={selectedIndex < flights.length - 1 ? () => onSelect(flights[selectedIndex + 1].sector.id) : undefined} />}
   </View>;
@@ -419,6 +425,7 @@ function FlightDetail({ row, roster, palette, onClose, onPrevious, onNext }: { r
   const stay = stayForSector(roster, row.sector);
   const status = [row.sector.deadhead ? 'DHC' : undefined, extra?.actualTimes ? 'Actual times' : undefined, extra?.aircraftType].filter(Boolean).join(' · ');
   const [headerHeight, setHeaderHeight] = useState(0);
+  const renderCrewMember: ListRenderItem<CrewMember> = useCallback(({ item }) => <View style={styles.crewRow}><View style={[styles.avatar, { backgroundColor: palette.accentSoft }]}><Text style={[styles.avatarText, { color: palette.accent }]}>{item.name[0]}</Text></View><View style={styles.grow}><Text style={[styles.crewName, { color: palette.text }]}>{item.name}</Text><Text style={[styles.meta, { color: palette.muted }]}>{item.position ?? item.role}</Text></View></View>, [palette]);
   const scrollHeader = <View>
     {stay && <View style={[styles.stayCard, { backgroundColor: palette.surface, borderColor: palette.line }]}><View style={styles.flightCardTop}><Text style={[styles.label, { color: palette.muted }]}>STAY{stay.station ? ` · ${stay.station}` : ''}</Text>{stay.rest ? <Text style={[styles.flightNumber, { color: palette.gold }]}>REST {stay.rest}</Text> : null}</View>{stay.hotel ? <Text style={[styles.stayTitle, { color: palette.text }]}>{stay.hotel}</Text> : null}{stay.checkIn || stay.checkOut ? <Text style={[styles.meta, { color: palette.muted }]}>{stay.checkIn ?? '—'} → {stay.checkOut ?? '—'}</Text> : null}{stay.address ? <Text numberOfLines={2} style={[styles.stayMeta, { color: palette.muted }]}>{stay.address}</Text> : null}{stay.phone ? <Text numberOfLines={2} style={[styles.stayMeta, { color: palette.muted }]}>{stay.phone}</Text> : null}</View>}
     <Text style={[styles.swipeHint, { color: palette.muted }]}>{onPrevious ? '‹ ' : ''}swipe flight{onNext ? ' ›' : ''} · swipe down to close</Text>
@@ -440,7 +447,7 @@ function FlightDetail({ row, roster, palette, onClose, onPrevious, onNext }: { r
       showsVerticalScrollIndicator={false}
       ListHeaderComponent={scrollHeader}
       ListEmptyComponent={<Text style={[styles.meta, { color: palette.muted, marginTop: 12 }]}>Crew is not listed for this flight in the imported report.</Text>}
-      renderItem={({ item }) => <View style={styles.crewRow}><View style={[styles.avatar, { backgroundColor: palette.accentSoft }]}><Text style={[styles.avatarText, { color: palette.accent }]}>{item.name[0]}</Text></View><View style={styles.grow}><Text style={[styles.crewName, { color: palette.text }]}>{item.name}</Text><Text style={[styles.meta, { color: palette.muted }]}>{item.position ?? item.role}</Text></View></View>}
+      renderItem={renderCrewMember}
     />
   </SwipeSurface></IOSSheet>;
 }
@@ -475,11 +482,13 @@ function MoreScreenImpl({ rosters, palette, onRestoreBackup, onDeleteRoster, onE
   };
   const backupThenClose = () => { handleExport(); setConfirmErase(false); };
   const confirmAndErase = () => { setConfirmErase(false); onErase(); };
+  const renderRosterRow: ListRenderItem<RosterWithNormalized> = useCallback(({ item }) => <View style={[styles.libraryRow, { borderColor: palette.line }]}><View style={styles.grow}><Text style={[styles.libraryMonth, { color: palette.text }]}>{rosterMonthLabel(item)}</Text><Text style={[styles.meta, { color: palette.muted }]}>{item.subject?.base ?? 'Roster'} · stored locally</Text></View><Pressable onPress={() => onDeleteRoster(item.period.start)} style={[styles.deleteRosterButton, { backgroundColor: palette.accentSoft }]}><Text style={[styles.deleteRosterText, { color: palette.danger }]}>Delete</Text></Pressable></View>, [palette, onDeleteRoster]);
+  const renderExpiryRow: ListRenderItem<NormalizedExpiry> = useCallback(({ item }) => <ExpiryRow expiry={item} palette={palette} />, [palette]);
 
   return <View style={styles.screen}>
     <Text style={[styles.sectionTitle, { color: palette.text }]}>More</Text>
     <ScrollView style={styles.grow} contentContainerStyle={styles.moreContent} showsVerticalScrollIndicator={false}>
-      <View style={[styles.libraryCard, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}><Text style={[styles.cardTitle, { color: palette.text }]}>Rosters</Text>{rosters.length ? <FlatList data={rosters} keyExtractor={(item) => item.period.start} style={styles.libraryList} showsVerticalScrollIndicator={false} renderItem={({ item }) => <View style={[styles.libraryRow, { borderColor: palette.line }]}><View style={styles.grow}><Text style={[styles.libraryMonth, { color: palette.text }]}>{rosterMonthLabel(item)}</Text><Text style={[styles.meta, { color: palette.muted }]}>{item.subject?.base ?? 'Roster'} · stored locally</Text></View><Pressable onPress={() => onDeleteRoster(item.period.start)} style={[styles.deleteRosterButton, { backgroundColor: palette.accentSoft }]}><Text style={[styles.deleteRosterText, { color: palette.danger }]}>Delete</Text></Pressable></View>} /> : <Text style={[styles.meta, { color: palette.muted }]}>No rosters stored</Text>}</View>
+      <View style={[styles.libraryCard, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}><Text style={[styles.cardTitle, { color: palette.text }]}>Rosters</Text>{rosters.length ? <FlatList data={rosters} keyExtractor={(item) => item.period.start} style={styles.libraryList} showsVerticalScrollIndicator={false} renderItem={renderRosterRow} /> : <Text style={[styles.meta, { color: palette.muted }]}>No rosters stored</Text>}</View>
 
       {rosters.length > 0 && <Pressable onPress={() => setConfirmErase(true)} style={[styles.dangerButton, { backgroundColor: palette.danger + '1A', borderColor: palette.danger }]}><Text style={[styles.dangerText, { color: palette.danger }]}>⚠ Erase local roster data</Text></Pressable>}
 
@@ -524,7 +533,7 @@ function MoreScreenImpl({ rosters, palette, onRestoreBackup, onDeleteRoster, onE
         contentContainerStyle={styles.expirySheetListContent}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={<Text style={[styles.meta, { color: palette.muted, marginTop: 8 }]}>No expiry data in the imported roster.</Text>}
-        renderItem={({ item }) => <ExpiryRow expiry={item} palette={palette} />}
+        renderItem={renderExpiryRow}
       />
     </IOSSheet>
   </View>;
