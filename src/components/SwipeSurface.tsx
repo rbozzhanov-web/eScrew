@@ -19,8 +19,7 @@ export type SwipeSurfaceHandle = {
 };
 
 const RETURN_SPRING = { stiffness: 255, damping: 29, mass: 0.92, useNativeDriver: true } as const;
-const ENTRY_SPRING = { stiffness: 275, damping: 31, mass: 0.9, useNativeDriver: true } as const;
-const PAGE_EASING = Easing.bezier(0.22, 0.78, 0, 1);
+const PAGE_SPRING = { stiffness: 340, damping: 32, mass: 0.82, useNativeDriver: true } as const;
 const WEB_COMPOSITE = Platform.OS === 'web'
   ? ({ willChange: 'transform', backfaceVisibility: 'hidden', transformStyle: 'preserve-3d' } as any)
   : undefined;
@@ -46,13 +45,15 @@ export const SwipeSurface = forwardRef<SwipeSurfaceHandle, Props>(function Swipe
     if (transitioning.current) return;
     transitioning.current = true;
     const width = Math.max(260, size.current.width);
-    const speed = Math.abs(velocity);
+    // One continuous spring carries the velocity through both legs of the page-turn — no
+    // fixed-duration/easing handoff, so the motion reads as a single physical gesture
+    // (matching native high-refresh-rate paging) rather than two mismatched animations.
+    const carriedVelocity = direction * Math.min(2.4, Math.max(0.9, Math.abs(velocity)));
 
-    Animated.timing(translation.x, {
+    Animated.spring(translation.x, {
       toValue: direction * (width + 8),
-      duration: speed >= 1 ? 120 : speed >= 0.65 ? 140 : 164,
-      easing: PAGE_EASING,
-      useNativeDriver: true,
+      ...PAGE_SPRING,
+      velocity: carriedVelocity,
       isInteraction: false,
     }).start(({ finished }) => {
       if (!finished) { settle(); return; }
@@ -64,8 +65,8 @@ export const SwipeSurface = forwardRef<SwipeSurfaceHandle, Props>(function Swipe
       requestAnimationFrame(() => {
         Animated.spring(translation.x, {
           toValue: 0,
-          ...ENTRY_SPRING,
-          velocity: direction * Math.min(2, Math.max(0.45, speed)),
+          ...PAGE_SPRING,
+          velocity: carriedVelocity,
           isInteraction: false,
         }).start(({ finished: entryFinished }) => {
           if (entryFinished) translation.setValue({ x: 0, y: 0 });
