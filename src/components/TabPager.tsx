@@ -17,7 +17,7 @@ export type TabPagerHandle = {
   goTo: (target: string) => void;
 };
 
-const PAGE_SPRING = { stiffness: 300, damping: 32, mass: 0.9, useNativeDriver: true } as const;
+export const TAB_PAGER_SPRING = { stiffness: 300, damping: 32, mass: 0.9, useNativeDriver: true } as const;
 const RETURN_SPRING = { stiffness: 255, damping: 29, mass: 0.92, useNativeDriver: true } as const;
 
 /**
@@ -47,14 +47,15 @@ export const TabPager = forwardRef<TabPagerHandle, Props>(function TabPager({ ac
     if (finishing.current) return;
     finishing.current = true;
     const carriedVelocity = next.direction * Math.min(2.4, Math.max(0.8, Math.abs(velocity)));
+    // Commit before the page spring so the bottom-tab indicator starts on the same frame.
+    onChange(next.to);
     Animated.spring(translation, {
       toValue: next.direction * width.current,
-      ...PAGE_SPRING,
+      ...TAB_PAGER_SPRING,
       velocity: carriedVelocity,
       isInteraction: false,
     }).start(({ finished }) => {
       if (!finished) { clear(); return; }
-      onChange(next.to);
       softHaptic();
       clear();
     });
