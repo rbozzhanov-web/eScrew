@@ -3,7 +3,7 @@ import { ActivityIndicator, Animated, FlatList, Platform, Pressable, ScrollView,
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IOSDialog, IOSSheet } from './IOSOverlay';
 import { SwipeSurface, type SwipeSurfaceHandle } from './SwipeSurface';
-import { TabPager, type TabPagerHandle } from './TabPager';
+import { TabPager, TAB_PAGER_SPRING, type TabPagerHandle } from './TabPager';
 import { buildRosterTimeline, flightExtra, stayForSector, type RosterTimelineRow, type RosterWithNormalized } from './rosterDataView';
 import type { NormalizedExpiry } from '@/src/core/rosterContract';
 import { exportRosterCalendar } from '@/src/domain/calendar';
@@ -88,8 +88,7 @@ export default function MainScreen() {
 
   useEffect(() => {
     Animated.spring(tabSelection, {
-      toValue: TABS.indexOf(tab), stiffness: 380, damping: 34, mass: 0.72,
-      useNativeDriver: true, isInteraction: false,
+      toValue: TABS.indexOf(tab), ...TAB_PAGER_SPRING, isInteraction: false,
     }).start();
   }, [tab, tabSelection]);
 
