@@ -33,11 +33,15 @@ type RosterFocusHandle = { focusToday: () => void };
 const MONO_FONT = Platform.OS === 'web'
   ? ({ fontFamily: 'ui-monospace,"SF Mono",Menlo,monospace' } as any)
   : undefined;
+// backdrop-filter is read through a CSS custom property (rather than a literal blur()) so
+// SwipeSurface can suspend it document-wide for the duration of a page-turn transform: WebKit
+// re-samples everything behind a blurred element on every frame it moves, which is cheap for one
+// card but adds up fast with this many glass surfaces animating across a tab switch at once.
 const WEB_GLASS = Platform.OS === 'web'
-  ? ({ backdropFilter: 'blur(24px) saturate(1.4)', WebkitBackdropFilter: 'blur(24px) saturate(1.4)' } as any)
+  ? ({ backdropFilter: 'var(--escrew-blur-glass, blur(24px) saturate(1.4))', WebkitBackdropFilter: 'var(--escrew-blur-glass, blur(24px) saturate(1.4))' } as any)
   : undefined;
 const WEB_TAB_GLASS = Platform.OS === 'web'
-  ? ({ backdropFilter: 'blur(32px) saturate(1.5)', WebkitBackdropFilter: 'blur(32px) saturate(1.5)' } as any)
+  ? ({ backdropFilter: 'var(--escrew-blur-tab, blur(32px) saturate(1.5))', WebkitBackdropFilter: 'var(--escrew-blur-tab, blur(32px) saturate(1.5))' } as any)
   : undefined;
 /**
  * All shadow* props must live in the same style object — react-native-web derives a single

@@ -28,6 +28,15 @@ const WEB_COMPOSITE = Platform.OS === 'web'
   ? ({ willChange: 'transform', backfaceVisibility: 'hidden', transformStyle: 'preserve-3d' } as any)
   : undefined;
 
+// WebKit re-samples everything behind a backdrop-filter element on every frame it moves, so
+// blurring several glass cards while they're all being translated at once (a tab or month/flight
+// page turn) is far more expensive than the same cards sitting still. Suspending the blur — via a
+// body class the glass surfaces read as a CSS custom property — for just the duration of the
+// transform sidesteps that without touching the spring/timing logic below.
+const GLASS_SUSPEND_CLASS = 'escrew-suspend-glass';
+const suspendGlass = () => { if (Platform.OS === 'web' && typeof document !== 'undefined') document.body.classList.add(GLASS_SUSPEND_CLASS); };
+const resumeGlass = () => { if (Platform.OS === 'web' && typeof document !== 'undefined') document.body.classList.remove(GLASS_SUSPEND_CLASS); };
+
 export const SwipeSurface = forwardRef<SwipeSurfaceHandle, Props>(function SwipeSurface({ children, style, onSwipeLeft, onSwipeRight, onSwipeDown, threshold = 52, dominance = 1.25 }, ref) {
   const translation = useRef(new Animated.ValueXY()).current;
   const activeAxis = useRef<SwipeAxis | undefined>(undefined);
@@ -42,12 +51,14 @@ export const SwipeSurface = forwardRef<SwipeSurfaceHandle, Props>(function Swipe
   const settle = useCallback(() => {
     Animated.spring(translation, { toValue: { x: 0, y: 0 }, ...RETURN_SPRING, isInteraction: false }).start(() => {
       transitioning.current = false;
+      resumeGlass();
     });
   }, [translation]);
 
   const completeHorizontal = useCallback((direction: -1 | 1, callback: () => void, velocity = 0) => {
     if (transitioning.current) return;
     transitioning.current = true;
+    suspendGlass();
     const width = Math.max(260, size.current.width);
     // One continuous spring carries the velocity through both legs of the page-turn — no
     // fixed-duration/easing handoff, so the motion reads as a single physical gesture
@@ -74,6 +85,7 @@ export const SwipeSurface = forwardRef<SwipeSurfaceHandle, Props>(function Swipe
           isInteraction: false,
         }).start(({ finished: entryFinished }) => {
           if (entryFinished) translation.setValue({ x: 0, y: 0 });
+          resumeGlass();
         });
       });
     });
@@ -86,6 +98,7 @@ export const SwipeSurface = forwardRef<SwipeSurfaceHandle, Props>(function Swipe
   const completeDown = useCallback((callback: () => void) => {
     if (transitioning.current) return;
     transitioning.current = true;
+    suspendGlass();
     const height = Math.max(360, size.current.height);
     Animated.timing(translation.y, {
       toValue: height + 56,
@@ -96,6 +109,7 @@ export const SwipeSurface = forwardRef<SwipeSurfaceHandle, Props>(function Swipe
     }).start(({ finished }) => {
       if (finished) { softHaptic(); callback(); }
       reset();
+      resumeGlass();
     });
   }, [reset, translation]);
 
@@ -109,6 +123,7 @@ export const SwipeSurface = forwardRef<SwipeSurfaceHandle, Props>(function Swipe
       return activeAxis.current !== undefined;
     },
     onPanResponderGrant: () => {
+      suspendGlass();
       translation.stopAnimation();
       translation.setValue({ x: 0, y: 0 });
     },
