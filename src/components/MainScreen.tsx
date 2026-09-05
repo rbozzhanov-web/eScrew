@@ -3,6 +3,7 @@ import { ActivityIndicator, Animated, FlatList, Platform, Pressable, ScrollView,
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IOSDialog, IOSSheet } from './IOSOverlay';
 import { SwipeSurface, type SwipeSurfaceHandle } from './SwipeSurface';
+import { TabPager, type TabPagerHandle } from './TabPager';
 import { buildRosterTimeline, flightExtra, stayForSector, type RosterTimelineRow, type RosterWithNormalized } from './rosterDataView';
 import type { NormalizedExpiry } from '@/src/core/rosterContract';
 import { exportRosterCalendar } from '@/src/domain/calendar';
@@ -20,9 +21,9 @@ import { weatherIcon, windDirectionLabel } from '@/src/weather/weatherCodes';
 type Tab = 'Home' | 'Roster' | 'More';
 const TABS: Tab[] = ['Home', 'Roster', 'More'];
 const TAB_ICONS: Record<Tab, { glyph: string; size: number; nudge: number; weight: '700' | '800' }> = {
-  Home: { glyph: '⌂', size: 24, nudge: 0, weight: '700' },
-  Roster: { glyph: '✈︎', size: 22, nudge: 0, weight: '700' },
-  More: { glyph: '•••', size: 18, nudge: -2, weight: '700' },
+  Home: { glyph: 'â', size: 24, nudge: 0, weight: '700' },
+  Roster: { glyph: 'âï¸', size: 22, nudge: 0, weight: '700' },
+  More: { glyph: 'â¢â¢â¢', size: 18, nudge: -2, weight: '700' },
 };
 type Palette = { background:string; surface:string; surfaceStrong:string; text:string; muted:string; line:string; accentLine:string; accent:string; accentSoft:string; gold:string; danger:string; weekend:string };
 type RosterDuty = { roster: ParsedAirAstanaRoster; duty: Duty };
@@ -40,7 +41,7 @@ const WEB_TAB_GLASS = Platform.OS === 'web'
   ? ({ backdropFilter: 'blur(32px) saturate(1.5)', WebkitBackdropFilter: 'blur(32px) saturate(1.5)' } as any)
   : undefined;
 /**
- * All shadow* props must live in the same style object — react-native-web derives a single
+ * All shadow* props must live in the same style object â react-native-web derives a single
  * boxShadow per object, so splitting shadowColor into a separate object in the style array
  * (rather than merging shadow properties key-by-key) makes the later object's missing
  * offset/radius/opacity silently zero out the shadow instead of merging with the earlier one.
@@ -76,7 +77,7 @@ export default function MainScreen() {
   const [importError, setImportError] = useState<string>();
   const [tabBarWidth, setTabBarWidth] = useState(0);
   const tabSelection = useRef(new Animated.Value(0)).current;
-  const tabSwipeRef = useRef<SwipeSurfaceHandle>(null);
+  const tabPagerRef = useRef<TabPagerHandle>(null);
   const rosterFocus = useRef<RosterFocusHandle>({ focusToday: () => undefined }).current;
 
   useEffect(() => {
@@ -159,22 +160,13 @@ export default function MainScreen() {
     setActiveMonth(next.period.start);
     setSelectedFlight(undefined);
   }, [roster, rosters]);
-  const changeTab = useCallback((direction: -1 | 1) => {
-    const next = TABS[TABS.indexOf(tab) + direction];
-    if (!next) return;
+  const prepareTabChange = useCallback((next: string) => {
     if (next === 'Roster') rosterFocus.focusToday();
     setSelectedFlight(undefined);
-    setTab(next);
-  }, [tab, rosterFocus]);
-  const goToTab = useCallback((target: Tab) => {
-    if (target === tab) return;
-    const direction = TABS.indexOf(target) > TABS.indexOf(tab) ? -1 : 1;
-    setSelectedFlight(undefined);
-    tabSwipeRef.current?.play(direction, () => {
-      if (target === 'Roster') rosterFocus.focusToday();
-      setTab(target);
-    });
-  }, [tab, rosterFocus]);
+  }, [rosterFocus]);
+  const commitTabChange = useCallback((next: string) => {
+    setTab(next as Tab);
+  }, []);
   const eraseAll = useCallback(() => {
     clearStoredRosters();
     setRosters([]);
@@ -194,27 +186,24 @@ export default function MainScreen() {
 
       {importError && <ImportErrorBanner message={importError} palette={palette} onDismiss={() => setImportError(undefined)} />}
 
-      <SwipeSurface ref={tabSwipeRef} style={styles.viewport} onSwipeLeft={tab === 'More' ? undefined : () => changeTab(1)} onSwipeRight={tab === 'Home' ? undefined : () => changeTab(-1)}>
-        {/* All three tabs stay mounted permanently and are shown/hidden via opacity rather than
-            conditional rendering — swapping tabs would otherwise force a full mount of the
-            destination screen (FlatList layout, etc.) synchronously at the animation handoff,
-            which is heavy enough to visibly stall the in-flight page-turn spring. */}
-        <View style={[styles.tabPane, tab !== 'Home' && styles.tabPaneHidden]} pointerEvents={tab === 'Home' ? 'auto' : 'none'}>
-          <Home allDuties={allDuties} fallbackRoster={roster} rosters={rosters} palette={palette} onImport={importRoster} importing={importing} />
-        </View>
-        <View style={[styles.tabPane, tab !== 'Roster' && styles.tabPaneHidden]} pointerEvents={tab === 'Roster' ? 'auto' : 'none'}>
-          <RosterScreen roster={roster} rosters={rosters} duties={duties} selectedSector={selectedSector} palette={palette} importing={importing} onImport={importRoster} onSelect={setSelectedFlight} onMonth={changeMonth} rosterFocus={rosterFocus} />
-        </View>
-        <View style={[styles.tabPane, tab !== 'More' && styles.tabPaneHidden]} pointerEvents={tab === 'More' ? 'auto' : 'none'}>
-          <MoreScreen rosters={rosters} palette={palette} onRestoreBackup={restoreFromBackup} onDeleteRoster={deleteRoster} onErase={eraseAll} />
-        </View>
-      </SwipeSurface>
+      <TabPager
+        ref={tabPagerRef}
+        activeTab={tab}
+        style={styles.viewport}
+        onBeforeChange={prepareTabChange}
+        onChange={commitTabChange}
+        pages={[
+          { key: 'Home', content: <Home allDuties={allDuties} fallbackRoster={roster} rosters={rosters} palette={palette} onImport={importRoster} importing={importing} /> },
+          { key: 'Roster', content: <RosterScreen roster={roster} rosters={rosters} duties={duties} selectedSector={selectedSector} palette={palette} importing={importing} onImport={importRoster} onSelect={setSelectedFlight} onMonth={changeMonth} rosterFocus={rosterFocus} /> },
+          { key: 'More', content: <MoreScreen rosters={rosters} palette={palette} onRestoreBackup={restoreFromBackup} onDeleteRoster={deleteRoster} onErase={eraseAll} /> },
+        ]}
+      />
 
       <View onLayout={(event) => { const nextWidth = event.nativeEvent.layout.width; if (Math.abs(nextWidth - tabBarWidth) > 0.5) setTabBarWidth(nextWidth); }} style={[styles.depthSurface, styles.tabBar, { backgroundColor: palette.surface, borderColor: palette.line }]}>
         {tabBarWidth > 0 && <Animated.View pointerEvents="none" style={[styles.tabSelection, { width: Math.max(0, tabStep - 8), backgroundColor: palette.surfaceStrong, transform: [{ translateX: tabIndicatorX }] }]} />}
         {TABS.map((item) => {
           const active = item === tab;
-          return <Pressable key={item} onPress={() => goToTab(item)} style={styles.tabItem} accessibilityRole="tab" accessibilityState={{ selected: active }}>
+          return <Pressable key={item} onPress={() => tabPagerRef.current?.goTo(item)} style={styles.tabItem} accessibilityRole="tab" accessibilityState={{ selected: active }}>
             <View style={styles.tabIconWrap}><Text style={[styles.tabIcon, { color: active ? palette.accent : palette.muted, fontSize: TAB_ICONS[item].size, lineHeight: TAB_ICONS[item].size + 3, marginTop: TAB_ICONS[item].nudge, fontWeight: TAB_ICONS[item].weight }]}>{TAB_ICONS[item].glyph}</Text></View>
             <Text style={[styles.tabText, { color: active ? palette.text : palette.muted }]}>{item}</Text>
           </Pressable>;
@@ -228,7 +217,7 @@ function ImportErrorBanner({ message, palette, onDismiss }: { message: string; p
   return <View style={[styles.aimsStatus, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.danger }]}>
     <View style={styles.aimsStatusIcon}><Text style={[styles.aimsStatusGlyph, { color: palette.danger }]}>!</Text></View>
     <View style={styles.grow}><Text style={[styles.aimsStatusTitle, { color: palette.text }]}>Could not import roster</Text><Text style={[styles.meta, { color: palette.muted }]}>{message}</Text></View>
-    <Pressable onPress={onDismiss} accessibilityLabel="Dismiss import error" style={styles.statusDismiss}><Text style={[styles.statusDismissText, { color: palette.muted }]}>×</Text></Pressable>
+    <Pressable onPress={onDismiss} accessibilityLabel="Dismiss import error" style={styles.statusDismiss}><Text style={[styles.statusDismissText, { color: palette.muted }]}>Ã</Text></Pressable>
   </View>;
 }
 
@@ -272,15 +261,15 @@ function HomeImpl({ allDuties, fallbackRoster, rosters, palette, onImport, impor
       </View>
       <View style={styles.flightBadgeRow}>{duty.sectors.map((sector) => <View key={sector.id} style={[styles.flightBadge, { backgroundColor: palette.accentSoft }]}><Text style={[styles.flightBadgeText, { color: palette.accent }]}>{sector.flightNumber}</Text></View>)}</View>
       <View style={[styles.timeDivider, { backgroundColor: palette.line }]} />
-      <View style={styles.timeRow}><TimeCell label="REPORT" value={duty.reportTime} palette={palette} /><TimeCell label={`DEP · ${first.departure}`} value={first.departureTime} palette={palette} /><TimeCell label={`ARR · ${last.arrival}`} value={last.arrivalTime} palette={palette} /><TimeCell label="RELEASE" value={duty.releaseTime} palette={palette} /></View>
-      <Text style={[styles.heroFoot, { color: palette.muted }]}>{dutyMinutes !== undefined ? `Duty ${formatMinutes(dutyMinutes)} · ` : ''}{duty.sectors.length} sector{duty.sectors.length === 1 ? '' : 's'}</Text>
+      <View style={styles.timeRow}><TimeCell label="REPORT" value={duty.reportTime} palette={palette} /><TimeCell label={`DEP Â· ${first.departure}`} value={first.departureTime} palette={palette} /><TimeCell label={`ARR Â· ${last.arrival}`} value={last.arrivalTime} palette={palette} /><TimeCell label="RELEASE" value={duty.releaseTime} palette={palette} /></View>
+      <Text style={[styles.heroFoot, { color: palette.muted }]}>{dutyMinutes !== undefined ? `Duty ${formatMinutes(dutyMinutes)} Â· ` : ''}{duty.sectors.length} sector{duty.sectors.length === 1 ? '' : 's'}</Text>
       <WeatherChip code={last.arrival} palette={palette} />
     </View>
     <Text style={[styles.label, { color: palette.muted }]}>{rosterMonthLabel(roster)}</Text>
     <View style={styles.summaryRow}><Summary title="BLOCK HOURS" value={formatMinutes(block)} detail={`${operatingCount(roster)} sectors flown`} palette={palette} /><Summary title="NIGHT HOURS" value={formatMinutes(night)} detail={nightShare === undefined ? 'reported by the roster' : `${nightShare}% of block time`} palette={palette} /></View>
-    {yearRosters.length > 1 && <Text style={[styles.meta, { color: palette.muted }]}>{year} to date · {formatMinutes(ytdBlock)} block · {formatMinutes(ytdNight)} night · {yearRosters.length} months imported</Text>}
+    {yearRosters.length > 1 && <Text style={[styles.meta, { color: palette.muted }]}>{year} to date Â· {formatMinutes(ytdBlock)} block Â· {formatMinutes(ytdNight)} night Â· {yearRosters.length} months imported</Text>}
     <View style={styles.upNext}>
-      <Text style={[styles.label, { color: palette.muted }]}>CREW ON THIS FLIGHT · {crew.length}</Text>
+      <Text style={[styles.label, { color: palette.muted }]}>CREW ON THIS FLIGHT Â· {crew.length}</Text>
       {crew.length > 0
         ? <FlatList data={crew} keyExtractor={(item) => item.id} showsVerticalScrollIndicator={false} style={styles.upNextList} renderItem={({ item }) => <CrewRow member={item} palette={palette} />} />
         : <Text style={[styles.meta, { color: palette.muted, marginTop: 4 }]}>Crew is not listed for this flight in the imported roster.</Text>}
@@ -319,8 +308,8 @@ function RosterScreenImpl({ roster, rosters, duties, selectedSector, palette, im
   };
 
   return <View style={styles.screen}>
-    <View style={styles.titleRow}><View style={styles.grow}><Text style={[styles.sectionTitle, { color: palette.text }]}>{roster ? rosterMonthLabel(roster) : 'Roster'}</Text><Text style={[styles.meta, { color: palette.muted }]}>{roster?.subject ? `${roster.subject.base ?? '—'} · ${roster.subject.rank ?? 'crew'}` : 'Personal schedule'}</Text></View><View style={styles.titleActions}>{roster && <Pressable onPress={exportCalendar} style={[styles.compactButton, { backgroundColor: palette.surface, borderColor: palette.line }]}>{calendarState === 'working' ? <ActivityIndicator size="small" /> : <Text style={[styles.compactText, { color: palette.text }]}>{calendarState === 'done' ? 'Added' : calendarState === 'error' ? 'Retry' : 'Calendar'}</Text>}</Pressable>}<Pressable onPress={onImport} disabled={importing} style={[styles.compactButton, { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft }]}>{importing ? <ActivityIndicator size="small" /> : <Text style={[styles.compactText, { color: palette.accent }]}>{roster ? 'Add file' : 'Import file'}</Text>}</Pressable></View></View>
-    {roster && rosters.length > 1 && <View style={styles.monthNav}><Pressable disabled={index <= 0} onPress={() => goToMonth(-1)}><Text style={[styles.monthNavText, { color: index <= 0 ? palette.line : palette.text }]}>‹ Previous</Text></Pressable><Text style={[styles.meta, { color: palette.muted }]}>{index + 1} / {rosters.length}</Text><Pressable disabled={index >= rosters.length - 1} onPress={() => goToMonth(1)}><Text style={[styles.monthNavText, { color: index >= rosters.length - 1 ? palette.line : palette.text }]}>Next ›</Text></Pressable></View>}
+    <View style={styles.titleRow}><View style={styles.grow}><Text style={[styles.sectionTitle, { color: palette.text }]}>{roster ? rosterMonthLabel(roster) : 'Roster'}</Text><Text style={[styles.meta, { color: palette.muted }]}>{roster?.subject ? `${roster.subject.base ?? 'â'} Â· ${roster.subject.rank ?? 'crew'}` : 'Personal schedule'}</Text></View><View style={styles.titleActions}>{roster && <Pressable onPress={exportCalendar} style={[styles.compactButton, { backgroundColor: palette.surface, borderColor: palette.line }]}>{calendarState === 'working' ? <ActivityIndicator size="small" /> : <Text style={[styles.compactText, { color: palette.text }]}>{calendarState === 'done' ? 'Added' : calendarState === 'error' ? 'Retry' : 'Calendar'}</Text>}</Pressable>}<Pressable onPress={onImport} disabled={importing} style={[styles.compactButton, { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft }]}>{importing ? <ActivityIndicator size="small" /> : <Text style={[styles.compactText, { color: palette.accent }]}>{roster ? 'Add file' : 'Import file'}</Text>}</Pressable></View></View>
+    {roster && rosters.length > 1 && <View style={styles.monthNav}><Pressable disabled={index <= 0} onPress={() => goToMonth(-1)}><Text style={[styles.monthNavText, { color: index <= 0 ? palette.line : palette.text }]}>â¹ Previous</Text></Pressable><Text style={[styles.meta, { color: palette.muted }]}>{index + 1} / {rosters.length}</Text><Pressable disabled={index >= rosters.length - 1} onPress={() => goToMonth(1)}><Text style={[styles.monthNavText, { color: index >= rosters.length - 1 ? palette.line : palette.text }]}>Next âº</Text></Pressable></View>}
     {!roster ? <View style={[styles.emptyCard, styles.depthSurface, { backgroundColor: palette.surface, borderColor: palette.line }]}><Text style={[styles.meta, { color: palette.muted }]}>Tap AIMS above, or import a saved roster file to begin.</Text></View> : <SwipeSurface ref={monthSwipeRef} style={styles.monthSwipeWrap} onSwipeRight={index > 0 ? () => onMonth(-1) : undefined} onSwipeLeft={index < rosters.length - 1 ? () => onMonth(1) : undefined} threshold={38}><View style={[styles.innerWindow, styles.depthSurface, { backgroundColor: palette.surface, borderColor: palette.line }]}><FlatList
       ref={listRef}
       data={timeline}
@@ -342,17 +331,17 @@ const RosterScreen = memo(RosterScreenImpl);
 function FlightRosterCard({ duty, sector, selected, isToday, palette, onPress }: { duty: Duty; sector: Sector; selected: boolean; isToday: boolean; palette: Palette; onPress: () => void }) {
   const dateMeta = rosterDateMeta(duty);
   return <Pressable onPress={onPress} style={[styles.rosterCard, isToday && styles.rosterCardToday, { backgroundColor: selected || isToday ? palette.accentSoft : palette.surfaceStrong, borderColor: isToday ? palette.accent : palette.line, ...(isToday ? todayGlow(palette) : null) }]}>
-    <View style={styles.flightCardTop}><Text style={[styles.label, { color: isToday ? palette.accent : dateMeta.weekend ? palette.weekend : palette.muted }]}>{dateMeta.label}{isToday ? ' · TODAY' : ''}</Text><Text style={[styles.flightNumber, { color: palette.muted }]}>{sector.flightNumber}{sector.deadhead ? ' · DHC' : ''}</Text></View>
-    <Text style={[styles.rosterRoute, { color: palette.text }]}>{sector.departure} → {sector.arrival}</Text>
-    <Text style={[styles.meta, { color: palette.muted }]}>{sector.departureTime} – {sector.arrivalTime} · Report {duty.reportTime}</Text>
+    <View style={styles.flightCardTop}><Text style={[styles.label, { color: isToday ? palette.accent : dateMeta.weekend ? palette.weekend : palette.muted }]}>{dateMeta.label}{isToday ? ' Â· TODAY' : ''}</Text><Text style={[styles.flightNumber, { color: palette.muted }]}>{sector.flightNumber}{sector.deadhead ? ' Â· DHC' : ''}</Text></View>
+    <Text style={[styles.rosterRoute, { color: palette.text }]}>{sector.departure} â {sector.arrival}</Text>
+    <Text style={[styles.meta, { color: palette.muted }]}>{sector.departureTime} â {sector.arrivalTime} Â· Report {duty.reportTime}</Text>
   </Pressable>;
 }
 
 function RosterEventCard({ item, isToday, palette }: { item: Extract<RosterTimelineRow, { kind: 'event' }>; isToday: boolean; palette: Palette }) {
   const dateMeta = eventDateMeta(item.date);
-  const detail = [item.detail, item.station].filter(Boolean).join(' · ');
+  const detail = [item.detail, item.station].filter(Boolean).join(' Â· ');
   return <View style={[styles.rosterCard, isToday && styles.rosterCardToday, { backgroundColor: isToday ? palette.accentSoft : palette.surfaceStrong, borderColor: isToday ? palette.accent : palette.line, ...(isToday ? todayGlow(palette) : null) }]}>
-    <View style={styles.flightCardTop}><Text style={[styles.label, { color: isToday ? palette.accent : dateMeta.weekend ? palette.weekend : palette.muted }]}>{dateMeta.label}{isToday ? ' · TODAY' : ''}</Text><Text style={[styles.flightNumber, { color: palette.muted }]}>{item.badge}</Text></View>
+    <View style={styles.flightCardTop}><Text style={[styles.label, { color: isToday ? palette.accent : dateMeta.weekend ? palette.weekend : palette.muted }]}>{dateMeta.label}{isToday ? ' Â· TODAY' : ''}</Text><Text style={[styles.flightNumber, { color: palette.muted }]}>{item.badge}</Text></View>
     <Text numberOfLines={2} style={[styles.rosterEventTitle, { color: palette.text }]}>{item.title}</Text>
     {detail ? <Text style={[styles.meta, { color: palette.muted }]}>{detail}</Text> : null}
   </View>;
@@ -361,17 +350,17 @@ function RosterEventCard({ item, isToday, palette }: { item: Extract<RosterTimel
 function FlightDetail({ row, roster, palette, onClose, onPrevious, onNext }: { row: FlightRow; roster?: RosterWithNormalized; palette: Palette; onClose: () => void; onPrevious?: () => void; onNext?: () => void }) {
   const extra = flightExtra(roster, row.sector);
   const stay = stayForSector(roster, row.sector);
-  const status = [row.sector.deadhead ? 'DHC' : undefined, extra?.actualTimes ? 'Actual times' : undefined, extra?.aircraftType].filter(Boolean).join(' · ');
+  const status = [row.sector.deadhead ? 'DHC' : undefined, extra?.actualTimes ? 'Actual times' : undefined, extra?.aircraftType].filter(Boolean).join(' Â· ');
   const [headerHeight, setHeaderHeight] = useState(0);
   const scrollHeader = <View>
-    {stay && <View style={[styles.stayCard, { backgroundColor: palette.surface, borderColor: palette.line }]}><View style={styles.flightCardTop}><Text style={[styles.label, { color: palette.muted }]}>STAY{stay.station ? ` · ${stay.station}` : ''}</Text>{stay.rest ? <Text style={[styles.flightNumber, { color: palette.gold }]}>REST {stay.rest}</Text> : null}</View>{stay.hotel ? <Text style={[styles.stayTitle, { color: palette.text }]}>{stay.hotel}</Text> : null}{stay.checkIn || stay.checkOut ? <Text style={[styles.meta, { color: palette.muted }]}>{stay.checkIn ?? '—'} → {stay.checkOut ?? '—'}</Text> : null}{stay.address ? <Text numberOfLines={2} style={[styles.stayMeta, { color: palette.muted }]}>{stay.address}</Text> : null}{stay.phone ? <Text numberOfLines={2} style={[styles.stayMeta, { color: palette.muted }]}>{stay.phone}</Text> : null}</View>}
-    <Text style={[styles.swipeHint, { color: palette.muted }]}>{onPrevious ? '‹ ' : ''}swipe flight{onNext ? ' ›' : ''} · swipe down to close</Text>
-    <Text style={[styles.flyingWith, { color: palette.accent }]}>Flying with · {row.sector.crew.length}</Text>
+    {stay && <View style={[styles.stayCard, { backgroundColor: palette.surface, borderColor: palette.line }]}><View style={styles.flightCardTop}><Text style={[styles.label, { color: palette.muted }]}>STAY{stay.station ? ` Â· ${stay.station}` : ''}</Text>{stay.rest ? <Text style={[styles.flightNumber, { color: palette.gold }]}>REST {stay.rest}</Text> : null}</View>{stay.hotel ? <Text style={[styles.stayTitle, { color: palette.text }]}>{stay.hotel}</Text> : null}{stay.checkIn || stay.checkOut ? <Text style={[styles.meta, { color: palette.muted }]}>{stay.checkIn ?? 'â'} â {stay.checkOut ?? 'â'}</Text> : null}{stay.address ? <Text numberOfLines={2} style={[styles.stayMeta, { color: palette.muted }]}>{stay.address}</Text> : null}{stay.phone ? <Text numberOfLines={2} style={[styles.stayMeta, { color: palette.muted }]}>{stay.phone}</Text> : null}</View>}
+    <Text style={[styles.swipeHint, { color: palette.muted }]}>{onPrevious ? 'â¹ ' : ''}swipe flight{onNext ? ' âº' : ''} Â· swipe down to close</Text>
+    <Text style={[styles.flyingWith, { color: palette.accent }]}>Flying with Â· {row.sector.crew.length}</Text>
   </View>;
   return <IOSSheet visible onClose={onClose} handleColor={palette.line} style={[styles.flightSheet, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}><SwipeSurface style={styles.flightSheetContent} onSwipeLeft={onNext} onSwipeRight={onPrevious} threshold={44}>
     <View onLayout={(event) => setHeaderHeight(event.nativeEvent.layout.height)}>
-      <Text style={[styles.label, { color: palette.muted }]}>{row.duty.dateLabel} · {row.sector.flightNumber}{row.sector.deadhead ? ' · DHC' : ''}</Text>
-      <Text style={[styles.sheetRoute, { color: palette.text }]}>{row.sector.departure} → {row.sector.arrival}</Text>
+      <Text style={[styles.label, { color: palette.muted }]}>{row.duty.dateLabel} Â· {row.sector.flightNumber}{row.sector.deadhead ? ' Â· DHC' : ''}</Text>
+      <Text style={[styles.sheetRoute, { color: palette.text }]}>{row.sector.departure} â {row.sector.arrival}</Text>
       {status ? <Text style={[styles.meta, { color: palette.muted }]}>{status}</Text> : null}
       <WeatherChip code={row.sector.arrival} palette={palette} />
       <View style={[styles.flightFacts, { borderColor: palette.line }]}><FlightFact label="REPORT" value={row.duty.reportTime} palette={palette} /><FlightFact label="DEP" value={row.sector.departureTime} palette={palette} /><FlightFact label="ARR" value={row.sector.arrivalTime} palette={palette} /><FlightFact label="RELEASE" value={row.duty.releaseTime} palette={palette} /></View>
@@ -423,9 +412,9 @@ function MoreScreenImpl({ rosters, palette, onRestoreBackup, onDeleteRoster, onE
   return <View style={styles.screen}>
     <Text style={[styles.sectionTitle, { color: palette.text }]}>More</Text>
     <ScrollView style={styles.grow} contentContainerStyle={styles.moreContent} showsVerticalScrollIndicator={false}>
-      <View style={[styles.libraryCard, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}><Text style={[styles.cardTitle, { color: palette.text }]}>Rosters</Text>{rosters.length ? <FlatList data={rosters} keyExtractor={(item) => item.period.start} style={styles.libraryList} showsVerticalScrollIndicator={false} renderItem={({ item }) => <View style={[styles.libraryRow, { borderColor: palette.line }]}><View style={styles.grow}><Text style={[styles.libraryMonth, { color: palette.text }]}>{rosterMonthLabel(item)}</Text><Text style={[styles.meta, { color: palette.muted }]}>{item.subject?.base ?? 'Roster'} · stored locally</Text></View><Pressable onPress={() => onDeleteRoster(item.period.start)} style={[styles.deleteRosterButton, { backgroundColor: palette.accentSoft }]}><Text style={[styles.deleteRosterText, { color: palette.danger }]}>Delete</Text></Pressable></View>} /> : <Text style={[styles.meta, { color: palette.muted }]}>No rosters stored</Text>}</View>
+      <View style={[styles.libraryCard, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}><Text style={[styles.cardTitle, { color: palette.text }]}>Rosters</Text>{rosters.length ? <FlatList data={rosters} keyExtractor={(item) => item.period.start} style={styles.libraryList} showsVerticalScrollIndicator={false} renderItem={({ item }) => <View style={[styles.libraryRow, { borderColor: palette.line }]}><View style={styles.grow}><Text style={[styles.libraryMonth, { color: palette.text }]}>{rosterMonthLabel(item)}</Text><Text style={[styles.meta, { color: palette.muted }]}>{item.subject?.base ?? 'Roster'} Â· stored locally</Text></View><Pressable onPress={() => onDeleteRoster(item.period.start)} style={[styles.deleteRosterButton, { backgroundColor: palette.accentSoft }]}><Text style={[styles.deleteRosterText, { color: palette.danger }]}>Delete</Text></Pressable></View>} /> : <Text style={[styles.meta, { color: palette.muted }]}>No rosters stored</Text>}</View>
 
-      {rosters.length > 0 && <Pressable onPress={() => setConfirmErase(true)} style={[styles.dangerButton, { backgroundColor: palette.danger + '1A', borderColor: palette.danger }]}><Text style={[styles.dangerText, { color: palette.danger }]}>⚠ Erase local roster data</Text></Pressable>}
+      {rosters.length > 0 && <Pressable onPress={() => setConfirmErase(true)} style={[styles.dangerButton, { backgroundColor: palette.danger + '1A', borderColor: palette.danger }]}><Text style={[styles.dangerText, { color: palette.danger }]}>â  Erase local roster data</Text></Pressable>}
 
       <View style={[styles.infoCard, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}>
         <Text style={[styles.cardTitle, { color: palette.text }]}>Backup</Text>
@@ -439,20 +428,20 @@ function MoreScreenImpl({ rosters, palette, onRestoreBackup, onDeleteRoster, onE
 
       <View style={[styles.libraryCard, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}>
         <Pressable onPress={() => setExpiriesOpen(true)} style={styles.expiryHeaderRow} accessibilityRole="button">
-          <Text style={[styles.cardTitle, { color: palette.text }]}>Expiry Dates{sortedExpiries.length ? ` · ${sortedExpiries.length}` : ''}</Text>
-          <Text style={[styles.expiryChevron, { color: palette.muted }]}>›</Text>
+          <Text style={[styles.cardTitle, { color: palette.text }]}>Expiry Dates{sortedExpiries.length ? ` Â· ${sortedExpiries.length}` : ''}</Text>
+          <Text style={[styles.expiryChevron, { color: palette.muted }]}>âº</Text>
         </Pressable>
         {sortedExpiries.length === 0 && <Text style={[styles.meta, { color: palette.muted, marginTop: 8 }]}>No expiry data in the imported roster.</Text>}
       </View>
 
-      <View style={[styles.infoCard, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}><Text style={[styles.cardTitle, { color: palette.text }]}>Privacy</Text><Text style={[styles.meta, { color: palette.muted }]}>Roster PDFs are parsed locally. AIMS sends roster data only; credentials and session data are not stored by eScrew. Weather sends only an airport code to Open-Meteo — no roster or crew data.</Text></View>
+      <View style={[styles.infoCard, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}><Text style={[styles.cardTitle, { color: palette.text }]}>Privacy</Text><Text style={[styles.meta, { color: palette.muted }]}>Roster PDFs are parsed locally. AIMS sends roster data only; credentials and session data are not stored by eScrew. Weather sends only an airport code to Open-Meteo â no roster or crew data. Current update: PR #99.</Text></View>
 
       <VersionFooter palette={palette} />
     </ScrollView>
 
     <IOSDialog visible={confirmErase} onClose={() => setConfirmErase(false)} style={[styles.confirmDialog, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}>
       <Text style={[styles.cardTitle, { color: palette.text }]}>Erase all local roster data?</Text>
-      <Text style={[styles.meta, { color: palette.muted, marginTop: 6 }]}>This removes every imported roster and expiry record from this device. This cannot be undone — back up first if you want to keep a copy.</Text>
+      <Text style={[styles.meta, { color: palette.muted, marginTop: 6 }]}>This removes every imported roster and expiry record from this device. This cannot be undone â back up first if you want to keep a copy.</Text>
       <View style={styles.confirmActions}>
         <Pressable onPress={backupThenClose} style={[styles.confirmCancel, { backgroundColor: palette.surface, borderColor: palette.line }]}><Text style={[styles.compactText, { color: palette.text }]}>Backup</Text></Pressable>
         <Pressable onPress={confirmAndErase} style={[styles.confirmErase, { backgroundColor: palette.danger }]}><Text style={[styles.compactText, { color: '#fff' }]}>Erase</Text></Pressable>
@@ -460,7 +449,7 @@ function MoreScreenImpl({ rosters, palette, onRestoreBackup, onDeleteRoster, onE
     </IOSDialog>
 
     <IOSSheet visible={expiriesOpen} onClose={() => setExpiriesOpen(false)} handleColor={palette.line} style={[styles.expirySheet, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}>
-      <Text style={[styles.cardTitle, { color: palette.text }]}>Expiry Dates{sortedExpiries.length ? ` · ${sortedExpiries.length}` : ''}</Text>
+      <Text style={[styles.cardTitle, { color: palette.text }]}>Expiry Dates{sortedExpiries.length ? ` Â· ${sortedExpiries.length}` : ''}</Text>
       <FlatList
         data={sortedExpiries}
         keyExtractor={(item, index) => `${item.code}-${index}`}
@@ -479,7 +468,7 @@ function VersionFooter({ palette }: { palette: Palette }) {
   const version = process.env.EXPO_PUBLIC_ESCREW_VERSION;
   const builtAt = process.env.EXPO_PUBLIC_ESCREW_BUILT_AT ? formatBuiltAt(process.env.EXPO_PUBLIC_ESCREW_BUILT_AT) : undefined;
   if (!version || version === 'unknown') return null;
-  return <Text style={[styles.versionText, { color: palette.muted }]}>PR {version}{builtAt ? ` · ${builtAt}` : ''}</Text>;
+  return <Text style={[styles.versionText, { color: palette.muted }]}>PR {version}{builtAt ? ` Â· ${builtAt}` : ''}</Text>;
 }
 
 function formatBuiltAt(iso: string): string | undefined {
@@ -511,7 +500,7 @@ function expiryStatus(date?: string): 'expired' | 'soon' | 'ok' | undefined {
 }
 
 function formatExpiryDate(date?: string): string {
-  if (!date) return '—';
+  if (!date) return 'â';
   const [year, month, day] = date.split('-').map(Number);
   const parsed = new Date(Date.UTC(year, (month ?? 1) - 1, day ?? 1));
   if (!Number.isFinite(parsed.getTime())) return date;
@@ -526,8 +515,8 @@ function crewOnDuty(duty: Duty): CrewMember[] { const seen = new Set<string>(); 
 function formatCountdown(milliseconds: number): string { const total = Math.max(0, Math.floor(milliseconds / 1000)); const days = Math.floor(total / 86400), hours = Math.floor((total % 86400) / 3600), minutes = Math.floor((total % 3600) / 60), seconds = total % 60; const clock = `${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`; return days > 0 ? `${days}d ${clock}` : clock; }
 function rosterDateMeta(duty: Duty): { label: string; weekend: boolean } { if (!duty.date) return { label: duty.dateLabel, weekend: false }; return eventDateMeta(duty.date); }
 function localTodayIso(): string { const now = new Date(); return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`; }
-function eventDateMeta(value: string): { label: string; weekend: boolean } { const [year, month, day] = value.split('-').map(Number); const date = new Date(Date.UTC(year, month - 1, day)); if (!Number.isFinite(date.getTime()) || date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return { label: value, weekend: false }; const weekdayIndex = date.getUTCDay(); const weekday = ['SUN','MON','TUE','WED','THU','FRI','SAT'][weekdayIndex]; const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC']; return { label: `${String(day).padStart(2, '0')} ${months[month - 1]} · ${weekday}`, weekend: weekdayIndex === 0 || weekdayIndex === 6 }; }
-function routeChain(duty: Duty): string { return [duty.sectors[0]?.departure, ...duty.sectors.map((sector) => sector.arrival)].filter(Boolean).join(' → '); }
+function eventDateMeta(value: string): { label: string; weekend: boolean } { const [year, month, day] = value.split('-').map(Number); const date = new Date(Date.UTC(year, month - 1, day)); if (!Number.isFinite(date.getTime()) || date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return { label: value, weekend: false }; const weekdayIndex = date.getUTCDay(); const weekday = ['SUN','MON','TUE','WED','THU','FRI','SAT'][weekdayIndex]; const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC']; return { label: `${String(day).padStart(2, '0')} ${months[month - 1]} Â· ${weekday}`, weekend: weekdayIndex === 0 || weekdayIndex === 6 }; }
+function routeChain(duty: Duty): string { return [duty.sectors[0]?.departure, ...duty.sectors.map((sector) => sector.arrival)].filter(Boolean).join(' â '); }
 function TimeCell({ label, value, palette }: { label: string; value: string; palette: Palette }) { return <View style={styles.timeCell}><Text numberOfLines={1} style={[styles.timeLabel, { color: palette.muted }]}>{label}</Text><Text style={[styles.timeValue, { color: palette.text }]}>{value}</Text></View>; }
 function WeatherChip({ code, palette }: { code: string; palette: Palette }) {
   const weather = useAirportWeather(code);
@@ -535,11 +524,11 @@ function WeatherChip({ code, palette }: { code: string; palette: Palette }) {
   const { icon, label } = weatherIcon(weather.weatherCode, weather.isDay);
   return <View style={styles.weatherRow}>
     <Text style={styles.weatherIcon}>{icon}</Text>
-    <Text style={[styles.weatherTemp, { color: palette.text }]}>{weather.temp}°</Text>
-    <Text numberOfLines={1} style={[styles.weatherMeta, { color: palette.muted }]}>{code} · {label} · {windDirectionLabel(weather.windDeg)} {weather.windSpeed}kt · {weather.pressure}hPa</Text>
+    <Text style={[styles.weatherTemp, { color: palette.text }]}>{weather.temp}Â°</Text>
+    <Text numberOfLines={1} style={[styles.weatherMeta, { color: palette.muted }]}>{code} Â· {label} Â· {windDirectionLabel(weather.windDeg)} {weather.windSpeed}kt Â· {weather.pressure}hPa</Text>
   </View>;
 }
-function CrewRow({ member, palette }: { member: CrewMember; palette: Palette }) { return <View style={[styles.crewRow, { borderBottomWidth: StyleSheet.hairlineWidth, borderColor: palette.line }]}><View style={[styles.avatar, { backgroundColor: palette.accentSoft }]}><Text style={[styles.avatarText, { color: palette.accent }]}>{member.name?.trim()?.[0]?.toUpperCase() ?? '•'}</Text></View><View style={styles.grow}><Text numberOfLines={1} style={[styles.crewName, { color: palette.text }]}>{member.name}</Text><Text style={[styles.meta, { color: palette.muted }]}>{member.position ?? member.role}</Text></View></View>; }
+function CrewRow({ member, palette }: { member: CrewMember; palette: Palette }) { return <View style={[styles.crewRow, { borderBottomWidth: StyleSheet.hairlineWidth, borderColor: palette.line }]}><View style={[styles.avatar, { backgroundColor: palette.accentSoft }]}><Text style={[styles.avatarText, { color: palette.accent }]}>{member.name?.trim()?.[0]?.toUpperCase() ?? 'â¢'}</Text></View><View style={styles.grow}><Text numberOfLines={1} style={[styles.crewName, { color: palette.text }]}>{member.name}</Text><Text style={[styles.meta, { color: palette.muted }]}>{member.position ?? member.role}</Text></View></View>; }
 function Summary({ title, value, detail, palette }: { title: string; value: string; detail: string; palette: Palette }) { return <View style={[styles.summary, styles.depthSurface, { backgroundColor: palette.surface, borderColor: palette.line }]}><Text style={[styles.label, { color: palette.muted }]}>{title}</Text><Text style={[styles.summaryValue, { color: palette.text }]}>{value}</Text><Text style={[styles.meta, { color: palette.muted }]}>{detail}</Text></View>; }
 function PrimaryButton({ title, onPress, loading, palette }: { title: string; onPress: () => void; loading: boolean; palette: Palette }) { return <Pressable onPress={onPress} disabled={loading} style={[styles.primaryButton, { backgroundColor: palette.accent }]}>{loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.actionText}>{title}</Text>}</Pressable>; }
 function operatingCount(roster: ParsedAirAstanaRoster) { return roster.sectors.filter((sector) => !sector.deadhead).length; }
