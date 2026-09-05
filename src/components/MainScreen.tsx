@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Animated, FlatList, Platform, Pressable, ScrollView, StyleSheet, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IOSDialog, IOSSheet } from './IOSOverlay';
@@ -18,6 +18,7 @@ import { useAirportWeather } from '@/src/weather/weatherService';
 import { weatherIcon, windDirectionLabel } from '@/src/weather/weatherCodes';
 
 type Tab = 'Home' | 'Roster' | 'More';
+type RosterFocusHandle = { focusToday: () => void };
 const TABS: Tab[] = ['Home', 'Roster', 'More'];
 const TAB_ICONS: Record<Tab, { glyph: string; size: number; nudge: number; weight: '700' | '800' }> = {
   Home: { glyph: '⌂', size: 24, nudge: 0, weight: '700' },
@@ -76,6 +77,7 @@ export default function MainScreen() {
   const [tabBarWidth, setTabBarWidth] = useState(0);
   const tabSelection = useRef(new Animated.Value(0)).current;
   const tabSwipeRef = useRef<SwipeSurfaceHandle>(null);
+  const rosterFocus = useRef<RosterFocusHandle>({ focusToday: () => undefined }).current;
 
   useEffect(() => {
     const stored = loadStoredRosters();
@@ -97,7 +99,7 @@ export default function MainScreen() {
   const tabStep = tabBarWidth / TABS.length;
   const tabIndicatorX = Animated.multiply(tabSelection, tabStep);
 
-  const importRoster = async () => {
+  const importRoster = useCallback(async () => {
     setImportError(undefined);
     setImporting(true);
     try {
@@ -113,9 +115,9 @@ export default function MainScreen() {
     } finally {
       setImporting(false);
     }
-  };
+  }, []);
 
-  const importFromAims = async () => {
+  const importFromAims = useCallback(async () => {
     if (importing) return;
     setImportError(undefined);
     setImporting(true);
@@ -132,8 +134,8 @@ export default function MainScreen() {
     } finally {
       setImporting(false);
     }
-  };
-  const restoreFromBackup = async () => {
+  }, [importing]);
+  const restoreFromBackup = useCallback(async () => {
     const result = await restoreBackup();
     if (result.restored) {
       const next = loadStoredRosters();
@@ -141,41 +143,45 @@ export default function MainScreen() {
       setActiveMonth(next.at(-1)?.period.start);
     }
     return result;
-  };
+  }, []);
 
-  const deleteRoster = (periodStart: string) => {
+  const deleteRoster = useCallback((periodStart: string) => {
     const next = removeStoredRoster(periodStart);
     setRosters(next);
     setSelectedFlight(undefined);
     setActiveMonth((current) => current && current !== periodStart && next.some((item) => item.period.start === current) ? current : next.at(-1)?.period.start);
-  };
-  const changeMonth = (direction: -1 | 1) => {
+  }, []);
+  const changeMonth = useCallback((direction: -1 | 1) => {
     if (!roster) return;
     const index = rosters.findIndex((item) => item.period.start === roster.period.start);
     const next = rosters[index + direction];
     if (!next) return;
     setActiveMonth(next.period.start);
     setSelectedFlight(undefined);
-  };
-  const changeTab = (direction: -1 | 1) => {
+  }, [roster, rosters]);
+  const changeTab = useCallback((direction: -1 | 1) => {
     const next = TABS[TABS.indexOf(tab) + direction];
     if (!next) return;
+    if (next === 'Roster') rosterFocus.focusToday();
     setSelectedFlight(undefined);
     setTab(next);
-  };
-  const goToTab = (target: Tab) => {
+  }, [tab, rosterFocus]);
+  const goToTab = useCallback((target: Tab) => {
     if (target === tab) return;
     const direction = TABS.indexOf(target) > TABS.indexOf(tab) ? -1 : 1;
     setSelectedFlight(undefined);
-    tabSwipeRef.current?.play(direction, () => setTab(target));
-  };
-  const eraseAll = () => {
+    tabSwipeRef.current?.play(direction, () => {
+      if (target === 'Roster') rosterFocus.focusToday();
+      setTab(target);
+    });
+  }, [tab, rosterFocus]);
+  const eraseAll = useCallback(() => {
     clearStoredRosters();
     setRosters([]);
     setActiveMonth(undefined);
     setSelectedFlight(undefined);
     setTab('Home');
-  };
+  }, []);
 
   return <SafeAreaView style={[styles.safe, { backgroundColor: palette.background }]} edges={desktopWeb ? ['bottom'] : ['top', 'bottom']}>
     <View style={styles.app}>
@@ -197,7 +203,7 @@ export default function MainScreen() {
           <Home allDuties={allDuties} fallbackRoster={roster} rosters={rosters} palette={palette} onImport={importRoster} importing={importing} />
         </View>
         <View style={[styles.tabPane, tab !== 'Roster' && styles.tabPaneHidden]} pointerEvents={tab === 'Roster' ? 'auto' : 'none'}>
-          <RosterScreen roster={roster} rosters={rosters} duties={duties} selectedSector={selectedSector} palette={palette} importing={importing} onImport={importRoster} onSelect={setSelectedFlight} onMonth={changeMonth} />
+          <RosterScreen roster={roster} rosters={rosters} duties={duties} selectedSector={selectedSector} palette={palette} importing={importing} onImport={importRoster} onSelect={setSelectedFlight} onMonth={changeMonth} rosterFocus={rosterFocus} />
         </View>
         <View style={[styles.tabPane, tab !== 'More' && styles.tabPaneHidden]} pointerEvents={tab === 'More' ? 'auto' : 'none'}>
           <MoreScreen rosters={rosters} palette={palette} onRestoreBackup={restoreFromBackup} onDeleteRoster={deleteRoster} onErase={eraseAll} />
@@ -283,7 +289,7 @@ function HomeImpl({ allDuties, fallbackRoster, rosters, palette, onImport, impor
 }
 const Home = memo(HomeImpl);
 
-function RosterScreenImpl({ roster, rosters, duties, selectedSector, palette, importing, onImport, onSelect, onMonth }: { roster?: ParsedAirAstanaRoster; rosters: ParsedAirAstanaRoster[]; duties: Duty[]; selectedSector?: Sector; palette: Palette; importing: boolean; onImport: () => void; onSelect: (id?: string) => void; onMonth: (direction: -1 | 1) => void }) {
+function RosterScreenImpl({ roster, rosters, duties, selectedSector, palette, importing, onImport, onSelect, onMonth, rosterFocus }: { roster?: ParsedAirAstanaRoster; rosters: ParsedAirAstanaRoster[]; duties: Duty[]; selectedSector?: Sector; palette: Palette; importing: boolean; onImport: () => void; onSelect: (id?: string) => void; onMonth: (direction: -1 | 1) => void; rosterFocus: RosterFocusHandle }) {
   const [calendarState, setCalendarState] = useState<'idle'|'working'|'done'|'error'>('idle');
   const index = roster ? rosters.findIndex((item) => item.period.start === roster.period.start) : -1;
   const flights = useMemo<FlightRow[]>(() => duties.flatMap((duty) => duty.sectors.map((sector) => ({ duty, sector }))), [duties]);
@@ -298,6 +304,13 @@ function RosterScreenImpl({ roster, rosters, duties, selectedSector, palette, im
     if (idx === -1) idx = timeline.findIndex((row) => row.sortKey.slice(0, 10) > today);
     return idx;
   }, [timeline, today]);
+  const focusToday = useCallback(() => {
+    if (todayIndex < 0) return;
+    listRef.current?.scrollToIndex({ index: todayIndex, animated: false, viewPosition: 0 });
+  }, [todayIndex]);
+  useEffect(() => {
+    rosterFocus.focusToday = focusToday;
+  }, [focusToday, rosterFocus]);
   useEffect(() => setCalendarState('idle'), [roster?.period.start]);
   const exportCalendar = async () => { if (!roster || calendarState === 'working') return; setCalendarState('working'); try { await exportRosterCalendar(roster); setCalendarState('done'); } catch (e) { setCalendarState(e instanceof Error && /cancel/i.test(e.message) ? 'idle' : 'error'); } };
   const goToMonth = (direction: -1 | 1) => {
