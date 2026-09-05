@@ -2,7 +2,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Animated, FlatList, Platform, Pressable, ScrollView, StyleSheet, Text, View, useColorScheme, useWindowDimensions, type LayoutChangeEvent, type ListRenderItem } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IOSDialog, IOSSheet } from './IOSOverlay';
-import { PAGE_SPRING, SwipeSurface, type SwipeSurfaceHandle } from './SwipeSurface';
+import { SwipeSurface, type SwipeSurfaceHandle } from './SwipeSurface';
 import { buildRosterTimeline, flightExtra, stayForSector, type RosterTimelineRow, type RosterWithNormalized } from './rosterDataView';
 import type { NormalizedExpiry } from '@/src/core/rosterContract';
 import { exportRosterCalendar } from '@/src/domain/calendar';
@@ -33,15 +33,11 @@ type RosterFocusHandle = { focusToday: () => void };
 const MONO_FONT = Platform.OS === 'web'
   ? ({ fontFamily: 'ui-monospace,"SF Mono",Menlo,monospace' } as any)
   : undefined;
-// backdrop-filter is read through a CSS custom property (rather than a literal blur()) so
-// SwipeSurface can suspend it document-wide for the duration of a page-turn transform: WebKit
-// re-samples everything behind a blurred element on every frame it moves, which is cheap for one
-// card but adds up fast with this many glass surfaces animating across a tab switch at once.
 const WEB_GLASS = Platform.OS === 'web'
-  ? ({ backdropFilter: 'var(--escrew-blur-glass, blur(24px) saturate(1.4))', WebkitBackdropFilter: 'var(--escrew-blur-glass, blur(24px) saturate(1.4))' } as any)
+  ? ({ backdropFilter: 'blur(24px) saturate(1.4)', WebkitBackdropFilter: 'blur(24px) saturate(1.4)' } as any)
   : undefined;
 const WEB_TAB_GLASS = Platform.OS === 'web'
-  ? ({ backdropFilter: 'var(--escrew-blur-tab, blur(32px) saturate(1.5))', WebkitBackdropFilter: 'var(--escrew-blur-tab, blur(32px) saturate(1.5))' } as any)
+  ? ({ backdropFilter: 'blur(32px) saturate(1.5)', WebkitBackdropFilter: 'blur(32px) saturate(1.5)' } as any)
   : undefined;
 /**
  * All shadow* props must live in the same style object — react-native-web derives a single
@@ -94,17 +90,16 @@ export default function MainScreen() {
     setActiveMonth(stored.at(-1)?.period.start);
   }, []);
 
-  // Springs the indicator to whatever tab is now active. Called imperatively at the same
-  // moment a tab change is *initiated* (see goToTab/changeTab below), so the indicator starts
-  // moving on the same tick as the content's exit animation rather than waiting for the
-  // animation's completion callback to commit `tab` and this effect to catch up a frame later.
-  // Kept as an effect too, as a fallback for paths that jump tabs directly via setTab (import,
-  // erase) without going through goToTab/changeTab — redundant, harmless re-triggers for the
-  // paths that already animated it imperatively (a spring already at its toValue is a no-op).
-  const animateIndicator = useCallback((target: Tab) => {
-    Animated.spring(tabSelection, { toValue: TABS.indexOf(target), ...PAGE_SPRING, isInteraction: false }).start();
-  }, [tabSelection]);
-  useEffect(() => { animateIndicator(tab); }, [tab, animateIndicator]);
+  useEffect(() => {
+    Animated.spring(tabSelection, {
+      toValue: TABS.indexOf(tab),
+      stiffness: 380,
+      damping: 34,
+      mass: 0.72,
+      useNativeDriver: true,
+      isInteraction: false,
+    }).start();
+  }, [tab, tabSelection]);
 
   const roster = rosters.find((item) => item.period.start === activeMonth) ?? rosters.at(-1);
   const duties = useMemo(() => roster ? rosterToDuties(roster) : [], [roster]);
@@ -178,19 +173,17 @@ export default function MainScreen() {
     if (!next) return;
     if (next === 'Roster') rosterFocus.focusToday();
     setSelectedFlight(undefined);
-    animateIndicator(next);
     setTab(next);
-  }, [tab, rosterFocus, animateIndicator]);
+  }, [tab, rosterFocus]);
   const goToTab = useCallback((target: Tab) => {
     if (target === tab) return;
     const direction = TABS.indexOf(target) > TABS.indexOf(tab) ? -1 : 1;
     setSelectedFlight(undefined);
-    animateIndicator(target);
     tabSwipeRef.current?.play(direction, () => {
       if (target === 'Roster') rosterFocus.focusToday();
       setTab(target);
     });
-  }, [tab, rosterFocus, animateIndicator]);
+  }, [tab, rosterFocus]);
   const eraseAll = useCallback(() => {
     clearStoredRosters();
     setRosters([]);

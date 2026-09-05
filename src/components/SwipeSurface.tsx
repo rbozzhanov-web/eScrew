@@ -19,28 +19,18 @@ export type SwipeSurfaceHandle = {
 };
 
 const RETURN_SPRING = { stiffness: 255, damping: 29, mass: 0.92, useNativeDriver: true } as const;
-// Slightly slower than the return spring, with near-critical damping: this softens the
-// initial horizontal acceleration without introducing a bounce or a timing/easing handoff.
-// Exported so callers driving something else in lockstep with the page turn (e.g. a tab-bar
-// indicator) use the exact same physics rather than a second hand-copied tuple.
-export const PAGE_SPRING = { stiffness: 300, damping: 32, mass: 0.9, useNativeDriver: true } as const;
+const ENTRY_SPRING = { stiffness: 275, damping: 31, mass: 0.9, useNativeDriver: true } as const;
+const PAGE_EASING = Easing.bezier(0.22, 0.78, 0, 1);
 const WEB_COMPOSITE = Platform.OS === 'web'
   ? ({ willChange: 'transform', backfaceVisibility: 'hidden', transformStyle: 'preserve-3d' } as any)
   : undefined;
-
-// WebKit re-samples everything behind a backdrop-filter element on every frame it moves, so
-// blurring several glass cards while they're all being translated at once (a tab or month/flight
-// page turn) is far more expensive than the same cards sitting still. Suspending the blur — via a
-// body class the glass surfaces read as a CSS custom property — for just the duration of the
-// transform sidesteps that without touching the spring/timing logic below.
-const GLASS_SUSPEND_CLASS = 'escrew-suspend-glass';
-const suspendGlass = () => { if (Platform.OS === 'web' && typeof document !== 'undefined') document.body.classList.add(GLASS_SUSPEND_CLASS); };
-const resumeGlass = () => { if (Platform.OS === 'web' && typeof document !== 'undefined') document.body.classList.remove(GLASS_SUSPEND_CLASS); };
 
 export const SwipeSurface = forwardRef<SwipeSurfaceHandle, Props>(function SwipeSurface({ children, style, onSwipeLeft, onSwipeRight, onSwipeDown, threshold = 52, dominance = 1.25 }, ref) {
   const translation = useRef(new Animated.ValueXY()).current;
   const activeAxis = useRef<SwipeAxis | undefined>(undefined);
   const size = useRef({ width: 360, height: 640 });
+  // Block only while the old page is leaving. As soon as the callback swaps in the
+  // next page, a fresh gesture may interrupt its entry spring immediately.
   const transitioning = useRef(false);
 
   const reset = useCallback(() => {
@@ -51,24 +41,20 @@ export const SwipeSurface = forwardRef<SwipeSurfaceHandle, Props>(function Swipe
   const settle = useCallback(() => {
     Animated.spring(translation, { toValue: { x: 0, y: 0 }, ...RETURN_SPRING, isInteraction: false }).start(() => {
       transitioning.current = false;
-      resumeGlass();
     });
   }, [translation]);
 
   const completeHorizontal = useCallback((direction: -1 | 1, callback: () => void, velocity = 0) => {
     if (transitioning.current) return;
     transitioning.current = true;
-    suspendGlass();
     const width = Math.max(260, size.current.width);
-    // One continuous spring carries the velocity through both legs of the page-turn — no
-    // fixed-duration/easing handoff, so the motion reads as a single physical gesture
-    // (matching native high-refresh-rate paging) rather than two mismatched animations.
-    const carriedVelocity = direction * Math.min(2.4, Math.max(0.9, Math.abs(velocity)));
+    const speed = Math.abs(velocity);
 
-    Animated.spring(translation.x, {
+    Animated.timing(translation.x, {
       toValue: direction * (width + 8),
-      ...PAGE_SPRING,
-      velocity: carriedVelocity,
+      duration: speed >= 1 ? 120 : speed >= 0.65 ? 140 : 164,
+      easing: PAGE_EASING,
+      useNativeDriver: true,
       isInteraction: false,
     }).start(({ finished }) => {
       if (!finished) { settle(); return; }
@@ -76,16 +62,17 @@ export const SwipeSurface = forwardRef<SwipeSurfaceHandle, Props>(function Swipe
       callback();
       softHaptic();
       translation.setValue({ x: -direction * width, y: 0 });
+      // The page is now swapped. Do not wait for its entry spring before accepting
+      // the next swipe; a new PanResponder grant will stop this spring cleanly.
       transitioning.current = false;
       requestAnimationFrame(() => {
         Animated.spring(translation.x, {
           toValue: 0,
-          ...PAGE_SPRING,
-          velocity: carriedVelocity,
+          ...ENTRY_SPRING,
+          velocity: direction * Math.min(2, Math.max(0.45, speed)),
           isInteraction: false,
         }).start(({ finished: entryFinished }) => {
           if (entryFinished) translation.setValue({ x: 0, y: 0 });
-          resumeGlass();
         });
       });
     });
@@ -98,7 +85,6 @@ export const SwipeSurface = forwardRef<SwipeSurfaceHandle, Props>(function Swipe
   const completeDown = useCallback((callback: () => void) => {
     if (transitioning.current) return;
     transitioning.current = true;
-    suspendGlass();
     const height = Math.max(360, size.current.height);
     Animated.timing(translation.y, {
       toValue: height + 56,
@@ -109,7 +95,6 @@ export const SwipeSurface = forwardRef<SwipeSurfaceHandle, Props>(function Swipe
     }).start(({ finished }) => {
       if (finished) { softHaptic(); callback(); }
       reset();
-      resumeGlass();
     });
   }, [reset, translation]);
 
@@ -123,7 +108,6 @@ export const SwipeSurface = forwardRef<SwipeSurfaceHandle, Props>(function Swipe
       return activeAxis.current !== undefined;
     },
     onPanResponderGrant: () => {
-      suspendGlass();
       translation.stopAnimation();
       translation.setValue({ x: 0, y: 0 });
     },
