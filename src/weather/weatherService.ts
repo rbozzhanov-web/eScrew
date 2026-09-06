@@ -79,19 +79,14 @@ function inclusiveIsoDays(start: string, end: string): number {
   return Math.max(1, isoDayNumber(end) - isoDayNumber(start) + 1);
 }
 
-function clockMinutes(value: string | undefined): number | undefined {
-  const match = /^(\d{1,2}):(\d{2})$/.exec(value ?? '');
-  if (!match) return undefined;
-  const hours = Number(match[1]);
-  const minutes = Number(match[2]);
-  return hours < 24 && minutes < 60 ? hours * 60 + minutes : undefined;
-}
-
-function sectorArrivalDate(sector: { date: string; arrivalDate?: string; timeOut?: string; timeIn?: string }): string {
-  if (validIsoDate(sector.arrivalDate)) return sector.arrivalDate;
-  const out = clockMinutes(sector.timeOut);
-  const arrival = clockMinutes(sector.timeIn);
-  return out !== undefined && arrival !== undefined && arrival < out ? addIsoDays(sector.date, 1) : sector.date;
+/**
+ * Both PDF and AIMS parsers already preserve an explicit arrivalDate when a sector arrives
+ * on a different calendar day. If it is omitted, the arrival is on sector.date. Do not infer
+ * +1 from local clock values: different time zones can make arrivalTime < departureTime on a
+ * perfectly same-day flight.
+ */
+function sectorArrivalDate(sector: { date: string; arrivalDate?: string }): string {
+  return validIsoDate(sector.arrivalDate) ? sector.arrivalDate : sector.date;
 }
 
 function normalizedDays(days: number): number {
@@ -99,14 +94,14 @@ function normalizedDays(days: number): number {
 }
 
 /**
- * Resolve forecast dates from the actual arrival at `code`.
+ * Resolve forecast dates from the exact roster arrival at `code`.
  *
- * `expandLayover=false` is used for home-base arrivals: only the arrival calendar day is
- * returned even if another duty departs the base later. When expansion is allowed, the
- * window runs from the arrival day through the next later departure from the same station.
- * A same-duty turnaround therefore naturally stays one day, while a true outstation layover
- * spans every calendar day through the departure day. If no later departure is known, we do
- * not invent a layover and fall back to the requested single-day window.
+ * - home-base/no-expansion: arrival day only
+ * - next departure belongs to the same duty: turnaround, arrival day only
+ * - next departure belongs to a later duty: real layover, inclusive arrival -> departure
+ *
+ * A valid caller date is authoritative. If there is no matching arrival on that date, keep
+ * the caller's date rather than silently substituting a nearby occurrence of the same station.
  */
 function resolveLayoverWindow(code: string, requestedDays: number, startDateHint?: string, expandLayover = true): ForecastWindow {
   const fallback = { startDate: validIsoDate(startDateHint) ? startDateHint : undefined, days: normalizedDays(requestedDays) };
@@ -124,11 +119,14 @@ function resolveLayoverWindow(code: string, requestedDays: number, startDateHint
       .filter((item) => item.sector.arrivalAirport?.trim().toUpperCase() === target);
     if (!arrivals.length) return fallback;
 
-    const hintedDay = validIsoDate(startDateHint) ? isoDayNumber(startDateHint) : undefined;
-    const arrival = [...arrivals].sort((a, b) => {
-      if (hintedDay === undefined) return b.arrivalDate.localeCompare(a.arrivalDate);
-      return Math.abs(isoDayNumber(a.arrivalDate) - hintedDay) - Math.abs(isoDayNumber(b.arrivalDate) - hintedDay);
-    })[0];
+    let arrival;
+    if (validIsoDate(startDateHint)) {
+      const exactDayArrivals = arrivals.filter((item) => item.arrivalDate === startDateHint);
+      if (!exactDayArrivals.length) return fallback;
+      arrival = exactDayArrivals[0];
+    } else {
+      arrival = arrivals[arrivals.length - 1];
+    }
     if (!arrival) return fallback;
 
     const arrivalMoment = `${arrival.arrivalDate}T${arrival.sector.timeIn || '00:00'}`;
@@ -136,7 +134,11 @@ function resolveLayoverWindow(code: string, requestedDays: number, startDateHint
       item.sector.departureAirport?.trim().toUpperCase() === target &&
       `${item.sector.date}T${item.sector.timeOut || '00:00'}` > arrivalMoment
     );
-    if (!nextDeparture) return { startDate: arrival.arrivalDate, days: fallback.days };
+    if (!nextDeparture) return { startDate: arrival.arrivalDate, days: 1 };
+
+    const sameDuty = nextDeparture.rosterKey === arrival.rosterKey
+      && nextDeparture.sector.dutyIndex === arrival.sector.dutyIndex;
+    if (sameDuty) return { startDate: arrival.arrivalDate, days: 1 };
 
     return {
       startDate: arrival.arrivalDate,

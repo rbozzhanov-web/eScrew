@@ -70,7 +70,10 @@ export function flightExtra(roster: RosterWithNormalized | undefined, sector: Se
     date: flight.date,
     aircraftType: flight.aircraftType,
     actualTimes: flight.actualTimes,
-    arrivalDate: flight.arrivalDate,
+    // In normalized roster data an omitted arrivalDate means arrival is on flight.date.
+    // Returning that date explicitly prevents UI code from guessing +1 from local clock
+    // values, which is incorrect on west/eastbound sectors that cross time zones.
+    arrivalDate: flight.arrivalDate ?? flight.date,
   };
 }
 
@@ -160,8 +163,10 @@ function isSectorSupplement(supplement: NormalizedSupplement): boolean {
 function findNormalizedFlight(roster: NormalizedRoster | undefined, sector: Sector): NormalizedFlight | undefined {
   if (!roster) return undefined;
   const number = normalizeFlight(sector.flightNumber);
+  const sectorDate = sectorDateFromIdentity(sector.id);
   return roster.duties.flatMap((duty) => duty.flights).find((flight) =>
-    normalizeFlight(flight.flightNumber) === number
+    (!sectorDate || flight.date === sectorDate)
+    && normalizeFlight(flight.flightNumber) === number
     && flight.origin.toUpperCase() === sector.departure.toUpperCase()
     && flight.destination.toUpperCase() === sector.arrival.toUpperCase()
     && flight.departure === sector.departureTime
@@ -170,6 +175,10 @@ function findNormalizedFlight(roster: NormalizedRoster | undefined, sector: Sect
 
 function sectorDate(roster: NormalizedRoster | undefined, sector: Sector): string | undefined {
   return findNormalizedFlight(roster, sector)?.date;
+}
+
+function sectorDateFromIdentity(id: string): string | undefined {
+  return /^(\d{4}-\d{2}-\d{2})(?=-)/.exec(id)?.[1];
 }
 
 function field(supplement: NormalizedSupplement, label: string): string | undefined {
