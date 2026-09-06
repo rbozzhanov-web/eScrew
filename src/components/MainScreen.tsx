@@ -14,7 +14,7 @@ import { pickAndParseRoster } from '@/src/import/pickRoster';
 import type { ParsedAirAstanaRoster } from '@/src/import/parseAirAstanaRoster';
 import { exportBackup, restoreBackup } from '@/src/storage/backup';
 import { clearStoredRosters, loadStoredRosters, removeStoredRoster, upsertStoredRoster } from '@/src/storage/rosterStorage';
-import { prefetchStationWeather, useAirportForecast, useAirportWeather } from '@/src/weather/weatherService';
+import { prefetchStationWeather, useAirportForecastState, useAirportWeather } from '@/src/weather/weatherService';
 import { weatherIcon, windDirectionLabel } from '@/src/weather/weatherCodes';
 
 type Tab = 'Home' | 'Roster' | 'More';
@@ -450,6 +450,10 @@ function RosterEventCard({ item, isToday, palette, onLayout }: { item: Extract<R
 function FlightDetail({ row, roster, palette, onClose, onPrevious, onNext }: { row: FlightRow; roster?: RosterWithNormalized; palette: Palette; onClose: () => void; onPrevious?: () => void; onNext?: () => void }) {
   const extra = flightExtra(roster, row.sector);
   const stay = stayForSector(roster, row.sector);
+  const weatherCode = detailWeatherStation(row, roster?.subject?.base);
+  const forecastStartDate = weatherCode === row.sector.departure
+    ? row.duty.date
+    : extra?.arrivalDate ?? extra?.date ?? row.duty.releaseDate ?? row.duty.date;
   const status = [row.sector.deadhead ? 'DHC' : undefined, extra?.actualTimes ? 'Actual times' : undefined, extra?.aircraftType].filter(Boolean).join(' · ');
   const [headerHeight, setHeaderHeight] = useState(0);
   const renderCrewMember: ListRenderItem<CrewMember> = useCallback(({ item }) => <View style={styles.crewRow}><View style={[styles.avatar, { backgroundColor: palette.accentSoft }]}><Text style={[styles.avatarText, { color: palette.accent }]}>{item.name[0]}</Text></View><View style={styles.grow}><Text style={[styles.crewName, { color: palette.text }]}>{item.name}</Text><Text style={[styles.meta, { color: palette.muted }]}>{item.position ?? item.role}</Text></View></View>, [palette]);
@@ -463,7 +467,7 @@ function FlightDetail({ row, roster, palette, onClose, onPrevious, onNext }: { r
       <Text style={[styles.label, { color: palette.muted }]}>{row.duty.dateLabel} · {row.sector.flightNumber}{row.sector.deadhead ? ' · DHC' : ''}</Text>
       <Text style={[styles.sheetRoute, { color: palette.text }]}>{row.sector.departure} → {row.sector.arrival}</Text>
       {status ? <Text style={[styles.meta, { color: palette.muted }]}>{status}</Text> : null}
-      <WeatherChip code={row.sector.arrival} palette={palette} stay={stay} forecastStartDate={extra?.arrivalDate ?? extra?.date ?? row.duty.releaseDate ?? row.duty.date} />
+      <WeatherChip code={weatherCode} palette={palette} stay={stay} forecastStartDate={forecastStartDate} />
       <View style={[styles.flightFacts, { borderColor: palette.line }]}><FlightFact label="REPORT" value={row.duty.reportTime} palette={palette} /><FlightFact label="DEP" value={row.sector.departureTime} palette={palette} /><FlightFact label="ARR" value={row.sector.arrivalTime} palette={palette} /><FlightFact label="RELEASE" value={row.duty.releaseTime} palette={palette} /></View>
     </View>
     <FlatList
@@ -620,47 +624,67 @@ function rosterDateMeta(duty: Duty): { label: string; weekend: boolean } { if (!
 function localTodayIso(): string { const now = new Date(); return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`; }
 function eventDateMeta(value: string): { label: string; weekend: boolean } { const [year, month, day] = value.split('-').map(Number); const date = new Date(Date.UTC(year, month - 1, day)); if (!Number.isFinite(date.getTime()) || date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return { label: value, weekend: false }; const weekdayIndex = date.getUTCDay(); const weekday = ['SUN','MON','TUE','WED','THU','FRI','SAT'][weekdayIndex]; const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC']; return { label: `${String(day).padStart(2, '0')} ${months[month - 1]} · ${weekday}`, weekend: weekdayIndex === 0 || weekdayIndex === 6 }; }
 function routeChain(duty: Duty): string { return [duty.sectors[0]?.departure, ...duty.sectors.map((sector) => sector.arrival)].filter(Boolean).join(' → '); }
+function detailWeatherStation(row: FlightRow, base?: string): string {
+  const normalizedBase = base?.trim().toUpperCase();
+  return normalizedBase && row.sector.departure.trim().toUpperCase() !== normalizedBase ? row.sector.departure : row.sector.arrival;
+}
 function TimeCell({ label, value, palette }: { label: string; value: string; palette: Palette }) { return <View style={styles.timeCell}><Text numberOfLines={1} style={[styles.timeLabel, { color: palette.muted }]}>{label}</Text><Text style={[styles.timeValue, { color: palette.text }]}>{value}</Text></View>; }
 function WeatherChip({ code, palette, stay, forecastStartDate }: { code: string; palette: Palette; stay?: StayInfo; forecastStartDate?: string }) {
   const weather = useAirportWeather(code);
   const [stayOpen, setStayOpen] = useState(false);
   const restHours = parseRestHours(stay?.rest);
   const forecastDayCount = Math.min(3, Math.max(2, restHours !== undefined ? Math.ceil(restHours / 24) + 1 : 2));
-  const forecast = useAirportForecast(code, forecastDayCount, forecastStartDate);
+  const { forecast, status: forecastStatus, startDate: resolvedForecastStartDate, retry } = useAirportForecastState(code, forecastDayCount, forecastStartDate);
   // Weather needs network and may never have been cached for this station (a duty viewed
   // for the first time while offline, e.g. mid-flight in airplane mode). The stay duration
   // itself comes from the imported roster, not the network, so it must stay reachable even
   // when weather never loaded — only hide the whole row when there's neither to show.
   if (!weather && !stay) return null;
   const conditions = weather ? weatherIcon(weather.weatherCode, weather.isDay) : undefined;
+  const displayDate = resolvedForecastStartDate ?? forecastStartDate;
+  const futureTarget = Boolean(displayDate && displayDate > localTodayIso());
+  const targetForecast = displayDate ? forecast?.find((day) => day.date === displayDate) : undefined;
+  const targetConditions = targetForecast ? weatherIcon(targetForecast.weatherCode, true) : undefined;
   return <>
     <Pressable onPress={() => setStayOpen(true)} accessibilityRole="button" accessibilityLabel={`Duration of stay at ${code}`} style={styles.weatherRow}>
-      <Text style={styles.weatherIcon}>{conditions?.icon ?? '✈︎'}</Text>
-      {weather ? <>
-        <Text style={[styles.weatherTemp, { color: palette.text }]}>{weather.temp}°</Text>
-        <Text numberOfLines={1} style={[styles.weatherMeta, { color: palette.muted }]}>{code} · {conditions!.label} · {windDirectionLabel(weather.windDeg)} {weather.windSpeed}kt · {weather.pressure}hPa</Text>
-      </> : (
-        <Text numberOfLines={1} style={[styles.weatherMeta, { color: palette.muted }]}>{code}{stay?.rest ? ` · Rest ${stay.rest}` : ''} · Weather unavailable offline</Text>
-      )}
+      {futureTarget ? <>
+        <Text style={styles.weatherIcon}>{targetConditions?.icon ?? '✈︎'}</Text>
+        {targetForecast && <Text style={[styles.weatherTemp, { color: palette.text }]}>{targetForecast.tempMax}°/{targetForecast.tempMin}°</Text>}
+        <Text numberOfLines={1} style={[styles.weatherMeta, { color: palette.muted }]}>{code} · {displayDate ? forecastDayLabel(displayDate) : ''}{targetConditions ? ` · ${targetConditions.label}` : forecastStatus === 'loading' ? ' · Loading forecast' : ' · Forecast unavailable'}</Text>
+      </> : <>
+        <Text style={styles.weatherIcon}>{conditions?.icon ?? '✈︎'}</Text>
+        {weather ? <>
+          <Text style={[styles.weatherTemp, { color: palette.text }]}>{weather.temp}°</Text>
+          <Text numberOfLines={1} style={[styles.weatherMeta, { color: palette.muted }]}>{code} · {conditions!.label} · {windDirectionLabel(weather.windDeg)} {weather.windSpeed}kt · {weather.pressure}hPa</Text>
+        </> : (
+          <Text numberOfLines={1} style={[styles.weatherMeta, { color: palette.muted }]}>{code}{stay?.rest ? ` · Rest ${stay.rest}` : ''} · Weather unavailable</Text>
+        )}
+      </>}
     </Pressable>
     <IOSDialog visible={stayOpen} onClose={() => setStayOpen(false)} style={[styles.stayPopup, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}>
-      <Text style={[styles.label, { color: palette.muted }]}>STAY · {code}</Text>
+      <Text style={[styles.label, { color: palette.muted }]}>STAY · {code}{displayDate ? ` · FROM ${forecastDayLabel(displayDate)}` : ''}</Text>
       {stay?.rest
         ? <Text style={[styles.stayPopupRest, { color: palette.text }]}>{stay.rest}</Text>
         : <Text style={[styles.meta, { color: palette.muted, marginTop: 6 }]}>No layover recorded for this stop.</Text>}
-      {forecast && forecast.length > 0 && <View style={styles.stayForecastList}>
-        {forecast.slice(0, forecastDayCount).map((day) => {
-          const dayConditions = weatherIcon(day.weatherCode, true);
-          return <View key={day.date} style={[styles.stayForecastRow, { borderColor: palette.line }]}>
-            <Text style={[styles.stayForecastDay, { color: palette.muted }]}>{forecastDayLabel(day.date)}</Text>
-            <View style={styles.stayForecastConditions}>
-              <Text style={[styles.stayForecastIcon, { flex: 0 }]}>{dayConditions.icon}</Text>
-              <Text numberOfLines={1} style={[styles.meta, styles.stayForecastDescription, { color: palette.muted }]}>{dayConditions.label}</Text>
-            </View>
-            <Text style={[styles.stayForecastTemp, { color: palette.text }]}>{day.tempMax}° / {day.tempMin}°</Text>
-          </View>;
-        })}
-      </View>}
+      {forecast && forecast.length > 0
+        ? <View style={styles.stayForecastList}>
+            {forecast.map((day) => {
+              const dayConditions = weatherIcon(day.weatherCode, true);
+              return <View key={day.date} style={[styles.stayForecastRow, { borderColor: palette.line }]}>
+                <Text style={[styles.stayForecastDay, { color: palette.muted }]}>{forecastDayLabel(day.date)}</Text>
+                <View style={styles.stayForecastConditions}>
+                  <Text style={[styles.stayForecastIcon, { flex: 0 }]}>{dayConditions.icon}</Text>
+                  <Text numberOfLines={1} style={[styles.meta, styles.stayForecastDescription, { color: palette.muted }]}>{dayConditions.label}</Text>
+                </View>
+                <Text style={[styles.stayForecastTemp, { color: palette.text }]}>{day.tempMax}° / {day.tempMin}°</Text>
+              </View>;
+            })}
+          </View>
+        : forecastStatus === 'loading'
+          ? <View style={styles.forecastStateRow}><ActivityIndicator size="small" /><Text style={[styles.meta, { color: palette.muted }]}>Loading forecast…</Text></View>
+          : forecastStatus === 'offline'
+            ? <Text style={[styles.meta, { color: palette.muted, marginTop: 6 }]}>Forecast unavailable while offline.</Text>
+            : <Pressable onPress={retry} accessibilityRole="button" style={styles.forecastRetry}><Text style={[styles.meta, { color: palette.accent }]}>Forecast unavailable. Tap to retry.</Text></Pressable>}
     </IOSDialog>
   </>;
 }
@@ -691,7 +715,7 @@ const styles = StyleSheet.create({
   primaryButton:{height:50,borderRadius:16,alignItems:'center',justifyContent:'center'}, actionText:{color:'#fff',fontWeight:'700'}, titleRow:{flexDirection:'row',alignItems:'center',gap:8}, titleActions:{flexDirection:'row',gap:7}, compactButton:{height:38,minWidth:72,borderWidth:1,borderRadius:14,alignItems:'center',justifyContent:'center',paddingHorizontal:10}, compactText:{fontWeight:'700',fontSize:12}, monthNav:{height:40,flexDirection:'row',alignItems:'center',justifyContent:'space-between'}, monthNavText:{fontSize:12,fontWeight:'600'}, monthSwipeWrap:{flex:1,minHeight:0},
   emptyCard:{borderWidth:1,borderRadius:20,padding:14}, innerWindow:{flex:1,minHeight:0,borderWidth:1,borderRadius:20,overflow:'hidden'}, listContent:{padding:8,gap:7,paddingBottom:18}, rosterCard:{borderWidth:1,borderRadius:16,padding:13}, rosterCardToday:{borderWidth:1.5}, flightCardTop:{flexDirection:'row',justifyContent:'space-between'}, flightNumber:{fontSize:11,fontWeight:'700'}, rosterRoute:{fontSize:20,fontWeight:'700',marginTop:4}, rosterEventTitle:{fontSize:18,lineHeight:22,fontWeight:'700',marginTop:4},
   infoCard:{borderWidth:1,borderRadius:20,padding:14,gap:3}, cardTitle:{fontSize:17,lineHeight:22,fontWeight:'700'}, libraryCard:{borderWidth:1,borderRadius:20,padding:14,minHeight:88,maxHeight:190}, libraryList:{marginTop:5}, libraryRow:{minHeight:54,flexDirection:'row',alignItems:'center',gap:10,borderBottomWidth:StyleSheet.hairlineWidth}, libraryMonth:{fontSize:14,fontWeight:'700'}, deleteRosterButton:{minWidth:58,height:34,borderRadius:12,alignItems:'center',justifyContent:'center',paddingHorizontal:8}, deleteRosterText:{fontSize:11,fontWeight:'700'}, expiryDate:{fontSize:12,fontWeight:'700',fontVariant:['tabular-nums'],...MONO_FONT},
-  dangerButton:{height:48,borderWidth:1,borderRadius:15,alignItems:'center',justifyContent:'center'}, dangerText:{fontWeight:'700',fontSize:14}, backupRow:{flexDirection:'row',gap:8,marginTop:10}, expiryHeaderRow:{flexDirection:'row',alignItems:'center',justifyContent:'space-between'}, expiryChevron:{fontSize:20,fontWeight:'700'}, expirySheet:{width:'100%',maxWidth:620,maxHeight:'78%',alignSelf:'center',borderTopWidth:1,borderTopLeftRadius:28,borderTopRightRadius:28,paddingHorizontal:18,paddingBottom:12,overflow:'hidden'}, expirySheetList:{marginTop:10}, expirySheetListContent:{paddingBottom:12}, versionText:{fontSize:10,fontWeight:'600',letterSpacing:.2,opacity:.5,textAlign:'center',marginTop:2}, confirmDialog:{width:'88%',maxWidth:360,borderWidth:1,borderRadius:22,padding:18}, confirmActions:{flexDirection:'row',gap:10,marginTop:16}, stayPopup:{width:'88%',maxWidth:340,borderWidth:1,borderRadius:22,padding:18}, stayPopupRest:{fontSize:28,fontWeight:'800',marginTop:6,fontVariant:['tabular-nums'],...MONO_FONT}, stayForecastList:{marginTop:14,gap:2}, stayForecastRow:{flexDirection:'row',alignItems:'center',gap:6,paddingVertical:8,borderTopWidth:StyleSheet.hairlineWidth}, stayForecastDay:{width:34,fontSize:12,fontWeight:'700'}, stayForecastConditions:{flex:1,minWidth:0,flexDirection:'row',alignItems:'center',gap:6}, stayForecastDescription:{flex:1,minWidth:0,fontSize:12}, stayForecastIcon:{fontSize:18,flex:1}, stayForecastTemp:{fontSize:14,fontWeight:'700',fontVariant:['tabular-nums'],...MONO_FONT}, confirmCancel:{flex:1,height:44,borderWidth:1,borderRadius:13,alignItems:'center',justifyContent:'center'}, confirmErase:{flex:1,height:44,borderRadius:13,alignItems:'center',justifyContent:'center'}, moreContent:{gap:12,paddingBottom:24},
+  dangerButton:{height:48,borderWidth:1,borderRadius:15,alignItems:'center',justifyContent:'center'}, dangerText:{fontWeight:'700',fontSize:14}, backupRow:{flexDirection:'row',gap:8,marginTop:10}, expiryHeaderRow:{flexDirection:'row',alignItems:'center',justifyContent:'space-between'}, expiryChevron:{fontSize:20,fontWeight:'700'}, expirySheet:{width:'100%',maxWidth:620,maxHeight:'78%',alignSelf:'center',borderTopWidth:1,borderTopLeftRadius:28,borderTopRightRadius:28,paddingHorizontal:18,paddingBottom:12,overflow:'hidden'}, expirySheetList:{marginTop:10}, expirySheetListContent:{paddingBottom:12}, versionText:{fontSize:10,fontWeight:'600',letterSpacing:.2,opacity:.5,textAlign:'center',marginTop:2}, confirmDialog:{width:'88%',maxWidth:360,borderWidth:1,borderRadius:22,padding:18}, confirmActions:{flexDirection:'row',gap:10,marginTop:16}, stayPopup:{width:'88%',maxWidth:340,borderWidth:1,borderRadius:22,padding:18}, stayPopupRest:{fontSize:28,fontWeight:'800',marginTop:6,fontVariant:['tabular-nums'],...MONO_FONT}, stayForecastList:{marginTop:14,gap:2}, stayForecastRow:{flexDirection:'row',alignItems:'center',gap:6,paddingVertical:8,borderTopWidth:StyleSheet.hairlineWidth}, stayForecastDay:{width:34,fontSize:12,fontWeight:'700'}, stayForecastConditions:{flex:1,minWidth:0,flexDirection:'row',alignItems:'center',gap:6}, stayForecastDescription:{flex:1,minWidth:0,fontSize:12}, stayForecastIcon:{fontSize:18,flex:1}, stayForecastTemp:{fontSize:14,fontWeight:'700',fontVariant:['tabular-nums'],...MONO_FONT}, forecastStateRow:{flexDirection:'row',alignItems:'center',gap:8,marginTop:8}, forecastRetry:{marginTop:6,paddingVertical:4}, confirmCancel:{flex:1,height:44,borderWidth:1,borderRadius:13,alignItems:'center',justifyContent:'center'}, confirmErase:{flex:1,height:44,borderRadius:13,alignItems:'center',justifyContent:'center'}, moreContent:{gap:12,paddingBottom:24},
   depthSurface:{shadowColor:'#000',shadowOffset:{width:0,height:10},shadowOpacity:.1,shadowRadius:24,elevation:5,...WEB_GLASS}, tabBar:{height:68,marginTop:8,marginBottom:4,borderWidth:1,borderRadius:22,flexDirection:'row',...WEB_TAB_GLASS}, tabSelection:{position:'absolute',left:4,top:4,bottom:4,borderRadius:18,shadowColor:'#000',shadowOffset:{width:0,height:5},shadowOpacity:.08,shadowRadius:12,elevation:2}, tabItem:{flex:1,zIndex:1,alignItems:'center',justifyContent:'center',gap:2}, tabIconWrap:{minWidth:35,height:27,borderRadius:14,alignItems:'center',justifyContent:'center'}, tabIcon:{textAlign:'center'}, tabText:{fontSize:11,fontWeight:'600'},
   flightSheet:{width:'100%',maxWidth:620,maxHeight:'78%',alignSelf:'center',borderTopWidth:1,borderTopLeftRadius:28,borderTopRightRadius:28,paddingHorizontal:18,paddingBottom:12,overflow:'hidden'}, flightSheetContent:{minHeight:0,flexShrink:1}, sheetRoute:{fontSize:28,lineHeight:33,fontWeight:'700',marginTop:5}, swipeHint:{fontSize:10,marginTop:7}, flyingWith:{fontSize:11,fontWeight:'700',letterSpacing:.45,opacity:.82,marginTop:12,marginBottom:7}, crewScroll:{minHeight:0,flexShrink:1,flex:1,...Platform.select({web:{maxHeight:'calc(78vh - 46px)' as any},default:{}})}, crewList:{paddingBottom:12}, crewRow:{minHeight:50,flexDirection:'row',alignItems:'center'}, avatar:{width:34,height:34,borderRadius:17,alignItems:'center',justifyContent:'center',marginRight:11}, avatarText:{fontSize:12,fontWeight:'800'}, crewName:{fontSize:14,fontWeight:'600'},
   flightFacts:{flexDirection:'row',gap:6,borderTopWidth:StyleSheet.hairlineWidth,borderBottomWidth:StyleSheet.hairlineWidth,paddingVertical:10,marginTop:10}, flightFact:{flex:1,minWidth:0}, flightFactLabel:{fontSize:9,lineHeight:12,fontWeight:'700',letterSpacing:.45}, flightFactValue:{fontSize:16,lineHeight:20,fontWeight:'700',fontVariant:['tabular-nums'],marginTop:2,...MONO_FONT}, stayCard:{borderWidth:1,borderRadius:16,padding:12,marginTop:12}, stayTitle:{fontSize:16,lineHeight:21,fontWeight:'700',marginTop:4}, stayMeta:{fontSize:11,lineHeight:15,marginTop:4},
