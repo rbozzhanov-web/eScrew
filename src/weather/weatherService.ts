@@ -24,6 +24,7 @@ export type ForecastLoadStatus = 'loading' | 'ready' | 'offline' | 'error';
 export type AirportForecastState = { forecast?: ForecastDay[]; status: ForecastLoadStatus; startDate?: string; retry: () => void };
 type AirportForecast = { code: string; startDate?: string; days: ForecastDay[]; fetchedAt: number };
 type ForecastWindow = { startDate?: string; days: number };
+type ForecastRequest = { code: string; days: number; startDate?: string; expandLayover?: boolean };
 
 const STALE_AFTER_MS = 45 * 60 * 1000;
 const MAX_FORECAST_DAYS = 16;
@@ -95,11 +96,19 @@ function normalizedDays(days: number): number {
   return Math.max(1, Math.min(MAX_FORECAST_DAYS, Math.trunc(days) || 1));
 }
 
-/** Resolve the actual layover: arrival calendar date at the station through the next later
- * departure calendar date from that same station. The caller date is only a matching hint. */
-function resolveLayoverWindow(code: string, requestedDays: number, startDateHint?: string): ForecastWindow {
+/**
+ * Resolve forecast dates from the actual arrival at `code`.
+ *
+ * `expandLayover=false` is used for home-base arrivals: only the arrival calendar day is
+ * returned even if another duty departs the base later. When expansion is allowed, the
+ * window runs from the arrival day through the next later departure from the same station.
+ * A same-duty turnaround therefore naturally stays one day, while a true outstation layover
+ * spans every calendar day through the departure day. If no later departure is known, we do
+ * not invent a layover and fall back to the requested single-day window.
+ */
+function resolveLayoverWindow(code: string, requestedDays: number, startDateHint?: string, expandLayover = true): ForecastWindow {
   const fallback = { startDate: validIsoDate(startDateHint) ? startDateHint : undefined, days: normalizedDays(requestedDays) };
-  if (typeof localStorage === 'undefined') return fallback;
+  if (!expandLayover || typeof localStorage === 'undefined') return fallback;
 
   try {
     const target = code.trim().toUpperCase();
@@ -122,7 +131,6 @@ function resolveLayoverWindow(code: string, requestedDays: number, startDateHint
 
     const arrivalMoment = `${arrival.arrivalDate}T${arrival.sector.timeIn || '00:00'}`;
     const nextDeparture = sectors.find((item) =>
-      !(item.rosterKey === arrival.rosterKey && item.sector.dutyIndex === arrival.sector.dutyIndex) &&
       item.sector.departureAirport?.trim().toUpperCase() === target &&
       `${item.sector.date}T${item.sector.timeOut || '00:00'}` > arrivalMoment
     );
@@ -201,16 +209,15 @@ async function fetchAirportForecast(code: string, days: number, startDate?: stri
 }
 
 /**
- * Fire-and-forget: fetches current conditions + forecast for each requested station whenever
- * the cache is missing or stale, so weather is already sitting in localStorage the next time a
- * screen for that station renders — including the first time, and including offline. Meant to
- * be called for the next few upcoming duties' stations while the app is known to be online.
+ * Fire-and-forget cache warm-up for arrival stations the user is about to care about.
+ * Current conditions and the arrival/layover forecast are stored independently, so either
+ * can still be shown from cache when the device is later offline.
  */
-export function prefetchStationWeather(requests: { code: string; days: number; startDate?: string }[]): void {
+export function prefetchStationWeather(requests: ForecastRequest[]): void {
   if (typeof navigator !== 'undefined' && navigator.onLine === false) return;
   for (const request of requests) {
     const { code } = request;
-    const forecastWindow = resolveLayoverWindow(code, request.days, request.startDate);
+    const forecastWindow = resolveLayoverWindow(code, request.days, request.startDate, request.expandLayover ?? true);
     const cachedWeather = weatherCache.get(code);
     if (!cachedWeather || Date.now() - cachedWeather.fetchedAt >= STALE_AFTER_MS) {
       fetchAirportWeather(code).catch(() => {});
@@ -223,9 +230,9 @@ export function prefetchStationWeather(requests: { code: string; days: number; s
 }
 
 /**
- * Always renders whatever is cached immediately — no loading state blocks the first
- * paint. A background refresh only ever fires when the cache is stale AND the
- * browser reports it's online; offline (or a fresh cache) is a pure no-op.
+ * Always renders whatever is cached immediately. Failed online refreshes keep the previous
+ * cached value; they are never relabelled as "offline". The browser's actual online state is
+ * the only signal used to suppress network refreshes.
  */
 export function useAirportWeather(code: string | undefined): AirportWeather | undefined {
   const [weather, setWeather] = useState<AirportWeather | undefined>(() => (code ? weatherCache.get(code) : undefined));
@@ -256,8 +263,10 @@ export function useAirportWeather(code: string | undefined): AirportWeather | un
   return weather;
 }
 
-export function useAirportForecastState(code: string | undefined, days: number, startDate?: string): AirportForecastState {
-  const forecastWindow = code ? resolveLayoverWindow(code, days, startDate) : { startDate, days: normalizedDays(days) };
+export function useAirportForecastState(code: string | undefined, days: number, startDate?: string, expandLayover = true): AirportForecastState {
+  const forecastWindow = code
+    ? resolveLayoverWindow(code, days, startDate, expandLayover)
+    : { startDate, days: normalizedDays(days) };
   const readCached = () => {
     if (!code) return undefined;
     const cached = cachedForecast(code, forecastWindow.days, forecastWindow.startDate);
@@ -326,6 +335,6 @@ export function useAirportForecastState(code: string | undefined, days: number, 
 }
 
 /** Backward-compatible data-only hook for callers that do not need state/error UI. */
-export function useAirportForecast(code: string | undefined, days: number, startDate?: string): ForecastDay[] | undefined {
-  return useAirportForecastState(code, days, startDate).forecast;
+export function useAirportForecast(code: string | undefined, days: number, startDate?: string, expandLayover = true): ForecastDay[] | undefined {
+  return useAirportForecastState(code, days, startDate, expandLayover).forecast;
 }
