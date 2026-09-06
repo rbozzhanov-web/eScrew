@@ -20,7 +20,9 @@ export type ForecastDay = {
   tempMin: number;
 };
 
-export type ForecastLoadStatus = 'loading' | 'ready' | 'offline' | 'error';
+export type WeatherLoadStatus = 'loading' | 'ready' | 'offline' | 'error';
+export type ForecastLoadStatus = WeatherLoadStatus;
+export type AirportWeatherState = { weather?: AirportWeather; status: WeatherLoadStatus };
 export type AirportForecastState = { forecast?: ForecastDay[]; status: ForecastLoadStatus; startDate?: string; retry: () => void };
 type AirportForecast = { code: string; startDate?: string; days: ForecastDay[]; fetchedAt: number };
 type ForecastWindow = { startDate?: string; days: number };
@@ -230,37 +232,73 @@ export function prefetchStationWeather(requests: ForecastRequest[]): void {
 }
 
 /**
- * Always renders whatever is cached immediately. Failed online refreshes keep the previous
- * cached value; they are never relabelled as "offline". The browser's actual online state is
- * the only signal used to suppress network refreshes.
+ * Current conditions use the same explicit state semantics as forecasts. A request failure
+ * while online is `error`, not `offline`; actual navigator offline is the only source of the
+ * offline state. Any cached value remains immediately available and stays `ready` offline.
  */
-export function useAirportWeather(code: string | undefined): AirportWeather | undefined {
-  const [weather, setWeather] = useState<AirportWeather | undefined>(() => (code ? weatherCache.get(code) : undefined));
+export function useAirportWeatherState(code: string | undefined): AirportWeatherState {
+  const initialWeather = code ? weatherCache.get(code) : undefined;
+  const [weather, setWeather] = useState<AirportWeather | undefined>(initialWeather);
+  const [status, setStatus] = useState<WeatherLoadStatus>(() => initialWeather ? 'ready' : (typeof navigator !== 'undefined' && navigator.onLine === false ? 'offline' : 'loading'));
 
   useEffect(() => {
-    setWeather(code ? weatherCache.get(code) : undefined);
-    if (!code) return;
+    const cachedNow = code ? weatherCache.get(code) : undefined;
+    setWeather(cachedNow);
+    if (!code) { setStatus('error'); return; }
 
     let cancelled = false;
-    const refreshIfStale = () => {
-      if (typeof navigator !== 'undefined' && navigator.onLine === false) return;
+    const refreshIfStale = (force = false) => {
+      const online = typeof navigator === 'undefined' || navigator.onLine !== false;
       const cached = weatherCache.get(code);
-      if (cached && Date.now() - cached.fetchedAt < STALE_AFTER_MS) return;
+      if (cached) {
+        setWeather(cached);
+        if (!force && Date.now() - cached.fetchedAt < STALE_AFTER_MS) {
+          setStatus('ready');
+          return;
+        }
+      }
+      if (!online) {
+        setStatus(cached ? 'ready' : 'offline');
+        return;
+      }
+      setStatus(cached ? 'ready' : 'loading');
       fetchAirportWeather(code)
-        .then((fresh) => { if (fresh && !cancelled) setWeather(fresh); })
-        .catch(() => { /* keep showing whatever was cached (or nothing) */ });
+        .then((fresh) => {
+          if (cancelled) return;
+          if (fresh) {
+            setWeather(fresh);
+            setStatus('ready');
+          } else {
+            setStatus(cached ? 'ready' : 'error');
+          }
+        })
+        .catch(() => {
+          if (!cancelled) setStatus(cached ? 'ready' : 'error');
+        });
     };
 
     refreshIfStale();
-    const onOnline = () => refreshIfStale();
-    if (typeof window !== 'undefined') window.addEventListener('online', onOnline);
+    const onOnline = () => refreshIfStale(true);
+    const onOffline = () => { if (!weatherCache.get(code)) setStatus('offline'); };
+    if (typeof window !== 'undefined') {
+      window.addEventListener('online', onOnline);
+      window.addEventListener('offline', onOffline);
+    }
     return () => {
       cancelled = true;
-      if (typeof window !== 'undefined') window.removeEventListener('online', onOnline);
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('online', onOnline);
+        window.removeEventListener('offline', onOffline);
+      }
     };
   }, [code]);
 
-  return weather;
+  return { weather, status };
+}
+
+/** Backward-compatible data-only hook. */
+export function useAirportWeather(code: string | undefined): AirportWeather | undefined {
+  return useAirportWeatherState(code).weather;
 }
 
 export function useAirportForecastState(code: string | undefined, days: number, startDate?: string, expandLayover = true): AirportForecastState {
