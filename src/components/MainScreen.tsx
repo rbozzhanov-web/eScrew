@@ -14,7 +14,7 @@ import { pickAndParseRoster } from '@/src/import/pickRoster';
 import type { ParsedAirAstanaRoster } from '@/src/import/parseAirAstanaRoster';
 import { exportBackup, restoreBackup } from '@/src/storage/backup';
 import { clearStoredRosters, loadStoredRosters, removeStoredRoster, upsertStoredRoster } from '@/src/storage/rosterStorage';
-import { useAirportForecast, useAirportWeather } from '@/src/weather/weatherService';
+import { prefetchStationWeather, useAirportForecast, useAirportWeather } from '@/src/weather/weatherService';
 import { weatherIcon, windDirectionLabel } from '@/src/weather/weatherCodes';
 
 type Tab = 'Home' | 'Roster' | 'More';
@@ -109,6 +109,25 @@ export default function MainScreen() {
   const duties = useMemo(() => roster ? rosterToDuties(roster) : [], [roster]);
   const selectedSector = duties.flatMap((duty) => duty.sectors).find((sector) => sector.id === selectedFlight);
   const allDuties = useMemo<RosterDuty[]>(() => rosters.flatMap((item) => rosterToDuties(item).map((duty) => ({ roster: item, duty }))), [rosters]);
+  // Weather/forecast otherwise only get fetched the first time a screen for that station
+  // actually renders — this warms the cache for the next several upcoming duties as soon as
+  // the roster loads (while presumably still online), so it's already on-device by the time a
+  // duty is checked offline, rather than only once someone has opened that specific screen.
+  useEffect(() => {
+    const now = Date.now();
+    const upcoming = timedDuties(allDuties).filter((item) => item.releaseMs >= now).slice(0, 6);
+    const seen = new Set<string>();
+    const requests: { code: string; days: number }[] = [];
+    for (const item of upcoming) {
+      const last = item.duty.sectors[item.duty.sectors.length - 1];
+      if (!last || seen.has(last.arrival)) continue;
+      seen.add(last.arrival);
+      const restHours = parseRestHours(stayForSector(item.roster, last)?.rest);
+      const days = Math.min(3, Math.max(2, restHours !== undefined ? Math.ceil(restHours / 24) + 1 : 2));
+      requests.push({ code: last.arrival, days });
+    }
+    if (requests.length) prefetchStationWeather(requests);
+  }, [allDuties]);
   const tabStep = tabBarWidth / TABS.length;
   const tabIndicatorX = Animated.multiply(tabSelection, tabStep);
 

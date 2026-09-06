@@ -89,6 +89,27 @@ async function fetchAirportForecast(code: string, days: number): Promise<Forecas
 }
 
 /**
+ * Fire-and-forget: fetches current conditions + forecast for each requested station whenever
+ * the cache is missing or stale, so weather is already sitting in localStorage the next time a
+ * screen for that station renders — including the first time, and including offline. Meant to
+ * be called for the next few upcoming duties' stations while the app is known to be online
+ * (e.g. right after the roster loads), not gated on any particular screen being open.
+ */
+export function prefetchStationWeather(requests: { code: string; days: number }[]): void {
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) return;
+  for (const { code, days } of requests) {
+    const cachedWeather = weatherCache.get(code);
+    if (!cachedWeather || Date.now() - cachedWeather.fetchedAt >= STALE_AFTER_MS) {
+      fetchAirportWeather(code).catch(() => {});
+    }
+    const cachedForecast = forecastCache.get(code);
+    if (!cachedForecast || cachedForecast.days.length < days || Date.now() - cachedForecast.fetchedAt >= STALE_AFTER_MS) {
+      fetchAirportForecast(code, days).catch(() => {});
+    }
+  }
+}
+
+/**
  * Always renders whatever is cached immediately — no loading state blocks the first
  * paint. A background refresh only ever fires when the cache is stale AND the
  * browser reports it's online; offline (or a fresh cache) is a pure no-op, so
