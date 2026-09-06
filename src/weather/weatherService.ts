@@ -12,35 +12,39 @@ export type AirportWeather = {
   fetchedAt: number;
 };
 
-const KEY = 'escrew.weather.v1';
+export type ForecastDay = {
+  date: string;
+  weatherCode: number;
+  tempMax: number;
+  tempMin: number;
+};
+
 const STALE_AFTER_MS = 45 * 60 * 1000;
 
-type Cache = Record<string, AirportWeather>;
-
-function loadCache(): Cache {
-  if (typeof localStorage === 'undefined') return {};
-  try {
-    const value = JSON.parse(localStorage.getItem(KEY) || '{}');
-    return value && typeof value === 'object' ? value : {};
-  } catch {
-    return {};
+/** A tiny per-airport-code cache in localStorage, shared by the current-conditions and
+ * forecast lookups below — same staleness policy, same "show what's cached, refresh quietly" shape. */
+function makeCache<T extends { fetchedAt: number }>(storageKey: string) {
+  function load(): Record<string, T> {
+    if (typeof localStorage === 'undefined') return {};
+    try {
+      const value = JSON.parse(localStorage.getItem(storageKey) || '{}');
+      return value && typeof value === 'object' ? value : {};
+    } catch {
+      return {};
+    }
   }
+  function save(cache: Record<string, T>) {
+    if (typeof localStorage === 'undefined') return;
+    try { localStorage.setItem(storageKey, JSON.stringify(cache)); } catch { /* storage full or unavailable — cached view still works this session */ }
+  }
+  return {
+    get: (code: string) => load()[code],
+    set: (code: string, value: T) => { const cache = load(); cache[code] = value; save(cache); },
+  };
 }
 
-function saveCache(cache: Cache) {
-  if (typeof localStorage === 'undefined') return;
-  try { localStorage.setItem(KEY, JSON.stringify(cache)); } catch { /* storage full or unavailable — cached view still works this session */ }
-}
-
-function getCached(code: string): AirportWeather | undefined {
-  return loadCache()[code];
-}
-
-function setCached(code: string, weather: AirportWeather) {
-  const cache = loadCache();
-  cache[code] = weather;
-  saveCache(cache);
-}
+const weatherCache = makeCache<AirportWeather>('escrew.weather.v1');
+const forecastCache = makeCache<{ code: string; days: ForecastDay[]; fetchedAt: number }>('escrew.forecast.v1');
 
 async function fetchAirportWeather(code: string): Promise<AirportWeather | undefined> {
   const coords = airportCoords(code);
@@ -61,8 +65,27 @@ async function fetchAirportWeather(code: string): Promise<AirportWeather | undef
     pressure: Math.round(current.surface_pressure),
     fetchedAt: Date.now(),
   };
-  setCached(code, weather);
+  weatherCache.set(code, weather);
   return weather;
+}
+
+async function fetchAirportForecast(code: string, days: number): Promise<ForecastDay[] | undefined> {
+  const coords = airportCoords(code);
+  if (!coords) return undefined;
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=${days}`;
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Forecast request failed (${response.status})`);
+  const data = await response.json();
+  const daily = data?.daily;
+  if (!daily?.time) return undefined;
+  const result: ForecastDay[] = daily.time.map((date: string, index: number) => ({
+    date,
+    weatherCode: daily.weather_code[index],
+    tempMax: Math.round(daily.temperature_2m_max[index]),
+    tempMin: Math.round(daily.temperature_2m_min[index]),
+  }));
+  forecastCache.set(code, { code, days: result, fetchedAt: Date.now() });
+  return result;
 }
 
 /**
@@ -72,16 +95,16 @@ async function fetchAirportWeather(code: string): Promise<AirportWeather | undef
  * going offline never triggers a retry loop or a delay — just the last known reading.
  */
 export function useAirportWeather(code: string | undefined): AirportWeather | undefined {
-  const [weather, setWeather] = useState<AirportWeather | undefined>(() => (code ? getCached(code) : undefined));
+  const [weather, setWeather] = useState<AirportWeather | undefined>(() => (code ? weatherCache.get(code) : undefined));
 
   useEffect(() => {
-    setWeather(code ? getCached(code) : undefined);
+    setWeather(code ? weatherCache.get(code) : undefined);
     if (!code) return;
 
     let cancelled = false;
     const refreshIfStale = () => {
       if (typeof navigator !== 'undefined' && navigator.onLine === false) return;
-      const cached = getCached(code);
+      const cached = weatherCache.get(code);
       if (cached && Date.now() - cached.fetchedAt < STALE_AFTER_MS) return;
       fetchAirportWeather(code)
         .then((fresh) => { if (fresh && !cancelled) setWeather(fresh); })
@@ -98,4 +121,36 @@ export function useAirportWeather(code: string | undefined): AirportWeather | un
   }, [code]);
 
   return weather;
+}
+
+/** Same cache/staleness shape as useAirportWeather, but for the multi-day outlook shown
+ * in the stay-duration popup — `days` should cover the layover (see parseRestHours in
+ * MainScreen.tsx), capped by the caller since Open-Meteo will happily return a week. */
+export function useAirportForecast(code: string | undefined, days: number): ForecastDay[] | undefined {
+  const [forecast, setForecast] = useState<ForecastDay[] | undefined>(() => (code ? forecastCache.get(code)?.days : undefined));
+
+  useEffect(() => {
+    setForecast(code ? forecastCache.get(code)?.days : undefined);
+    if (!code) return;
+
+    let cancelled = false;
+    const refreshIfStale = () => {
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) return;
+      const cached = forecastCache.get(code);
+      if (cached && cached.days.length >= days && Date.now() - cached.fetchedAt < STALE_AFTER_MS) return;
+      fetchAirportForecast(code, days)
+        .then((fresh) => { if (fresh && !cancelled) setForecast(fresh); })
+        .catch(() => { /* keep showing whatever was cached (or nothing) — never surface a fetch error here */ });
+    };
+
+    refreshIfStale();
+    const onOnline = () => refreshIfStale();
+    if (typeof window !== 'undefined') window.addEventListener('online', onOnline);
+    return () => {
+      cancelled = true;
+      if (typeof window !== 'undefined') window.removeEventListener('online', onOnline);
+    };
+  }, [code, days]);
+
+  return forecast;
 }

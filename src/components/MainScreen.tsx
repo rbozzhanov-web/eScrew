@@ -14,7 +14,7 @@ import { pickAndParseRoster } from '@/src/import/pickRoster';
 import type { ParsedAirAstanaRoster } from '@/src/import/parseAirAstanaRoster';
 import { exportBackup, restoreBackup } from '@/src/storage/backup';
 import { clearStoredRosters, loadStoredRosters, removeStoredRoster, upsertStoredRoster } from '@/src/storage/rosterStorage';
-import { useAirportWeather } from '@/src/weather/weatherService';
+import { useAirportForecast, useAirportWeather } from '@/src/weather/weatherService';
 import { weatherIcon, windDirectionLabel } from '@/src/weather/weatherCodes';
 
 type Tab = 'Home' | 'Roster' | 'More';
@@ -599,6 +599,9 @@ function TimeCell({ label, value, palette }: { label: string; value: string; pal
 function WeatherChip({ code, palette, stay }: { code: string; palette: Palette; stay?: StayInfo }) {
   const weather = useAirportWeather(code);
   const [stayOpen, setStayOpen] = useState(false);
+  const restHours = parseRestHours(stay?.rest);
+  const forecastDayCount = Math.min(3, Math.max(2, restHours !== undefined ? Math.ceil(restHours / 24) + 1 : 2));
+  const forecast = useAirportForecast(code, forecastDayCount);
   if (!weather) return null;
   const { icon, label } = weatherIcon(weather.weatherCode, weather.isDay);
   return <>
@@ -612,10 +615,28 @@ function WeatherChip({ code, palette, stay }: { code: string; palette: Palette; 
       {stay?.rest
         ? <Text style={[styles.stayPopupRest, { color: palette.text }]}>{stay.rest}</Text>
         : <Text style={[styles.meta, { color: palette.muted, marginTop: 6 }]}>No layover recorded for this stop.</Text>}
-      {stay?.hotel ? <Text style={[styles.stayTitle, { color: palette.text }]}>{stay.hotel}</Text> : null}
-      {stay?.checkIn || stay?.checkOut ? <Text style={[styles.meta, { color: palette.muted }]}>{stay?.checkIn ?? '—'} → {stay?.checkOut ?? '—'}</Text> : null}
+      {forecast && forecast.length > 0 && <View style={styles.stayForecastList}>
+        {forecast.slice(0, forecastDayCount).map((day) => {
+          const dayIcon = weatherIcon(day.weatherCode, true).icon;
+          return <View key={day.date} style={[styles.stayForecastRow, { borderColor: palette.line }]}>
+            <Text style={[styles.stayForecastDay, { color: palette.muted }]}>{forecastDayLabel(day.date)}</Text>
+            <Text style={styles.stayForecastIcon}>{dayIcon}</Text>
+            <Text style={[styles.stayForecastTemp, { color: palette.text }]}>{day.tempMax}° / {day.tempMin}°</Text>
+          </View>;
+        })}
+      </View>}
     </IOSDialog>
   </>;
+}
+function parseRestHours(rest: string | undefined): number | undefined {
+  const match = rest ? /^(\d{1,3}):(\d{2})/.exec(rest.trim()) : null;
+  return match ? Number(match[1]) + Number(match[2]) / 60 : undefined;
+}
+function forecastDayLabel(value: string): string {
+  const [year, month, day] = value.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  const weekday = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'][date.getUTCDay()];
+  return `${weekday} ${day}`;
 }
 function CrewRow({ member, palette }: { member: CrewMember; palette: Palette }) { return <View style={[styles.crewRow, { borderBottomWidth: StyleSheet.hairlineWidth, borderColor: palette.line }]}><View style={[styles.avatar, { backgroundColor: palette.accentSoft }]}><Text style={[styles.avatarText, { color: palette.accent }]}>{member.name?.trim()?.[0]?.toUpperCase() ?? '•'}</Text></View><View style={styles.grow}><Text numberOfLines={1} style={[styles.crewName, { color: palette.text }]}>{member.name}</Text><Text style={[styles.meta, { color: palette.muted }]}>{member.position ?? member.role}</Text></View></View>; }
 function Summary({ title, value, detail, palette }: { title: string; value: string; detail: string; palette: Palette }) { return <View style={[styles.summary, styles.depthSurface, { backgroundColor: palette.surface, borderColor: palette.line }]}><Text style={[styles.label, { color: palette.muted }]}>{title}</Text><Text style={[styles.summaryValue, { color: palette.text }]}>{value}</Text><Text style={[styles.meta, { color: palette.muted }]}>{detail}</Text></View>; }
@@ -634,7 +655,7 @@ const styles = StyleSheet.create({
   primaryButton:{height:50,borderRadius:16,alignItems:'center',justifyContent:'center'}, actionText:{color:'#fff',fontWeight:'700'}, titleRow:{flexDirection:'row',alignItems:'center',gap:8}, titleActions:{flexDirection:'row',gap:7}, compactButton:{height:38,minWidth:72,borderWidth:1,borderRadius:14,alignItems:'center',justifyContent:'center',paddingHorizontal:10}, compactText:{fontWeight:'700',fontSize:12}, monthNav:{height:40,flexDirection:'row',alignItems:'center',justifyContent:'space-between'}, monthNavText:{fontSize:12,fontWeight:'600'}, monthSwipeWrap:{flex:1,minHeight:0},
   emptyCard:{borderWidth:1,borderRadius:20,padding:14}, innerWindow:{flex:1,minHeight:0,borderWidth:1,borderRadius:20,overflow:'hidden'}, listContent:{padding:8,gap:7,paddingBottom:18}, rosterCard:{borderWidth:1,borderRadius:16,padding:13}, rosterCardToday:{borderWidth:1.5}, flightCardTop:{flexDirection:'row',justifyContent:'space-between'}, flightNumber:{fontSize:11,fontWeight:'700'}, rosterRoute:{fontSize:20,fontWeight:'700',marginTop:4}, rosterEventTitle:{fontSize:18,lineHeight:22,fontWeight:'700',marginTop:4},
   infoCard:{borderWidth:1,borderRadius:20,padding:14,gap:3}, cardTitle:{fontSize:17,lineHeight:22,fontWeight:'700'}, libraryCard:{borderWidth:1,borderRadius:20,padding:14,minHeight:88,maxHeight:190}, libraryList:{marginTop:5}, libraryRow:{minHeight:54,flexDirection:'row',alignItems:'center',gap:10,borderBottomWidth:StyleSheet.hairlineWidth}, libraryMonth:{fontSize:14,fontWeight:'700'}, deleteRosterButton:{minWidth:58,height:34,borderRadius:12,alignItems:'center',justifyContent:'center',paddingHorizontal:8}, deleteRosterText:{fontSize:11,fontWeight:'700'}, expiryDate:{fontSize:12,fontWeight:'700',fontVariant:['tabular-nums'],...MONO_FONT},
-  dangerButton:{height:48,borderWidth:1,borderRadius:15,alignItems:'center',justifyContent:'center'}, dangerText:{fontWeight:'700',fontSize:14}, backupRow:{flexDirection:'row',gap:8,marginTop:10}, expiryHeaderRow:{flexDirection:'row',alignItems:'center',justifyContent:'space-between'}, expiryChevron:{fontSize:20,fontWeight:'700'}, expirySheet:{width:'100%',maxWidth:620,maxHeight:'78%',alignSelf:'center',borderTopWidth:1,borderTopLeftRadius:28,borderTopRightRadius:28,paddingHorizontal:18,paddingBottom:12,overflow:'hidden'}, expirySheetList:{marginTop:10}, expirySheetListContent:{paddingBottom:12}, versionText:{fontSize:10,fontWeight:'600',letterSpacing:.2,opacity:.5,textAlign:'center',marginTop:2}, confirmDialog:{width:'88%',maxWidth:360,borderWidth:1,borderRadius:22,padding:18}, confirmActions:{flexDirection:'row',gap:10,marginTop:16}, stayPopup:{width:'88%',maxWidth:340,borderWidth:1,borderRadius:22,padding:18}, stayPopupRest:{fontSize:28,fontWeight:'800',marginTop:6,fontVariant:['tabular-nums'],...MONO_FONT}, confirmCancel:{flex:1,height:44,borderWidth:1,borderRadius:13,alignItems:'center',justifyContent:'center'}, confirmErase:{flex:1,height:44,borderRadius:13,alignItems:'center',justifyContent:'center'}, moreContent:{gap:12,paddingBottom:24},
+  dangerButton:{height:48,borderWidth:1,borderRadius:15,alignItems:'center',justifyContent:'center'}, dangerText:{fontWeight:'700',fontSize:14}, backupRow:{flexDirection:'row',gap:8,marginTop:10}, expiryHeaderRow:{flexDirection:'row',alignItems:'center',justifyContent:'space-between'}, expiryChevron:{fontSize:20,fontWeight:'700'}, expirySheet:{width:'100%',maxWidth:620,maxHeight:'78%',alignSelf:'center',borderTopWidth:1,borderTopLeftRadius:28,borderTopRightRadius:28,paddingHorizontal:18,paddingBottom:12,overflow:'hidden'}, expirySheetList:{marginTop:10}, expirySheetListContent:{paddingBottom:12}, versionText:{fontSize:10,fontWeight:'600',letterSpacing:.2,opacity:.5,textAlign:'center',marginTop:2}, confirmDialog:{width:'88%',maxWidth:360,borderWidth:1,borderRadius:22,padding:18}, confirmActions:{flexDirection:'row',gap:10,marginTop:16}, stayPopup:{width:'88%',maxWidth:340,borderWidth:1,borderRadius:22,padding:18}, stayPopupRest:{fontSize:28,fontWeight:'800',marginTop:6,fontVariant:['tabular-nums'],...MONO_FONT}, stayForecastList:{marginTop:14,gap:2}, stayForecastRow:{flexDirection:'row',alignItems:'center',gap:10,paddingVertical:8,borderTopWidth:StyleSheet.hairlineWidth}, stayForecastDay:{width:44,fontSize:12,fontWeight:'700'}, stayForecastIcon:{fontSize:18,flex:1}, stayForecastTemp:{fontSize:14,fontWeight:'700',fontVariant:['tabular-nums'],...MONO_FONT}, confirmCancel:{flex:1,height:44,borderWidth:1,borderRadius:13,alignItems:'center',justifyContent:'center'}, confirmErase:{flex:1,height:44,borderRadius:13,alignItems:'center',justifyContent:'center'}, moreContent:{gap:12,paddingBottom:24},
   depthSurface:{shadowColor:'#000',shadowOffset:{width:0,height:10},shadowOpacity:.1,shadowRadius:24,elevation:5,...WEB_GLASS}, tabBar:{height:68,marginTop:8,marginBottom:4,borderWidth:1,borderRadius:22,flexDirection:'row',...WEB_TAB_GLASS}, tabSelection:{position:'absolute',left:4,top:4,bottom:4,borderRadius:18,shadowColor:'#000',shadowOffset:{width:0,height:5},shadowOpacity:.08,shadowRadius:12,elevation:2}, tabItem:{flex:1,zIndex:1,alignItems:'center',justifyContent:'center',gap:2}, tabIconWrap:{minWidth:35,height:27,borderRadius:14,alignItems:'center',justifyContent:'center'}, tabIcon:{textAlign:'center'}, tabText:{fontSize:11,fontWeight:'600'},
   flightSheet:{width:'100%',maxWidth:620,maxHeight:'78%',alignSelf:'center',borderTopWidth:1,borderTopLeftRadius:28,borderTopRightRadius:28,paddingHorizontal:18,paddingBottom:12,overflow:'hidden'}, flightSheetContent:{minHeight:0,flexShrink:1}, sheetRoute:{fontSize:28,lineHeight:33,fontWeight:'700',marginTop:5}, swipeHint:{fontSize:10,marginTop:7}, flyingWith:{fontSize:11,fontWeight:'700',letterSpacing:.45,opacity:.82,marginTop:12,marginBottom:7}, crewScroll:{minHeight:0,flexShrink:1,flex:1,...Platform.select({web:{maxHeight:'calc(78vh - 46px)' as any},default:{}})}, crewList:{paddingBottom:12}, crewRow:{minHeight:50,flexDirection:'row',alignItems:'center'}, avatar:{width:34,height:34,borderRadius:17,alignItems:'center',justifyContent:'center',marginRight:11}, avatarText:{fontSize:12,fontWeight:'800'}, crewName:{fontSize:14,fontWeight:'600'},
   flightFacts:{flexDirection:'row',gap:6,borderTopWidth:StyleSheet.hairlineWidth,borderBottomWidth:StyleSheet.hairlineWidth,paddingVertical:10,marginTop:10}, flightFact:{flex:1,minWidth:0}, flightFactLabel:{fontSize:9,lineHeight:12,fontWeight:'700',letterSpacing:.45}, flightFactValue:{fontSize:16,lineHeight:20,fontWeight:'700',fontVariant:['tabular-nums'],marginTop:2,...MONO_FONT}, stayCard:{borderWidth:1,borderRadius:16,padding:12,marginTop:12}, stayTitle:{fontSize:16,lineHeight:21,fontWeight:'700',marginTop:4}, stayMeta:{fontSize:11,lineHeight:15,marginTop:4},
