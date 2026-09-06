@@ -602,13 +602,21 @@ function WeatherChip({ code, palette, stay }: { code: string; palette: Palette; 
   const restHours = parseRestHours(stay?.rest);
   const forecastDayCount = Math.min(3, Math.max(2, restHours !== undefined ? Math.ceil(restHours / 24) + 1 : 2));
   const forecast = useAirportForecast(code, forecastDayCount);
-  if (!weather) return null;
-  const { icon, label } = weatherIcon(weather.weatherCode, weather.isDay);
+  // Weather needs network and may never have been cached for this station (a duty viewed
+  // for the first time while offline, e.g. mid-flight in airplane mode). The stay duration
+  // itself comes from the imported roster, not the network, so it must stay reachable even
+  // when weather never loaded — only hide the whole row when there's neither to show.
+  if (!weather && !stay) return null;
+  const conditions = weather ? weatherIcon(weather.weatherCode, weather.isDay) : undefined;
   return <>
     <Pressable onPress={() => setStayOpen(true)} accessibilityRole="button" accessibilityLabel={`Duration of stay at ${code}`} style={styles.weatherRow}>
-      <Text style={styles.weatherIcon}>{icon}</Text>
-      <Text style={[styles.weatherTemp, { color: palette.text }]}>{weather.temp}°</Text>
-      <Text numberOfLines={1} style={[styles.weatherMeta, { color: palette.muted }]}>{code} · {label} · {windDirectionLabel(weather.windDeg)} {weather.windSpeed}kt · {weather.pressure}hPa</Text>
+      <Text style={styles.weatherIcon}>{conditions?.icon ?? '✈︎'}</Text>
+      {weather ? <>
+        <Text style={[styles.weatherTemp, { color: palette.text }]}>{weather.temp}°</Text>
+        <Text numberOfLines={1} style={[styles.weatherMeta, { color: palette.muted }]}>{code} · {conditions!.label} · {windDirectionLabel(weather.windDeg)} {weather.windSpeed}kt · {weather.pressure}hPa</Text>
+      </> : (
+        <Text numberOfLines={1} style={[styles.weatherMeta, { color: palette.muted }]}>{code}{stay?.rest ? ` · Rest ${stay.rest}` : ''} · Weather unavailable offline</Text>
+      )}
     </Pressable>
     <IOSDialog visible={stayOpen} onClose={() => setStayOpen(false)} style={[styles.stayPopup, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}>
       <Text style={[styles.label, { color: palette.muted }]}>STAY · {code}</Text>
