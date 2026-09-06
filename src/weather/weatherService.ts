@@ -104,12 +104,12 @@ function resolveLayoverWindow(code: string, requestedDays: number, startDateHint
   try {
     const target = code.trim().toUpperCase();
     const sectors = loadStoredRosters()
-      .flatMap((roster) => roster.sectors)
-      .filter((sector) => validIsoDate(sector.date))
-      .sort((a, b) => `${a.date}T${a.timeOut || '00:00'}`.localeCompare(`${b.date}T${b.timeOut || '00:00'}`));
+      .flatMap((roster) => roster.sectors.map((sector) => ({ sector, rosterKey: roster.period.start })))
+      .filter((item) => validIsoDate(item.sector.date))
+      .sort((a, b) => `${a.sector.date}T${a.sector.timeOut || '00:00'}`.localeCompare(`${b.sector.date}T${b.sector.timeOut || '00:00'}`));
 
     const arrivals = sectors
-      .map((sector) => ({ sector, arrivalDate: sectorArrivalDate(sector) }))
+      .map((item) => ({ ...item, arrivalDate: sectorArrivalDate(item.sector) }))
       .filter((item) => item.sector.arrivalAirport?.trim().toUpperCase() === target);
     if (!arrivals.length) return fallback;
 
@@ -121,16 +121,16 @@ function resolveLayoverWindow(code: string, requestedDays: number, startDateHint
     if (!arrival) return fallback;
 
     const arrivalMoment = `${arrival.arrivalDate}T${arrival.sector.timeIn || '00:00'}`;
-    const nextDeparture = sectors.find((sector) =>
-      sector.dutyIndex !== arrival.sector.dutyIndex &&
-      sector.departureAirport?.trim().toUpperCase() === target &&
-      `${sector.date}T${sector.timeOut || '00:00'}` > arrivalMoment
+    const nextDeparture = sectors.find((item) =>
+      !(item.rosterKey === arrival.rosterKey && item.sector.dutyIndex === arrival.sector.dutyIndex) &&
+      item.sector.departureAirport?.trim().toUpperCase() === target &&
+      `${item.sector.date}T${item.sector.timeOut || '00:00'}` > arrivalMoment
     );
     if (!nextDeparture) return { startDate: arrival.arrivalDate, days: fallback.days };
 
     return {
       startDate: arrival.arrivalDate,
-      days: normalizedDays(inclusiveIsoDays(arrival.arrivalDate, nextDeparture.date)),
+      days: normalizedDays(inclusiveIsoDays(arrival.arrivalDate, nextDeparture.sector.date)),
     };
   } catch {
     return fallback;
