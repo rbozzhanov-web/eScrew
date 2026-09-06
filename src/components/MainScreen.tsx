@@ -15,7 +15,7 @@ import type { ParsedAirAstanaRoster } from '@/src/import/parseAirAstanaRoster';
 import { exportBackup, restoreBackup } from '@/src/storage/backup';
 import { clearStoredRosters, loadStoredRosters, removeStoredRoster, upsertStoredRoster } from '@/src/storage/rosterStorage';
 import { airportCoords } from '@/src/weather/airports';
-import { prefetchStationWeather, useAirportForecastState, useAirportWeather } from '@/src/weather/weatherService';
+import { prefetchStationWeather, useAirportForecastState, useAirportWeatherState } from '@/src/weather/weatherService';
 import { weatherIcon, windDirectionLabel } from '@/src/weather/weatherCodes';
 
 type Tab = 'Home' | 'Roster' | 'More';
@@ -502,10 +502,8 @@ function MoreScreenImpl({ rosters, palette, onRestoreBackup, onDeleteRoster, onE
       const { restored } = await onRestoreBackup();
       if (restored) setBackupNotice(`Restored ${restored} roster${restored === 1 ? '' : 's'}.`);
     } catch (error) {
-      setBackupNotice(error instanceof Error ? error.message : String(error));
-    } finally {
-      setBackupBusy(false);
-    }
+      setBackupNotice(error instanceof Error ? error.message : String(error)); }
+    finally { setBackupBusy(false); }
   };
   const backupThenClose = () => { handleExport(); setConfirmErase(false); };
   const confirmAndErase = () => { setConfirmErase(false); onErase(); };
@@ -634,7 +632,7 @@ function arrivalForecastDate(roster: RosterWithNormalized | undefined, duty: Dut
 }
 function TimeCell({ label, value, palette }: { label: string; value: string; palette: Palette }) { return <View style={styles.timeCell}><Text numberOfLines={1} style={[styles.timeLabel, { color: palette.muted }]}>{label}</Text><Text style={[styles.timeValue, { color: palette.text }]}>{value}</Text></View>; }
 function WeatherChip({ code, homeBase, palette, stay, forecastStartDate }: { code: string; homeBase?: string; palette: Palette; stay?: StayInfo; forecastStartDate?: string }) {
-  const weather = useAirportWeather(code);
+  const { weather, status: weatherStatus } = useAirportWeatherState(code);
   const [forecastOpen, setForecastOpen] = useState(false);
   const expandLayover = !isHomeBaseAirport(code, homeBase);
   const { forecast, status: forecastStatus, startDate: resolvedForecastStartDate, retry } = useAirportForecastState(code, 1, forecastStartDate, expandLayover);
@@ -656,7 +654,7 @@ function WeatherChip({ code, homeBase, palette, stay, forecastStartDate }: { cod
           <Text style={[styles.weatherTemp, { color: palette.text }]}>{weather.temp}°</Text>
           <Text numberOfLines={1} style={[styles.weatherMeta, { color: palette.muted }]}>{code} · {conditions!.label} · {windDirectionLabel(weather.windDeg)} {weather.windSpeed}kt · {weather.pressure}hPa</Text>
         </> : (
-          <Text numberOfLines={1} style={[styles.weatherMeta, { color: palette.muted }]}>{code} · Weather unavailable</Text>
+          <Text numberOfLines={1} style={[styles.weatherMeta, { color: palette.muted }]}>{code} · {weatherStatus === 'loading' ? 'Loading weather' : weatherStatus === 'offline' ? 'Offline' : 'Weather unavailable'}</Text>
         )}
       </>}
     </Pressable>
