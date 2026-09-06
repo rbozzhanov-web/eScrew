@@ -1,7 +1,8 @@
 /**
- * IATA code -> coordinates, for looking up weather by station. Covers Kazakhstan's
- * domestic network plus Air Astana's main international destinations. Not
- * exhaustive — an unknown code simply means no weather is shown for that leg.
+ * IATA code -> coordinates, for looking up weather by station. This deliberately covers
+ * Air Astana's current/typical network plus a broad set of major international hubs so a
+ * normal roster destination does not silently lose the weather row. Unknown regional
+ * airports still fail closed: no fabricated coordinates, no weather shown for that code.
  */
 export const AIRPORT_COORDS: Record<string, { lat: number; lon: number; name: string }> = {
   // Kazakhstan
@@ -20,33 +21,167 @@ export const AIRPORT_COORDS: Record<string, { lat: number; lon: number; name: st
   DZN: { lat: 47.7, lon: 67.7167, name: 'Zhezkazgan' },
   PLX: { lat: 50.3536, lon: 80.2364, name: 'Semey' },
   TDK: { lat: 45.0031, lon: 78.4864, name: 'Taldykorgan' },
+  KSN: { lat: 53.2069, lon: 63.5503, name: 'Kostanay' },
 
-  // Europe
-  FRA: { lat: 50.0333, lon: 8.5706, name: 'Frankfurt' },
-  LHR: { lat: 51.47, lon: -0.4543, name: 'London Heathrow' },
-  CDG: { lat: 49.0097, lon: 2.5479, name: 'Paris CDG' },
-  AMS: { lat: 52.3086, lon: 4.7639, name: 'Amsterdam' },
-  IST: { lat: 41.2753, lon: 28.7519, name: 'Istanbul' },
-
-  // Middle East
-  DXB: { lat: 25.2532, lon: 55.3657, name: 'Dubai' },
-  DOH: { lat: 25.2731, lon: 51.6089, name: 'Doha' },
-  MCT: { lat: 23.5933, lon: 58.2844, name: 'Muscat' },
-
-  // Asia
-  DEL: { lat: 28.5562, lon: 77.1, name: 'Delhi' },
-  BKK: { lat: 13.69, lon: 100.7501, name: 'Bangkok' },
-  ICN: { lat: 37.4602, lon: 126.4407, name: 'Seoul Incheon' },
-  PEK: { lat: 40.0801, lon: 116.5846, name: 'Beijing' },
-  PVG: { lat: 31.1443, lon: 121.8083, name: 'Shanghai Pudong' },
-  KUL: { lat: 2.7456, lon: 101.7099, name: 'Kuala Lumpur' },
-
-  // CIS / Caucasus
+  // Central Asia / Caucasus / CIS
+  TAS: { lat: 41.2579, lon: 69.2812, name: 'Tashkent' },
+  FRU: { lat: 43.0613, lon: 74.4776, name: 'Bishkek' },
+  OSS: { lat: 40.609, lon: 72.7933, name: 'Osh' },
+  DYU: { lat: 38.5433, lon: 68.825, name: 'Dushanbe' },
+  TBS: { lat: 41.6693, lon: 44.9547, name: 'Tbilisi' },
+  BUS: { lat: 41.6103, lon: 41.5997, name: 'Batumi' },
+  GYD: { lat: 40.4675, lon: 50.0467, name: 'Baku' },
+  EVN: { lat: 40.1473, lon: 44.3959, name: 'Yerevan' },
   SVO: { lat: 55.9726, lon: 37.4146, name: 'Moscow Sheremetyevo' },
   DME: { lat: 55.4088, lon: 37.9063, name: 'Moscow Domodedovo' },
+  VKO: { lat: 55.5915, lon: 37.2615, name: 'Moscow Vnukovo' },
   LED: { lat: 59.8003, lon: 30.2625, name: 'St. Petersburg' },
-  TBS: { lat: 41.6693, lon: 44.9547, name: 'Tbilisi' },
-  GYD: { lat: 40.4675, lon: 50.0467, name: 'Baku' },
+  OVB: { lat: 55.0126, lon: 82.6507, name: 'Novosibirsk' },
+  SVX: { lat: 56.7431, lon: 60.8027, name: 'Yekaterinburg' },
+  KJA: { lat: 56.1729, lon: 92.4933, name: 'Krasnoyarsk' },
+  IKT: { lat: 52.268, lon: 104.389, name: 'Irkutsk' },
+
+  // Turkey / Eastern Mediterranean
+  IST: { lat: 41.2753, lon: 28.7519, name: 'Istanbul' },
+  SAW: { lat: 40.8986, lon: 29.3092, name: 'Istanbul Sabiha Gokcen' },
+  AYT: { lat: 36.8987, lon: 30.8005, name: 'Antalya' },
+  ESB: { lat: 40.1281, lon: 32.9951, name: 'Ankara' },
+  ADB: { lat: 38.2924, lon: 27.157, name: 'Izmir' },
+  HER: { lat: 35.3397, lon: 25.1803, name: 'Heraklion' },
+  ATH: { lat: 37.9364, lon: 23.9445, name: 'Athens' },
+  LCA: { lat: 34.8751, lon: 33.6249, name: 'Larnaca' },
+  TLV: { lat: 32.0114, lon: 34.8867, name: 'Tel Aviv' },
+  TGD: { lat: 42.3594, lon: 19.2519, name: 'Podgorica' },
+
+  // Western / Central Europe
+  FRA: { lat: 50.0333, lon: 8.5706, name: 'Frankfurt' },
+  MUC: { lat: 48.3538, lon: 11.7861, name: 'Munich' },
+  BER: { lat: 52.3667, lon: 13.5033, name: 'Berlin Brandenburg' },
+  LHR: { lat: 51.47, lon: -0.4543, name: 'London Heathrow' },
+  LGW: { lat: 51.1537, lon: -0.1821, name: 'London Gatwick' },
+  CDG: { lat: 49.0097, lon: 2.5479, name: 'Paris CDG' },
+  ORY: { lat: 48.7253, lon: 2.3594, name: 'Paris Orly' },
+  AMS: { lat: 52.3086, lon: 4.7639, name: 'Amsterdam' },
+  BRU: { lat: 50.9014, lon: 4.4844, name: 'Brussels' },
+  ZRH: { lat: 47.4581, lon: 8.5555, name: 'Zurich' },
+  GVA: { lat: 46.2381, lon: 6.1089, name: 'Geneva' },
+  VIE: { lat: 48.1103, lon: 16.5697, name: 'Vienna' },
+  PRG: { lat: 50.1008, lon: 14.26, name: 'Prague' },
+  WAW: { lat: 52.1657, lon: 20.9671, name: 'Warsaw' },
+  BUD: { lat: 47.4369, lon: 19.2556, name: 'Budapest' },
+  FCO: { lat: 41.8003, lon: 12.2389, name: 'Rome Fiumicino' },
+  MXP: { lat: 45.6301, lon: 8.7281, name: 'Milan Malpensa' },
+  BCN: { lat: 41.2974, lon: 2.0833, name: 'Barcelona' },
+  MAD: { lat: 40.4719, lon: -3.5626, name: 'Madrid' },
+  LIS: { lat: 38.7742, lon: -9.1342, name: 'Lisbon' },
+  CPH: { lat: 55.6181, lon: 12.656, name: 'Copenhagen' },
+  ARN: { lat: 59.6519, lon: 17.9186, name: 'Stockholm Arlanda' },
+  OSL: { lat: 60.1939, lon: 11.1004, name: 'Oslo' },
+  HEL: { lat: 60.3172, lon: 24.9633, name: 'Helsinki' },
+  DUB: { lat: 53.4213, lon: -6.2701, name: 'Dublin' },
+
+  // Middle East / Gulf
+  DXB: { lat: 25.2532, lon: 55.3657, name: 'Dubai' },
+  DWC: { lat: 24.8964, lon: 55.1614, name: 'Dubai Al Maktoum' },
+  AUH: { lat: 24.433, lon: 54.6511, name: 'Abu Dhabi' },
+  DOH: { lat: 25.2731, lon: 51.6089, name: 'Doha' },
+  MCT: { lat: 23.5933, lon: 58.2844, name: 'Muscat' },
+  BAH: { lat: 26.2708, lon: 50.6336, name: 'Bahrain' },
+  KWI: { lat: 29.2266, lon: 47.9689, name: 'Kuwait' },
+  RUH: { lat: 24.9576, lon: 46.6988, name: 'Riyadh' },
+  JED: { lat: 21.6796, lon: 39.1565, name: 'Jeddah' },
+  MED: { lat: 24.5534, lon: 39.7051, name: 'Medina' },
+  AMM: { lat: 31.7226, lon: 35.9932, name: 'Amman' },
+  BEY: { lat: 33.8209, lon: 35.4884, name: 'Beirut' },
+
+  // Egypt / Africa
+  CAI: { lat: 30.1219, lon: 31.4056, name: 'Cairo' },
+  HRG: { lat: 27.1783, lon: 33.7994, name: 'Hurghada' },
+  SSH: { lat: 27.9773, lon: 34.395, name: 'Sharm El Sheikh' },
+  ADD: { lat: 8.9779, lon: 38.7993, name: 'Addis Ababa' },
+  NBO: { lat: -1.3192, lon: 36.9278, name: 'Nairobi' },
+  JNB: { lat: -26.1337, lon: 28.242, name: 'Johannesburg' },
+  CPT: { lat: -33.969, lon: 18.5972, name: 'Cape Town' },
+  CMN: { lat: 33.3675, lon: -7.58997, name: 'Casablanca' },
+
+  // South Asia / Indian Ocean
+  DEL: { lat: 28.5562, lon: 77.1, name: 'Delhi' },
+  BOM: { lat: 19.0887, lon: 72.8679, name: 'Mumbai' },
+  BLR: { lat: 13.1986, lon: 77.7066, name: 'Bengaluru' },
+  HYD: { lat: 17.2403, lon: 78.4294, name: 'Hyderabad' },
+  MAA: { lat: 12.9941, lon: 80.1709, name: 'Chennai' },
+  GOI: { lat: 15.3808, lon: 73.8314, name: 'Goa Dabolim' },
+  CMB: { lat: 7.1808, lon: 79.8841, name: 'Colombo' },
+  MLE: { lat: 4.1918, lon: 73.5291, name: 'Male' },
+
+  // Southeast Asia
+  BKK: { lat: 13.69, lon: 100.7501, name: 'Bangkok Suvarnabhumi' },
+  DMK: { lat: 13.9126, lon: 100.6068, name: 'Bangkok Don Mueang' },
+  HKT: { lat: 8.1132, lon: 98.3169, name: 'Phuket' },
+  SIN: { lat: 1.3644, lon: 103.9915, name: 'Singapore Changi' },
+  KUL: { lat: 2.7456, lon: 101.7099, name: 'Kuala Lumpur' },
+  CGK: { lat: -6.1256, lon: 106.6559, name: 'Jakarta' },
+  DPS: { lat: -8.7482, lon: 115.167, name: 'Bali Denpasar' },
+  SGN: { lat: 10.8188, lon: 106.652, name: 'Ho Chi Minh City' },
+  HAN: { lat: 21.2212, lon: 105.807, name: 'Hanoi' },
+  CXR: { lat: 11.9982, lon: 109.219, name: 'Nha Trang Cam Ranh' },
+  DAD: { lat: 16.0439, lon: 108.199, name: 'Da Nang' },
+  PQC: { lat: 10.1698, lon: 103.993, name: 'Phu Quoc' },
+  MNL: { lat: 14.5086, lon: 121.0198, name: 'Manila' },
+
+  // East Asia
+  ICN: { lat: 37.4602, lon: 126.4407, name: 'Seoul Incheon' },
+  GMP: { lat: 37.5583, lon: 126.7906, name: 'Seoul Gimpo' },
+  PEK: { lat: 40.0801, lon: 116.5846, name: 'Beijing Capital' },
+  PKX: { lat: 39.5098, lon: 116.4105, name: 'Beijing Daxing' },
+  PVG: { lat: 31.1443, lon: 121.8083, name: 'Shanghai Pudong' },
+  SHA: { lat: 31.1979, lon: 121.3363, name: 'Shanghai Hongqiao' },
+  CAN: { lat: 23.3924, lon: 113.299, name: 'Guangzhou' },
+  SZX: { lat: 22.6393, lon: 113.811, name: 'Shenzhen' },
+  HKG: { lat: 22.308, lon: 113.9185, name: 'Hong Kong' },
+  CTU: { lat: 30.5785, lon: 103.947, name: 'Chengdu Shuangliu' },
+  TFU: { lat: 30.3125, lon: 104.441, name: 'Chengdu Tianfu' },
+  URC: { lat: 43.9071, lon: 87.4742, name: 'Urumqi' },
+  XIY: { lat: 34.4471, lon: 108.752, name: 'Xi’an' },
+  NRT: { lat: 35.772, lon: 140.3929, name: 'Tokyo Narita' },
+  HND: { lat: 35.5494, lon: 139.7798, name: 'Tokyo Haneda' },
+  KIX: { lat: 34.4347, lon: 135.244, name: 'Osaka Kansai' },
+  TPE: { lat: 25.0777, lon: 121.233, name: 'Taipei Taoyuan' },
+  UBN: { lat: 47.6469, lon: 106.8198, name: 'Ulaanbaatar' },
+  SYX: { lat: 18.3029, lon: 109.412, name: 'Sanya' },
+
+  // Oceania
+  SYD: { lat: -33.9461, lon: 151.1772, name: 'Sydney' },
+  MEL: { lat: -37.6733, lon: 144.843, name: 'Melbourne' },
+  BNE: { lat: -27.3842, lon: 153.1175, name: 'Brisbane' },
+  PER: { lat: -31.9403, lon: 115.967, name: 'Perth' },
+  AKL: { lat: -37.0082, lon: 174.785, name: 'Auckland' },
+
+  // North America
+  JFK: { lat: 40.6413, lon: -73.7781, name: 'New York JFK' },
+  EWR: { lat: 40.6895, lon: -74.1745, name: 'Newark' },
+  BOS: { lat: 42.3656, lon: -71.0096, name: 'Boston' },
+  IAD: { lat: 38.9531, lon: -77.4565, name: 'Washington Dulles' },
+  ORD: { lat: 41.9742, lon: -87.9073, name: 'Chicago O’Hare' },
+  ATL: { lat: 33.6407, lon: -84.4277, name: 'Atlanta' },
+  DFW: { lat: 32.8998, lon: -97.0403, name: 'Dallas/Fort Worth' },
+  IAH: { lat: 29.9902, lon: -95.3368, name: 'Houston Intercontinental' },
+  LAX: { lat: 33.9416, lon: -118.4085, name: 'Los Angeles' },
+  SFO: { lat: 37.6213, lon: -122.379, name: 'San Francisco' },
+  SEA: { lat: 47.4502, lon: -122.3088, name: 'Seattle' },
+  YYZ: { lat: 43.6777, lon: -79.6248, name: 'Toronto Pearson' },
+  YVR: { lat: 49.1947, lon: -123.1792, name: 'Vancouver' },
+  YUL: { lat: 45.4706, lon: -73.7408, name: 'Montreal' },
+
+  // Latin America
+  MEX: { lat: 19.4361, lon: -99.0719, name: 'Mexico City' },
+  CUN: { lat: 21.0365, lon: -86.8771, name: 'Cancun' },
+  GRU: { lat: -23.4356, lon: -46.4731, name: 'Sao Paulo Guarulhos' },
+  GIG: { lat: -22.809, lon: -43.2506, name: 'Rio de Janeiro Galeao' },
+  EZE: { lat: -34.8222, lon: -58.5358, name: 'Buenos Aires Ezeiza' },
+  SCL: { lat: -33.393, lon: -70.7858, name: 'Santiago' },
+  LIM: { lat: -12.0219, lon: -77.1143, name: 'Lima' },
+  BOG: { lat: 4.7016, lon: -74.1469, name: 'Bogota' },
 };
 
 export function airportCoords(code: string) {
