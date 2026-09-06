@@ -14,6 +14,7 @@ import { pickAndParseRoster } from '@/src/import/pickRoster';
 import type { ParsedAirAstanaRoster } from '@/src/import/parseAirAstanaRoster';
 import { exportBackup, restoreBackup } from '@/src/storage/backup';
 import { clearStoredRosters, loadStoredRosters, removeStoredRoster, upsertStoredRoster } from '@/src/storage/rosterStorage';
+import { airportCoords } from '@/src/weather/airports';
 import { prefetchStationWeather, useAirportForecastState, useAirportWeather } from '@/src/weather/weatherService';
 import { weatherIcon, windDirectionLabel } from '@/src/weather/weatherCodes';
 
@@ -56,7 +57,7 @@ const todayGlow = (palette: Palette) => ({
 // authoritative scroll offset before rows are actually measured.
 const LIST_TOP_PADDING = 8;
 const LIST_ROW_GAP = 7;
-const ROW_HEIGHT_ESTIMATE = { flight: 96, event: 80 } as const;
+const ROW_HEIGHT_ESTIMATE = { flight: 124, event: 80 } as const;
 function heroTint(palette: Palette) {
   return Platform.OS === 'web'
     ? ({ backgroundImage: `linear-gradient(135deg, ${palette.accentSoft} 0%, ${palette.surfaceStrong} 60%)` } as any)
@@ -109,26 +110,22 @@ export default function MainScreen() {
   const duties = useMemo(() => roster ? rosterToDuties(roster) : [], [roster]);
   const selectedSector = duties.flatMap((duty) => duty.sectors).find((sector) => sector.id === selectedFlight);
   const allDuties = useMemo<RosterDuty[]>(() => rosters.flatMap((item) => rosterToDuties(item).map((duty) => ({ roster: item, duty }))), [rosters]);
-  // Weather/forecast otherwise only get fetched the first time a screen for that station
-  // actually renders — this warms the cache for the next several upcoming duties as soon as
-  // the roster loads (while presumably still online), so it's already on-device by the time a
-  // duty is checked offline, rather than only once someone has opened that specific screen.
+  // Warm the arrival-weather cache for the next duties. Every sector uses its ARRIVAL station;
+  // home-base arrivals stay one day, while outstations may expand through the next departure.
   useEffect(() => {
     const now = Date.now();
     const upcoming = timedDuties(allDuties).filter((item) => item.releaseMs >= now).slice(0, 6);
     const seen = new Set<string>();
-    const requests: { code: string; days: number; startDate?: string }[] = [];
+    const requests: { code: string; days: number; startDate?: string; expandLayover?: boolean }[] = [];
     for (const item of upcoming) {
-      const last = item.duty.sectors[item.duty.sectors.length - 1];
-      if (!last) continue;
-      const extra = flightExtra(item.roster, last);
-      const startDate = extra?.arrivalDate ?? extra?.date ?? item.duty.releaseDate ?? item.duty.date;
-      const requestKey = `${last.arrival}:${startDate ?? 'today'}`;
-      if (seen.has(requestKey)) continue;
-      seen.add(requestKey);
-      const restHours = parseRestHours(stayForSector(item.roster, last)?.rest);
-      const days = Math.min(3, Math.max(2, restHours !== undefined ? Math.ceil(restHours / 24) + 1 : 2));
-      requests.push({ code: last.arrival, days, startDate });
+      for (const sector of item.duty.sectors) {
+        const startDate = arrivalForecastDate(item.roster, item.duty, sector);
+        const expandLayover = !isHomeBaseAirport(sector.arrival, item.roster.subject?.base);
+        const requestKey = `${sector.arrival}:${startDate ?? 'today'}:${expandLayover ? 'layover' : 'day'}`;
+        if (seen.has(requestKey)) continue;
+        seen.add(requestKey);
+        requests.push({ code: sector.arrival, days: 1, startDate, expandLayover });
+      }
     }
     if (requests.length) prefetchStationWeather(requests);
   }, [allDuties]);
@@ -284,9 +281,8 @@ function HomeImpl({ allDuties, fallbackRoster, rosters, palette, onImport, impor
 
   const first = duty.sectors[0];
   const last = duty.sectors[duty.sectors.length - 1];
-  const lastExtra = flightExtra(roster, last);
   const stay = stayForSector(roster, last);
-  const forecastStartDate = lastExtra?.arrivalDate ?? lastExtra?.date ?? duty.releaseDate ?? duty.date;
+  const forecastStartDate = arrivalForecastDate(roster, duty, last);
   const reportMs = focus?.reportMs;
   const releaseMs = focus?.releaseMs;
   const isUpcoming = reportMs !== undefined && reportMs > now;
@@ -314,7 +310,7 @@ function HomeImpl({ allDuties, fallbackRoster, rosters, palette, onImport, impor
       <View style={[styles.timeDivider, { backgroundColor: palette.line }]} />
       <View style={styles.timeRow}><TimeCell label="REPORT" value={duty.reportTime} palette={palette} /><TimeCell label={`DEP · ${first.departure}`} value={first.departureTime} palette={palette} /><TimeCell label={`ARR · ${last.arrival}`} value={last.arrivalTime} palette={palette} /><TimeCell label="RELEASE" value={duty.releaseTime} palette={palette} /></View>
       <Text style={[styles.heroFoot, { color: palette.muted }]}>{dutyMinutes !== undefined ? `Duty ${formatMinutes(dutyMinutes)} · ` : ''}{duty.sectors.length} sector{duty.sectors.length === 1 ? '' : 's'}</Text>
-      <WeatherChip code={last.arrival} palette={palette} stay={stay} forecastStartDate={forecastStartDate} />
+      <WeatherChip code={last.arrival} homeBase={roster.subject?.base} palette={palette} stay={stay} forecastStartDate={forecastStartDate} />
     </View>
     <Text style={[styles.label, { color: palette.muted }]}>{rosterMonthLabel(roster)}</Text>
     <View style={styles.summaryRow}><Summary title="BLOCK HOURS" value={formatMinutes(block)} detail={`${operatingCount(roster)} sectors flown`} palette={palette} /><Summary title="NIGHT HOURS" value={formatMinutes(night)} detail={nightShare === undefined ? 'reported by the roster' : `${nightShare}% of block time`} palette={palette} /></View>
@@ -393,9 +389,9 @@ function RosterScreenImpl({ roster, rosters, duties, selectedSector, palette, im
   const renderTimelineRow: ListRenderItem<RosterTimelineRow> = useCallback(({ item }) => {
     const onLayout = (event: LayoutChangeEvent) => measureRow(item.key, event.nativeEvent.layout.height);
     return item.kind === 'flight'
-      ? <FlightRosterCard duty={item.duty} sector={item.sector} selected={selectedSector?.id === item.sector.id} isToday={item.sortKey.slice(0, 10) === today} palette={palette} onPress={() => onSelect(item.sector.id)} onLayout={onLayout} />
+      ? <FlightRosterCard roster={roster} duty={item.duty} sector={item.sector} selected={selectedSector?.id === item.sector.id} isToday={item.sortKey.slice(0, 10) === today} palette={palette} onPress={() => onSelect(item.sector.id)} onLayout={onLayout} />
       : <RosterEventCard item={item} isToday={item.sortKey.slice(0, 10) === today} palette={palette} onLayout={onLayout} />;
-  }, [selectedSector, today, palette, onSelect, measureRow]);
+  }, [roster, selectedSector, today, palette, onSelect, measureRow]);
   useEffect(() => {
     rosterFocus.focusToday = focusToday;
   }, [focusToday, rosterFocus]);
@@ -428,12 +424,15 @@ function RosterScreenImpl({ roster, rosters, duties, selectedSector, palette, im
 }
 const RosterScreen = memo(RosterScreenImpl);
 
-function FlightRosterCard({ duty, sector, selected, isToday, palette, onPress, onLayout }: { duty: Duty; sector: Sector; selected: boolean; isToday: boolean; palette: Palette; onPress: () => void; onLayout: (event: LayoutChangeEvent) => void }) {
+function FlightRosterCard({ roster, duty, sector, selected, isToday, palette, onPress, onLayout }: { roster?: RosterWithNormalized; duty: Duty; sector: Sector; selected: boolean; isToday: boolean; palette: Palette; onPress: () => void; onLayout: (event: LayoutChangeEvent) => void }) {
   const dateMeta = rosterDateMeta(duty);
+  const stay = stayForSector(roster, sector);
+  const forecastStartDate = arrivalForecastDate(roster, duty, sector);
   return <Pressable onPress={onPress} onLayout={onLayout} style={[styles.rosterCard, isToday && styles.rosterCardToday, { backgroundColor: selected || isToday ? palette.accentSoft : palette.surfaceStrong, borderColor: isToday ? palette.accent : palette.line, ...(isToday ? todayGlow(palette) : null) }]}>
     <View style={styles.flightCardTop}><Text style={[styles.label, { color: isToday ? palette.accent : dateMeta.weekend ? palette.weekend : palette.muted }]}>{dateMeta.label}{isToday ? ' · TODAY' : ''}</Text><Text style={[styles.flightNumber, { color: palette.muted }]}>{sector.flightNumber}{sector.deadhead ? ' · DHC' : ''}</Text></View>
     <Text style={[styles.rosterRoute, { color: palette.text }]}>{sector.departure} → {sector.arrival}</Text>
     <Text style={[styles.meta, { color: palette.muted }]}>{sector.departureTime} – {sector.arrivalTime} · Report {duty.reportTime}</Text>
+    <WeatherChip code={sector.arrival} homeBase={roster?.subject?.base} palette={palette} stay={stay} forecastStartDate={forecastStartDate} />
   </Pressable>;
 }
 
@@ -450,10 +449,7 @@ function RosterEventCard({ item, isToday, palette, onLayout }: { item: Extract<R
 function FlightDetail({ row, roster, palette, onClose, onPrevious, onNext }: { row: FlightRow; roster?: RosterWithNormalized; palette: Palette; onClose: () => void; onPrevious?: () => void; onNext?: () => void }) {
   const extra = flightExtra(roster, row.sector);
   const stay = stayForSector(roster, row.sector);
-  const weatherCode = detailWeatherStation(row, roster?.subject?.base);
-  const forecastStartDate = weatherCode === row.sector.departure
-    ? row.duty.date
-    : extra?.arrivalDate ?? extra?.date ?? row.duty.releaseDate ?? row.duty.date;
+  const forecastStartDate = arrivalForecastDate(roster, row.duty, row.sector);
   const status = [row.sector.deadhead ? 'DHC' : undefined, extra?.actualTimes ? 'Actual times' : undefined, extra?.aircraftType].filter(Boolean).join(' · ');
   const [headerHeight, setHeaderHeight] = useState(0);
   const renderCrewMember: ListRenderItem<CrewMember> = useCallback(({ item }) => <View style={styles.crewRow}><View style={[styles.avatar, { backgroundColor: palette.accentSoft }]}><Text style={[styles.avatarText, { color: palette.accent }]}>{item.name[0]}</Text></View><View style={styles.grow}><Text style={[styles.crewName, { color: palette.text }]}>{item.name}</Text><Text style={[styles.meta, { color: palette.muted }]}>{item.position ?? item.role}</Text></View></View>, [palette]);
@@ -467,7 +463,7 @@ function FlightDetail({ row, roster, palette, onClose, onPrevious, onNext }: { r
       <Text style={[styles.label, { color: palette.muted }]}>{row.duty.dateLabel} · {row.sector.flightNumber}{row.sector.deadhead ? ' · DHC' : ''}</Text>
       <Text style={[styles.sheetRoute, { color: palette.text }]}>{row.sector.departure} → {row.sector.arrival}</Text>
       {status ? <Text style={[styles.meta, { color: palette.muted }]}>{status}</Text> : null}
-      <WeatherChip code={weatherCode} palette={palette} stay={stay} forecastStartDate={forecastStartDate} />
+      <WeatherChip code={row.sector.arrival} homeBase={roster?.subject?.base} palette={palette} stay={stay} forecastStartDate={forecastStartDate} />
       <View style={[styles.flightFacts, { borderColor: palette.line }]}><FlightFact label="REPORT" value={row.duty.reportTime} palette={palette} /><FlightFact label="DEP" value={row.sector.departureTime} palette={palette} /><FlightFact label="ARR" value={row.sector.arrivalTime} palette={palette} /><FlightFact label="RELEASE" value={row.duty.releaseTime} palette={palette} /></View>
     </View>
     <FlatList
@@ -624,48 +620,49 @@ function rosterDateMeta(duty: Duty): { label: string; weekend: boolean } { if (!
 function localTodayIso(): string { const now = new Date(); return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`; }
 function eventDateMeta(value: string): { label: string; weekend: boolean } { const [year, month, day] = value.split('-').map(Number); const date = new Date(Date.UTC(year, month - 1, day)); if (!Number.isFinite(date.getTime()) || date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return { label: value, weekend: false }; const weekdayIndex = date.getUTCDay(); const weekday = ['SUN','MON','TUE','WED','THU','FRI','SAT'][weekdayIndex]; const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC']; return { label: `${String(day).padStart(2, '0')} ${months[month - 1]} · ${weekday}`, weekend: weekdayIndex === 0 || weekdayIndex === 6 }; }
 function routeChain(duty: Duty): string { return [duty.sectors[0]?.departure, ...duty.sectors.map((sector) => sector.arrival)].filter(Boolean).join(' → '); }
-function detailWeatherStation(row: FlightRow, base?: string): string {
-  const normalizedBase = base?.trim().toUpperCase();
-  return normalizedBase && row.sector.departure.trim().toUpperCase() !== normalizedBase ? row.sector.departure : row.sector.arrival;
+function isHomeBaseAirport(code: string, homeBase?: string): boolean { return Boolean(homeBase && code.trim().toUpperCase() === homeBase.trim().toUpperCase()); }
+function clockMinutes(value: string | undefined): number | undefined { const match = /^(\d{1,2}):(\d{2})$/.exec(value ?? ''); if (!match) return undefined; const hours = Number(match[1]); const minutes = Number(match[2]); return hours < 24 && minutes < 60 ? hours * 60 + minutes : undefined; }
+function addIsoDays(value: string, offset: number): string { const [year, month, day] = value.split('-').map(Number); const date = new Date(Date.UTC(year, month - 1, day + offset)); return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(date.getUTCDate()).padStart(2, '0')}`; }
+function arrivalForecastDate(roster: RosterWithNormalized | undefined, duty: Duty, sector: Sector): string | undefined {
+  const extra = flightExtra(roster, sector);
+  if (extra?.arrivalDate) return extra.arrivalDate;
+  const departureDate = extra?.date ?? duty.date;
+  if (!departureDate) return duty.releaseDate;
+  const departure = clockMinutes(sector.departureTime);
+  const arrival = clockMinutes(sector.arrivalTime);
+  return departure !== undefined && arrival !== undefined && arrival < departure ? addIsoDays(departureDate, 1) : departureDate;
 }
 function TimeCell({ label, value, palette }: { label: string; value: string; palette: Palette }) { return <View style={styles.timeCell}><Text numberOfLines={1} style={[styles.timeLabel, { color: palette.muted }]}>{label}</Text><Text style={[styles.timeValue, { color: palette.text }]}>{value}</Text></View>; }
-function WeatherChip({ code, palette, stay, forecastStartDate }: { code: string; palette: Palette; stay?: StayInfo; forecastStartDate?: string }) {
+function WeatherChip({ code, homeBase, palette, stay, forecastStartDate }: { code: string; homeBase?: string; palette: Palette; stay?: StayInfo; forecastStartDate?: string }) {
   const weather = useAirportWeather(code);
-  const [stayOpen, setStayOpen] = useState(false);
-  const restHours = parseRestHours(stay?.rest);
-  const forecastDayCount = Math.min(3, Math.max(2, restHours !== undefined ? Math.ceil(restHours / 24) + 1 : 2));
-  const { forecast, status: forecastStatus, startDate: resolvedForecastStartDate, retry } = useAirportForecastState(code, forecastDayCount, forecastStartDate);
-  // Weather needs network and may never have been cached for this station (a duty viewed
-  // for the first time while offline, e.g. mid-flight in airplane mode). The stay duration
-  // itself comes from the imported roster, not the network, so it must stay reachable even
-  // when weather never loaded — only hide the whole row when there's neither to show.
-  if (!weather && !stay) return null;
+  const [forecastOpen, setForecastOpen] = useState(false);
+  const expandLayover = !isHomeBaseAirport(code, homeBase);
+  const { forecast, status: forecastStatus, startDate: resolvedForecastStartDate, retry } = useAirportForecastState(code, 1, forecastStartDate, expandLayover);
+  if (!airportCoords(code)) return null;
   const conditions = weather ? weatherIcon(weather.weatherCode, weather.isDay) : undefined;
   const displayDate = resolvedForecastStartDate ?? forecastStartDate;
   const futureTarget = Boolean(displayDate && displayDate > localTodayIso());
   const targetForecast = displayDate ? forecast?.find((day) => day.date === displayDate) : undefined;
   const targetConditions = targetForecast ? weatherIcon(targetForecast.weatherCode, true) : undefined;
   return <>
-    <Pressable onPress={() => setStayOpen(true)} accessibilityRole="button" accessibilityLabel={`Duration of stay at ${code}`} style={styles.weatherRow}>
+    <Pressable onPress={(event) => { event.stopPropagation?.(); setForecastOpen(true); }} accessibilityRole="button" accessibilityLabel={`Weather forecast at ${code}`} style={styles.weatherRow}>
       {futureTarget ? <>
         <Text style={styles.weatherIcon}>{targetConditions?.icon ?? '✈︎'}</Text>
         {targetForecast && <Text style={[styles.weatherTemp, { color: palette.text }]}>{targetForecast.tempMax}°/{targetForecast.tempMin}°</Text>}
-        <Text numberOfLines={1} style={[styles.weatherMeta, { color: palette.muted }]}>{code} · {displayDate ? forecastDayLabel(displayDate) : ''}{targetConditions ? ` · ${targetConditions.label}` : forecastStatus === 'loading' ? ' · Loading forecast' : ' · Forecast unavailable'}</Text>
+        <Text numberOfLines={1} style={[styles.weatherMeta, { color: palette.muted }]}>{code} · {displayDate ? forecastDayLabel(displayDate) : ''}{targetConditions ? ` · ${targetConditions.label}` : forecastStatus === 'loading' ? ' · Loading forecast' : forecastStatus === 'offline' ? ' · Offline' : ' · Forecast unavailable'}</Text>
       </> : <>
         <Text style={styles.weatherIcon}>{conditions?.icon ?? '✈︎'}</Text>
         {weather ? <>
           <Text style={[styles.weatherTemp, { color: palette.text }]}>{weather.temp}°</Text>
           <Text numberOfLines={1} style={[styles.weatherMeta, { color: palette.muted }]}>{code} · {conditions!.label} · {windDirectionLabel(weather.windDeg)} {weather.windSpeed}kt · {weather.pressure}hPa</Text>
         </> : (
-          <Text numberOfLines={1} style={[styles.weatherMeta, { color: palette.muted }]}>{code}{stay?.rest ? ` · Rest ${stay.rest}` : ''} · Weather unavailable</Text>
+          <Text numberOfLines={1} style={[styles.weatherMeta, { color: palette.muted }]}>{code} · Weather unavailable</Text>
         )}
       </>}
     </Pressable>
-    <IOSDialog visible={stayOpen} onClose={() => setStayOpen(false)} style={[styles.stayPopup, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}>
-      <Text style={[styles.label, { color: palette.muted }]}>STAY · {code}{displayDate ? ` · FROM ${forecastDayLabel(displayDate)}` : ''}</Text>
-      {stay?.rest
-        ? <Text style={[styles.stayPopupRest, { color: palette.text }]}>{stay.rest}</Text>
-        : <Text style={[styles.meta, { color: palette.muted, marginTop: 6 }]}>No layover recorded for this stop.</Text>}
+    <IOSDialog visible={forecastOpen} onClose={() => setForecastOpen(false)} style={[styles.stayPopup, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}>
+      <Text style={[styles.label, { color: palette.muted }]}>FORECAST · {code}{displayDate ? ` · FROM ${forecastDayLabel(displayDate)}` : ''}</Text>
+      {stay?.rest ? <Text style={[styles.stayPopupRest, { color: palette.text }]}>{stay.rest}</Text> : null}
       {forecast && forecast.length > 0
         ? <View style={styles.stayForecastList}>
             {forecast.map((day) => {
@@ -687,10 +684,6 @@ function WeatherChip({ code, palette, stay, forecastStartDate }: { code: string;
             : <Pressable onPress={retry} accessibilityRole="button" style={styles.forecastRetry}><Text style={[styles.meta, { color: palette.accent }]}>Forecast unavailable. Tap to retry.</Text></Pressable>}
     </IOSDialog>
   </>;
-}
-function parseRestHours(rest: string | undefined): number | undefined {
-  const match = rest ? /^(\d{1,3}):(\d{2})/.exec(rest.trim()) : null;
-  return match ? Number(match[1]) + Number(match[2]) / 60 : undefined;
 }
 function forecastDayLabel(value: string): string {
   const [year, month, day] = value.split('-').map(Number);
