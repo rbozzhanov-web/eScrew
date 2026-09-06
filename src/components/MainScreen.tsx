@@ -57,7 +57,7 @@ const todayGlow = (palette: Palette) => ({
 // authoritative scroll offset before rows are actually measured.
 const LIST_TOP_PADDING = 8;
 const LIST_ROW_GAP = 7;
-const ROW_HEIGHT_ESTIMATE = { flight: 124, event: 80 } as const;
+const ROW_HEIGHT_ESTIMATE = { flight: 96, event: 80 } as const;
 function heroTint(palette: Palette) {
   return Platform.OS === 'web'
     ? ({ backgroundImage: `linear-gradient(135deg, ${palette.accentSoft} 0%, ${palette.surfaceStrong} 60%)` } as any)
