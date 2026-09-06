@@ -117,14 +117,18 @@ export default function MainScreen() {
     const now = Date.now();
     const upcoming = timedDuties(allDuties).filter((item) => item.releaseMs >= now).slice(0, 6);
     const seen = new Set<string>();
-    const requests: { code: string; days: number }[] = [];
+    const requests: { code: string; days: number; startDate?: string }[] = [];
     for (const item of upcoming) {
       const last = item.duty.sectors[item.duty.sectors.length - 1];
-      if (!last || seen.has(last.arrival)) continue;
-      seen.add(last.arrival);
+      if (!last) continue;
+      const extra = flightExtra(item.roster, last);
+      const startDate = extra?.arrivalDate ?? extra?.date ?? item.duty.releaseDate ?? item.duty.date;
+      const requestKey = `${last.arrival}:${startDate ?? 'today'}`;
+      if (seen.has(requestKey)) continue;
+      seen.add(requestKey);
       const restHours = parseRestHours(stayForSector(item.roster, last)?.rest);
       const days = Math.min(3, Math.max(2, restHours !== undefined ? Math.ceil(restHours / 24) + 1 : 2));
-      requests.push({ code: last.arrival, days });
+      requests.push({ code: last.arrival, days, startDate });
     }
     if (requests.length) prefetchStationWeather(requests);
   }, [allDuties]);
@@ -280,7 +284,9 @@ function HomeImpl({ allDuties, fallbackRoster, rosters, palette, onImport, impor
 
   const first = duty.sectors[0];
   const last = duty.sectors[duty.sectors.length - 1];
+  const lastExtra = flightExtra(roster, last);
   const stay = stayForSector(roster, last);
+  const forecastStartDate = lastExtra?.arrivalDate ?? lastExtra?.date ?? duty.releaseDate ?? duty.date;
   const reportMs = focus?.reportMs;
   const releaseMs = focus?.releaseMs;
   const isUpcoming = reportMs !== undefined && reportMs > now;
@@ -308,7 +314,7 @@ function HomeImpl({ allDuties, fallbackRoster, rosters, palette, onImport, impor
       <View style={[styles.timeDivider, { backgroundColor: palette.line }]} />
       <View style={styles.timeRow}><TimeCell label="REPORT" value={duty.reportTime} palette={palette} /><TimeCell label={`DEP · ${first.departure}`} value={first.departureTime} palette={palette} /><TimeCell label={`ARR · ${last.arrival}`} value={last.arrivalTime} palette={palette} /><TimeCell label="RELEASE" value={duty.releaseTime} palette={palette} /></View>
       <Text style={[styles.heroFoot, { color: palette.muted }]}>{dutyMinutes !== undefined ? `Duty ${formatMinutes(dutyMinutes)} · ` : ''}{duty.sectors.length} sector{duty.sectors.length === 1 ? '' : 's'}</Text>
-      <WeatherChip code={last.arrival} palette={palette} stay={stay} />
+      <WeatherChip code={last.arrival} palette={palette} stay={stay} forecastStartDate={forecastStartDate} />
     </View>
     <Text style={[styles.label, { color: palette.muted }]}>{rosterMonthLabel(roster)}</Text>
     <View style={styles.summaryRow}><Summary title="BLOCK HOURS" value={formatMinutes(block)} detail={`${operatingCount(roster)} sectors flown`} palette={palette} /><Summary title="NIGHT HOURS" value={formatMinutes(night)} detail={nightShare === undefined ? 'reported by the roster' : `${nightShare}% of block time`} palette={palette} /></View>
@@ -457,7 +463,7 @@ function FlightDetail({ row, roster, palette, onClose, onPrevious, onNext }: { r
       <Text style={[styles.label, { color: palette.muted }]}>{row.duty.dateLabel} · {row.sector.flightNumber}{row.sector.deadhead ? ' · DHC' : ''}</Text>
       <Text style={[styles.sheetRoute, { color: palette.text }]}>{row.sector.departure} → {row.sector.arrival}</Text>
       {status ? <Text style={[styles.meta, { color: palette.muted }]}>{status}</Text> : null}
-      <WeatherChip code={row.sector.arrival} palette={palette} stay={stay} />
+      <WeatherChip code={row.sector.arrival} palette={palette} stay={stay} forecastStartDate={extra?.arrivalDate ?? extra?.date ?? row.duty.releaseDate ?? row.duty.date} />
       <View style={[styles.flightFacts, { borderColor: palette.line }]}><FlightFact label="REPORT" value={row.duty.reportTime} palette={palette} /><FlightFact label="DEP" value={row.sector.departureTime} palette={palette} /><FlightFact label="ARR" value={row.sector.arrivalTime} palette={palette} /><FlightFact label="RELEASE" value={row.duty.releaseTime} palette={palette} /></View>
     </View>
     <FlatList
@@ -615,12 +621,12 @@ function localTodayIso(): string { const now = new Date(); return `${now.getFull
 function eventDateMeta(value: string): { label: string; weekend: boolean } { const [year, month, day] = value.split('-').map(Number); const date = new Date(Date.UTC(year, month - 1, day)); if (!Number.isFinite(date.getTime()) || date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return { label: value, weekend: false }; const weekdayIndex = date.getUTCDay(); const weekday = ['SUN','MON','TUE','WED','THU','FRI','SAT'][weekdayIndex]; const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC']; return { label: `${String(day).padStart(2, '0')} ${months[month - 1]} · ${weekday}`, weekend: weekdayIndex === 0 || weekdayIndex === 6 }; }
 function routeChain(duty: Duty): string { return [duty.sectors[0]?.departure, ...duty.sectors.map((sector) => sector.arrival)].filter(Boolean).join(' → '); }
 function TimeCell({ label, value, palette }: { label: string; value: string; palette: Palette }) { return <View style={styles.timeCell}><Text numberOfLines={1} style={[styles.timeLabel, { color: palette.muted }]}>{label}</Text><Text style={[styles.timeValue, { color: palette.text }]}>{value}</Text></View>; }
-function WeatherChip({ code, palette, stay }: { code: string; palette: Palette; stay?: StayInfo }) {
+function WeatherChip({ code, palette, stay, forecastStartDate }: { code: string; palette: Palette; stay?: StayInfo; forecastStartDate?: string }) {
   const weather = useAirportWeather(code);
   const [stayOpen, setStayOpen] = useState(false);
   const restHours = parseRestHours(stay?.rest);
   const forecastDayCount = Math.min(3, Math.max(2, restHours !== undefined ? Math.ceil(restHours / 24) + 1 : 2));
-  const forecast = useAirportForecast(code, forecastDayCount);
+  const forecast = useAirportForecast(code, forecastDayCount, forecastStartDate);
   // Weather needs network and may never have been cached for this station (a duty viewed
   // for the first time while offline, e.g. mid-flight in airplane mode). The stay duration
   // itself comes from the imported roster, not the network, so it must stay reachable even

@@ -19,6 +19,7 @@ export type RosterTimelineRow =
     };
 
 export type FlightExtra = {
+  date?: string;
   aircraftType?: string;
   actualTimes?: boolean;
   arrivalDate?: string;
@@ -66,6 +67,7 @@ export function flightExtra(roster: RosterWithNormalized | undefined, sector: Se
   const flight = findNormalizedFlight(roster?.normalized, sector);
   if (!flight) return undefined;
   return {
+    date: flight.date,
     aircraftType: flight.aircraftType,
     actualTimes: flight.actualTimes,
     arrivalDate: flight.arrivalDate,
