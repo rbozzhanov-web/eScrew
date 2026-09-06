@@ -104,7 +104,7 @@ function resolveLayoverWindow(code: string, requestedDays: number, startDateHint
   try {
     const target = code.trim().toUpperCase();
     const sectors = loadStoredRosters()
-      .flatMap((roster) => [...roster.sectors, ...(roster.boundarySectors ?? [])])
+      .flatMap((roster) => roster.sectors)
       .filter((sector) => validIsoDate(sector.date))
       .sort((a, b) => `${a.date}T${a.timeOut || '00:00'}`.localeCompare(`${b.date}T${b.timeOut || '00:00'}`));
 
