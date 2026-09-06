@@ -644,10 +644,13 @@ function WeatherChip({ code, palette, stay }: { code: string; palette: Palette; 
         : <Text style={[styles.meta, { color: palette.muted, marginTop: 6 }]}>No layover recorded for this stop.</Text>}
       {forecast && forecast.length > 0 && <View style={styles.stayForecastList}>
         {forecast.slice(0, forecastDayCount).map((day) => {
-          const dayIcon = weatherIcon(day.weatherCode, true).icon;
+          const dayConditions = weatherIcon(day.weatherCode, true);
           return <View key={day.date} style={[styles.stayForecastRow, { borderColor: palette.line }]}>
             <Text style={[styles.stayForecastDay, { color: palette.muted }]}>{forecastDayLabel(day.date)}</Text>
-            <Text style={styles.stayForecastIcon}>{dayIcon}</Text>
+            <View style={{ flex: 1, gap: 4 }}>
+              <Text style={[styles.stayForecastIcon, { flex: 0 }]}>{dayConditions.icon}</Text>
+              <Text style={[styles.meta, { color: palette.muted }]}>{dayConditions.label}</Text>
+            </View>
             <Text style={[styles.stayForecastTemp, { color: palette.text }]}>{day.tempMax}° / {day.tempMin}°</Text>
           </View>;
         })}
