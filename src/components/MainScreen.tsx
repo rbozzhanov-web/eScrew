@@ -21,9 +21,9 @@ import { weatherIcon, windDirectionLabel } from '@/src/weather/weatherCodes';
 type Tab = 'Home' | 'Roster' | 'More';
 const TABS: Tab[] = ['Home', 'Roster', 'More'];
 const TAB_ICONS: Record<Tab, { glyph: string; size: number; nudge: number; weight: '700' | '800' }> = {
-  Home: { glyph: '⌂', size: 24, nudge: 0, weight: '700' },
-  Roster: { glyph: '✈︎', size: 22, nudge: 0, weight: '700' },
-  More: { glyph: '•••', size: 18, nudge: -2, weight: '700' },
+  Home: { glyph: '⌂', size: 25, nudge: 0, weight: '700' },
+  Roster: { glyph: '✈︎', size: 24, nudge: 0, weight: '700' },
+  More: { glyph: '•••', size: 19, nudge: -2, weight: '700' },
 };
 type Palette = { background:string; surface:string; surfaceStrong:string; text:string; muted:string; line:string; accentLine:string; accent:string; accentSoft:string; gold:string; danger:string; weekend:string };
 type RosterDuty = { roster: ParsedAirAstanaRoster; duty: Duty };
@@ -34,33 +34,29 @@ type RosterFocusHandle = { focusToday: () => void };
 const MONO_FONT = Platform.OS === 'web'
   ? ({ fontFamily: 'ui-monospace,"SF Mono",Menlo,monospace' } as any)
   : undefined;
-// backdrop-filter is read through a CSS custom property (rather than a literal blur()) so
-// SwipeSurface can suspend it document-wide for the duration of a page-turn transform: WebKit
-// re-samples everything behind a blurred element on every frame it moves, which is cheap for one
-// card but adds up fast with this many glass surfaces animating across a tab switch at once.
 const WEB_GLASS = Platform.OS === 'web'
-  ? ({ backdropFilter: 'blur(24px) saturate(1.4)', WebkitBackdropFilter: 'blur(24px) saturate(1.4)' } as any)
+  ? ({ backdropFilter: 'blur(20px) saturate(1.28)', WebkitBackdropFilter: 'blur(20px) saturate(1.28)' } as any)
   : undefined;
 const WEB_TAB_GLASS = Platform.OS === 'web'
-  ? ({ backdropFilter: 'blur(32px) saturate(1.5)', WebkitBackdropFilter: 'blur(32px) saturate(1.5)' } as any)
+  ? ({ backdropFilter: 'blur(24px) saturate(1.35)', WebkitBackdropFilter: 'blur(24px) saturate(1.35)' } as any)
   : undefined;
-/**
- * All shadow* props must live in the same style object — react-native-web derives a single
- * boxShadow per object, so splitting shadowColor into a separate object in the style array
- * (rather than merging shadow properties key-by-key) makes the later object's missing
- * offset/radius/opacity silently zero out the shadow instead of merging with the earlier one.
- */
+const WEB_SKY_BACKGROUND = Platform.OS === 'web'
+  ? ({
+      backgroundImage: 'radial-gradient(circle at 18% 8%, rgba(255,255,255,.72) 0%, rgba(255,255,255,0) 30%), radial-gradient(ellipse at 78% 22%, rgba(255,191,134,.34) 0%, rgba(255,191,134,0) 34%), linear-gradient(145deg, #FFBF86 0%, #8EC5FF 40%, #2F80ED 80%)',
+      backgroundAttachment: 'fixed',
+    } as any)
+  : undefined;
 const todayGlow = (palette: Palette) => ({
-  shadowColor: palette.accent, shadowOffset: { width: 0, height: 8 }, shadowOpacity: .32, shadowRadius: 20, elevation: 8, ...WEB_GLASS,
+  shadowColor: palette.accent, shadowOffset: { width: 0, height: 8 }, shadowOpacity: .22, shadowRadius: 22, elevation: 8, ...WEB_GLASS,
 });
-// Matches styles.listContent (padding:8, gap:7) — used by getItemLayout to compute an
-// authoritative scroll offset before rows are actually measured.
 const LIST_TOP_PADDING = 8;
 const LIST_ROW_GAP = 7;
 const ROW_HEIGHT_ESTIMATE = { flight: 124, event: 80 } as const;
 function heroTint(palette: Palette) {
   return Platform.OS === 'web'
-    ? ({ backgroundImage: `linear-gradient(135deg, ${palette.accentSoft} 0%, ${palette.surfaceStrong} 60%)` } as any)
+    ? ({
+        backgroundImage: `radial-gradient(ellipse at 50% 112%, rgba(47,128,237,.18) 0%, rgba(255,191,134,.16) 40%, transparent 70%), linear-gradient(145deg, rgba(255,255,255,.74) 0%, rgba(255,255,255,.50) 58%, ${palette.accentSoft} 100%)`,
+      } as any)
     : undefined;
 }
 
@@ -73,9 +69,9 @@ export default function MainScreen() {
   const dark = hydrated && scheme === 'dark';
 
   const palette = useMemo<Palette>(() => dark ? {
-    background:'#0B1220', surface:'rgba(19,27,44,.72)', surfaceStrong:'rgba(24,33,53,.86)', text:'#F5F7FA', muted:'#8B95A5', line:'rgba(139,149,165,.18)', accentLine:'rgba(76,141,255,.32)', accent:'#4C8DFF', accentSoft:'rgba(76,141,255,.16)', gold:'#C9AC72', danger:'#EB6F79', weekend:'#D89A66',
+    background:'#091329', surface:'rgba(23,35,58,.62)', surfaceStrong:'rgba(28,42,68,.76)', text:'#F7FAFF', muted:'#A7B4C6', line:'rgba(255,255,255,.12)', accentLine:'rgba(142,197,255,.30)', accent:'#2F80ED', accentSoft:'rgba(142,197,255,.18)', gold:'#FFBF86', danger:'#F07278', weekend:'#FFBF86',
   } : {
-    background:'#F6F7FA', surface:'rgba(255,255,255,.72)', surfaceStrong:'rgba(255,255,255,.86)', text:'#0F172A', muted:'#687280', line:'rgba(15,23,42,.09)', accentLine:'rgba(45,125,255,.28)', accent:'#2D7DFF', accentSoft:'#E4EDFF', gold:'#A58B4F', danger:'#E5484D', weekend:'#9B613B',
+    background:'#8EC5FF', surface:'rgba(255,255,255,.55)', surfaceStrong:'rgba(255,255,255,.67)', text:'#091329', muted:'#718095', line:'rgba(255,255,255,.30)', accentLine:'rgba(47,128,237,.22)', accent:'#2F80ED', accentSoft:'rgba(142,197,255,.26)', gold:'#FFBF86', danger:'#E5484D', weekend:'#A26743',
   }, [dark]);
 
   const [tab, setTab] = useState<Tab>('Home');
@@ -110,8 +106,6 @@ export default function MainScreen() {
   const duties = useMemo(() => roster ? rosterToDuties(roster) : [], [roster]);
   const selectedSector = duties.flatMap((duty) => duty.sectors).find((sector) => sector.id === selectedFlight);
   const allDuties = useMemo<RosterDuty[]>(() => rosters.flatMap((item) => rosterToDuties(item).map((duty) => ({ roster: item, duty }))), [rosters]);
-  // Warm the arrival-weather cache for the next duties. Every sector uses its ARRIVAL station;
-  // home-base arrivals stay one day, while outstations may expand through the next departure.
   useEffect(() => {
     const now = Date.now();
     const upcoming = timedDuties(allDuties).filter((item) => item.releaseMs >= now).slice(0, 6);
@@ -216,11 +210,14 @@ export default function MainScreen() {
     setTab('Home');
   }, []);
 
-  return <SafeAreaView style={[styles.safe, { backgroundColor: palette.background }]} edges={desktopWeb ? ['bottom'] : ['top', 'bottom']}>
+  return <SafeAreaView style={[styles.safe, { backgroundColor: palette.background }, !dark && WEB_SKY_BACKGROUND]} edges={desktopWeb ? ['bottom'] : ['top', 'bottom']}>
     <View style={styles.app}>
       <View style={styles.header}>
-        <Text style={[styles.brand, { color: palette.text }]}>eScrew</Text>
-        <Pressable onPress={importFromAims} disabled={importing} style={[styles.modeButton, styles.depthSurface, { backgroundColor: importing ? palette.accentSoft : palette.surface }]} accessibilityLabel="Import from AIMS">
+        <View>
+          <Text style={[styles.brand, { color: palette.text }]}>eScrew</Text>
+          <Text style={[styles.brandSubtitle, { color: palette.muted }]}>CREW · ROSTER · EVERYWHERE</Text>
+        </View>
+        <Pressable onPress={importFromAims} disabled={importing} style={[styles.modeButton, styles.depthSurface, { backgroundColor: importing ? palette.accentSoft : palette.surface, borderColor: palette.line }]} accessibilityLabel="Import from AIMS">
           {importing ? <ActivityIndicator size="small" color={palette.accent} /> : <Text style={[styles.aimsGlyph, { color: palette.accent }]}>AIMS</Text>}
         </Pressable>
       </View>
@@ -228,10 +225,6 @@ export default function MainScreen() {
       {importError && <ImportErrorBanner message={importError} palette={palette} onDismiss={() => setImportError(undefined)} />}
 
       <SwipeSurface ref={tabSwipeRef} style={styles.viewport} onSwipeLeft={tab === 'More' ? undefined : () => changeTab(1)} onSwipeRight={tab === 'Home' ? undefined : () => changeTab(-1)}>
-        {/* All three tabs stay mounted permanently and are shown/hidden via opacity rather than
-            conditional rendering — swapping tabs would otherwise force a full mount of the
-            destination screen (FlatList layout, etc.) synchronously at the animation handoff,
-            which is heavy enough to visibly stall the in-flight page-turn spring. */}
         <View style={[styles.tabPane, tab !== 'Home' && styles.tabPaneHidden]} pointerEvents={tab === 'Home' ? 'auto' : 'none'}>
           <Home allDuties={allDuties} fallbackRoster={roster} rosters={rosters} palette={palette} onImport={importRoster} importing={importing} />
         </View>
@@ -244,12 +237,12 @@ export default function MainScreen() {
       </SwipeSurface>
 
       <View onLayout={(event) => { const nextWidth = event.nativeEvent.layout.width; if (Math.abs(nextWidth - tabBarWidth) > 0.5) setTabBarWidth(nextWidth); }} style={[styles.depthSurface, styles.tabBar, { backgroundColor: palette.surface, borderColor: palette.line }]}>
-        {tabBarWidth > 0 && <Animated.View pointerEvents="none" style={[styles.tabSelection, { width: Math.max(0, tabStep - 8), backgroundColor: palette.surfaceStrong, transform: [{ translateX: tabIndicatorX }] }]} />}
+        {tabBarWidth > 0 && <Animated.View pointerEvents="none" style={[styles.tabSelection, { width: Math.max(0, tabStep - 10), backgroundColor: palette.surfaceStrong, transform: [{ translateX: tabIndicatorX }] }]} />}
         {TABS.map((item) => {
           const active = item === tab;
           return <Pressable key={item} onPress={() => goToTab(item)} style={styles.tabItem} accessibilityRole="tab" accessibilityState={{ selected: active }}>
             <View style={styles.tabIconWrap}><Text style={[styles.tabIcon, { color: active ? palette.accent : palette.muted, fontSize: TAB_ICONS[item].size, lineHeight: TAB_ICONS[item].size + 3, marginTop: TAB_ICONS[item].nudge, fontWeight: TAB_ICONS[item].weight }]}>{TAB_ICONS[item].glyph}</Text></View>
-            <Text style={[styles.tabText, { color: active ? palette.text : palette.muted }]}>{item}</Text>
+            <Text style={[styles.tabText, { color: active ? palette.accent : palette.muted }]}>{item}</Text>
           </Pressable>;
         })}
       </View>
@@ -302,23 +295,29 @@ function HomeImpl({ allDuties, fallbackRoster, rosters, palette, onImport, impor
   return <View style={styles.screen}>
     <View style={styles.dutyHead}><Text style={[styles.label, { color: isActive ? palette.accent : palette.muted }]}>{isUpcoming ? 'NEXT DUTY' : isActive ? 'ON DUTY NOW' : 'LATEST DUTY'}</Text><Text style={[styles.label, { color: palette.muted }]}>{duty.dateLabel}</Text></View>
     <View style={[styles.heroCard, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.accentLine }, heroTint(palette)]}>
-      <View style={styles.heroTopRow}>
-        <Text numberOfLines={2} style={[styles.heroRoute, styles.heroRouteFlex, { color: palette.text }]}>{routeChain(duty)}</Text>
-        {countdown && <View style={[styles.countdownPill, { backgroundColor: palette.accentSoft }]}><Text style={[styles.countdown, { color: palette.accent }]}>{countdown}</Text><Text style={[styles.countdownLabel, { color: palette.accent }]}>{isUpcoming ? 'TO REPORT' : 'ON DUTY'}</Text></View>}
+      <View style={styles.heroRouteRow}>
+        <View style={[styles.planeOrb, styles.depthSurface, { backgroundColor: palette.surface, borderColor: palette.line }]}><Text style={[styles.planeGlyph, { color: palette.accent }]}>✈︎</Text></View>
+        <View style={styles.heroRouteBlock}>
+          <Text numberOfLines={2} style={[styles.heroRoute, { color: palette.text }]}>{routeChain(duty)}</Text>
+          <View style={styles.flightBadgeRow}>{duty.sectors.map((sector) => <View key={sector.id} style={[styles.flightBadge, { backgroundColor: palette.accentSoft, borderColor: palette.line }]}><Text style={[styles.flightBadgeText, { color: palette.accent }]}>{sector.flightNumber}</Text></View>)}</View>
+        </View>
       </View>
-      <View style={styles.flightBadgeRow}>{duty.sectors.map((sector) => <View key={sector.id} style={[styles.flightBadge, { backgroundColor: palette.accentSoft }]}><Text style={[styles.flightBadgeText, { color: palette.accent }]}>{sector.flightNumber}</Text></View>)}</View>
+      {countdown && <View style={styles.heroCountdownRow}><View style={[styles.countdownPill, styles.depthSurface, { backgroundColor: palette.surface, borderColor: palette.line }]}><Text style={[styles.countdown, { color: palette.accent }]}>{countdown}</Text><Text style={[styles.countdownLabel, { color: palette.accent }]}>{isUpcoming ? 'TO REPORT' : 'ON DUTY'}</Text></View></View>}
       <View style={[styles.timeDivider, { backgroundColor: palette.line }]} />
       <View style={styles.timeRow}><TimeCell label="REPORT" value={duty.reportTime} palette={palette} /><TimeCell label={`DEP · ${first.departure}`} value={first.departureTime} palette={palette} /><TimeCell label={`ARR · ${last.arrival}`} value={last.arrivalTime} palette={palette} /><TimeCell label="RELEASE" value={duty.releaseTime} palette={palette} /></View>
-      <Text style={[styles.heroFoot, { color: palette.muted }]}>{dutyMinutes !== undefined ? `Duty ${formatMinutes(dutyMinutes)} · ` : ''}{duty.sectors.length} sector{duty.sectors.length === 1 ? '' : 's'}</Text>
-      <WeatherChip code={last.arrival} homeBase={roster.subject?.base} palette={palette} stay={stay} forecastStartDate={forecastStartDate} />
+      <View style={[styles.timeDivider, styles.heroFooterDivider, { backgroundColor: palette.line }]} />
+      <View style={styles.heroFooterRow}>
+        <View style={styles.heroWeatherWrap}><WeatherChip code={last.arrival} homeBase={roster.subject?.base} palette={palette} stay={stay} forecastStartDate={forecastStartDate} /></View>
+        <Text style={[styles.heroFoot, { color: palette.muted }]}>{dutyMinutes !== undefined ? `Duty ${formatMinutes(dutyMinutes)} · ` : ''}{duty.sectors.length} sector{duty.sectors.length === 1 ? '' : 's'}</Text>
+      </View>
     </View>
     <Text style={[styles.label, { color: palette.muted }]}>{rosterMonthLabel(roster)}</Text>
     <View style={styles.summaryRow}><Summary title="BLOCK HOURS" value={formatMinutes(block)} detail={`${operatingCount(roster)} sectors flown`} palette={palette} /><Summary title="NIGHT HOURS" value={formatMinutes(night)} detail={nightShare === undefined ? 'reported by the roster' : `${nightShare}% of block time`} palette={palette} /></View>
-    {yearRosters.length > 1 && <Text style={[styles.meta, { color: palette.muted }]}>{year} to date · {formatMinutes(ytdBlock)} block · {formatMinutes(ytdNight)} night · {yearRosters.length} months imported</Text>}
+    {yearRosters.length > 1 && <Text style={[styles.meta, styles.ytdMeta, { color: palette.muted }]}>{year} to date · {formatMinutes(ytdBlock)} block · {formatMinutes(ytdNight)} night · {yearRosters.length} months imported</Text>}
     <View style={styles.upNext}>
       <Text style={[styles.label, { color: palette.muted }]}>CREW ON THIS FLIGHT · {crew.length}</Text>
       {crew.length > 0
-        ? <FlatList data={crew} keyExtractor={(item) => item.id} showsVerticalScrollIndicator={false} style={styles.upNextList} renderItem={renderCrewRow} />
+        ? <FlatList data={crew} keyExtractor={(item) => item.id} showsVerticalScrollIndicator={false} style={styles.upNextList} contentContainerStyle={styles.crewCardList} renderItem={renderCrewRow} />
         : <Text style={[styles.meta, { color: palette.muted, marginTop: 4 }]}>Crew is not listed for this flight in the imported roster.</Text>}
     </View>
   </View>;
@@ -342,19 +341,10 @@ function RosterScreenImpl({ roster, rosters, duties, selectedSector, palette, im
     if (idx === -1) idx = timeline.findIndex((row) => row.sortKey.slice(0, 10) > today);
     return idx;
   }, [timeline, today]);
-  // Without this, scrollToIndex/initialScrollIndex have to guess an offset (via
-  // averageItemLength), render near it, measure, and correct — a multi-step process that
-  // reliably lands a few rows short of the target instead of putting it at the top. Caching
-  // each row's real measured height (falling back to a per-kind estimate before it's been
-  // measured) gives FlatList an authoritative offset up front, so it can jump there in one
-  // step, and accuracy only improves as more rows get measured.
   const heightFor = useCallback((row: RosterTimelineRow | undefined) => {
     if (!row) return ROW_HEIGHT_ESTIMATE.flight;
     return rowHeights.get(row.key) ?? ROW_HEIGHT_ESTIMATE[row.kind];
   }, [rowHeights]);
-  // Offsets are cached per `timeline` array and only rebuilt (once, O(n)) when a row's height
-  // actually changes — otherwise every one of FlatList's frequent getItemLayout calls would
-  // redo the prefix-sum loop from scratch.
   const buildOffsets = useCallback(() => {
     const offsets: number[] = [];
     let offset = LIST_TOP_PADDING;
@@ -372,8 +362,6 @@ function RosterScreenImpl({ roster, rosters, duties, selectedSector, palette, im
     rowHeights.set(key, height);
     offsetsCache.current = null;
   }, [rowHeights]);
-  // Measured heights are keyed by row (not by month), so switching months would otherwise
-  // keep accumulating entries for every row ever seen across the whole session.
   useEffect(() => {
     rowHeights.clear();
     offsetsCache.current = null;
@@ -382,10 +370,6 @@ function RosterScreenImpl({ roster, rosters, duties, selectedSector, palette, im
     if (todayIndex < 0) return;
     listRef.current?.scrollToIndex({ index: todayIndex, animated: false, viewPosition: 0 });
   }, [todayIndex]);
-  // A fresh renderItem closure on every render (the previous inline-in-JSX form) defeats
-  // FlatList's ability to skip re-rendering unchanged rows, since it can't tell the function
-  // is "the same" renderer across renders — costly with a large roster. Stabilized here so it
-  // only changes when something a row actually depends on changes.
   const renderTimelineRow: ListRenderItem<RosterTimelineRow> = useCallback(({ item }) => {
     const onLayout = (event: LayoutChangeEvent) => measureRow(item.key, event.nativeEvent.layout.height);
     return item.kind === 'flight'
@@ -403,7 +387,7 @@ function RosterScreenImpl({ roster, rosters, duties, selectedSector, palette, im
   };
 
   return <View style={styles.screen}>
-    <View style={styles.titleRow}><View style={styles.grow}><Text style={[styles.sectionTitle, { color: palette.text }]}>{roster ? rosterMonthLabel(roster) : 'Roster'}</Text><Text style={[styles.meta, { color: palette.muted }]}>{roster?.subject ? `${roster.subject.base ?? '—'} · ${roster.subject.rank ?? 'crew'}` : 'Personal schedule'}</Text></View><View style={styles.titleActions}>{roster && <Pressable onPress={exportCalendar} style={[styles.compactButton, { backgroundColor: palette.surface, borderColor: palette.line }]}>{calendarState === 'working' ? <ActivityIndicator size="small" /> : <Text style={[styles.compactText, { color: palette.text }]}>{calendarState === 'done' ? 'Added' : calendarState === 'error' ? 'Retry' : 'Calendar'}</Text>}</Pressable>}<Pressable onPress={onImport} disabled={importing} style={[styles.compactButton, { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft }]}>{importing ? <ActivityIndicator size="small" /> : <Text style={[styles.compactText, { color: palette.accent }]}>{roster ? 'Add file' : 'Import file'}</Text>}</Pressable></View></View>
+    <View style={styles.titleRow}><View style={styles.grow}><Text style={[styles.sectionTitle, { color: palette.text }]}>{roster ? rosterMonthLabel(roster) : 'Roster'}</Text><Text style={[styles.meta, { color: palette.muted }]}>{roster?.subject ? `${roster.subject.base ?? '—'} · ${roster.subject.rank ?? 'crew'}` : 'Personal schedule'}</Text></View><View style={styles.titleActions}>{roster && <Pressable onPress={exportCalendar} style={[styles.compactButton, styles.depthSurface, { backgroundColor: palette.surface, borderColor: palette.line }]}>{calendarState === 'working' ? <ActivityIndicator size="small" /> : <Text style={[styles.compactText, { color: palette.text }]}>{calendarState === 'done' ? 'Added' : calendarState === 'error' ? 'Retry' : 'Calendar'}</Text>}</Pressable>}<Pressable onPress={onImport} disabled={importing} style={[styles.compactButton, styles.depthSurface, { backgroundColor: palette.accentSoft, borderColor: palette.line }]}>{importing ? <ActivityIndicator size="small" /> : <Text style={[styles.compactText, { color: palette.accent }]}>{roster ? 'Add file' : 'Import file'}</Text>}</Pressable></View></View>
     {roster && rosters.length > 1 && <View style={styles.monthNav}><Pressable disabled={index <= 0} onPress={() => goToMonth(-1)}><Text style={[styles.monthNavText, { color: index <= 0 ? palette.line : palette.text }]}>‹ Previous</Text></Pressable><Text style={[styles.meta, { color: palette.muted }]}>{index + 1} / {rosters.length}</Text><Pressable disabled={index >= rosters.length - 1} onPress={() => goToMonth(1)}><Text style={[styles.monthNavText, { color: index >= rosters.length - 1 ? palette.line : palette.text }]}>Next ›</Text></Pressable></View>}
     {!roster ? <View style={[styles.emptyCard, styles.depthSurface, { backgroundColor: palette.surface, borderColor: palette.line }]}><Text style={[styles.meta, { color: palette.muted }]}>Tap AIMS above, or import a saved roster file to begin.</Text></View> : <SwipeSurface ref={monthSwipeRef} style={styles.monthSwipeWrap} onSwipeRight={index > 0 ? () => onMonth(-1) : undefined} onSwipeLeft={index < rosters.length - 1 ? () => onMonth(1) : undefined} threshold={38}><View style={[styles.innerWindow, styles.depthSurface, { backgroundColor: palette.surface, borderColor: palette.line }]}><FlatList
       ref={listRef}
@@ -428,7 +412,7 @@ function FlightRosterCard({ roster, duty, sector, selected, isToday, palette, on
   const dateMeta = rosterDateMeta(duty);
   const stay = stayForSector(roster, sector);
   const forecastStartDate = arrivalForecastDate(roster, duty, sector);
-  return <Pressable onPress={onPress} onLayout={onLayout} style={[styles.rosterCard, isToday && styles.rosterCardToday, { backgroundColor: selected || isToday ? palette.accentSoft : palette.surfaceStrong, borderColor: isToday ? palette.accent : palette.line, ...(isToday ? todayGlow(palette) : null) }]}>
+  return <Pressable onPress={onPress} onLayout={onLayout} style={[styles.rosterCard, isToday && styles.rosterCardToday, styles.depthSurface, { backgroundColor: selected || isToday ? palette.accentSoft : palette.surfaceStrong, borderColor: isToday ? palette.accent : palette.line, ...(isToday ? todayGlow(palette) : null) }]}>
     <View style={styles.flightCardTop}><Text style={[styles.label, { color: isToday ? palette.accent : dateMeta.weekend ? palette.weekend : palette.muted }]}>{dateMeta.label}{isToday ? ' · TODAY' : ''}</Text><Text style={[styles.flightNumber, { color: palette.muted }]}>{sector.flightNumber}{sector.deadhead ? ' · DHC' : ''}</Text></View>
     <Text style={[styles.rosterRoute, { color: palette.text }]}>{sector.departure} → {sector.arrival}</Text>
     <Text style={[styles.meta, { color: palette.muted }]}>{sector.departureTime} – {sector.arrivalTime} · Report {duty.reportTime}</Text>
@@ -439,7 +423,7 @@ function FlightRosterCard({ roster, duty, sector, selected, isToday, palette, on
 function RosterEventCard({ item, isToday, palette, onLayout }: { item: Extract<RosterTimelineRow, { kind: 'event' }>; isToday: boolean; palette: Palette; onLayout: (event: LayoutChangeEvent) => void }) {
   const dateMeta = eventDateMeta(item.date);
   const detail = [item.detail, item.station].filter(Boolean).join(' · ');
-  return <View onLayout={onLayout} style={[styles.rosterCard, isToday && styles.rosterCardToday, { backgroundColor: isToday ? palette.accentSoft : palette.surfaceStrong, borderColor: isToday ? palette.accent : palette.line, ...(isToday ? todayGlow(palette) : null) }]}>
+  return <View onLayout={onLayout} style={[styles.rosterCard, isToday && styles.rosterCardToday, styles.depthSurface, { backgroundColor: isToday ? palette.accentSoft : palette.surfaceStrong, borderColor: isToday ? palette.accent : palette.line, ...(isToday ? todayGlow(palette) : null) }]}>
     <View style={styles.flightCardTop}><Text style={[styles.label, { color: isToday ? palette.accent : dateMeta.weekend ? palette.weekend : palette.muted }]}>{dateMeta.label}{isToday ? ' · TODAY' : ''}</Text><Text style={[styles.flightNumber, { color: palette.muted }]}>{item.badge}</Text></View>
     <Text numberOfLines={2} style={[styles.rosterEventTitle, { color: palette.text }]}>{item.title}</Text>
     {detail ? <Text style={[styles.meta, { color: palette.muted }]}>{detail}</Text> : null}
@@ -454,7 +438,7 @@ function FlightDetail({ row, roster, palette, onClose, onPrevious, onNext }: { r
   const [headerHeight, setHeaderHeight] = useState(0);
   const renderCrewMember: ListRenderItem<CrewMember> = useCallback(({ item }) => <View style={styles.crewRow}><View style={[styles.avatar, { backgroundColor: palette.accentSoft }]}><Text style={[styles.avatarText, { color: palette.accent }]}>{item.name[0]}</Text></View><View style={styles.grow}><Text style={[styles.crewName, { color: palette.text }]}>{item.name}</Text><Text style={[styles.meta, { color: palette.muted }]}>{item.position ?? item.role}</Text></View></View>, [palette]);
   const scrollHeader = <View>
-    {stay && <View style={[styles.stayCard, { backgroundColor: palette.surface, borderColor: palette.line }]}><View style={styles.flightCardTop}><Text style={[styles.label, { color: palette.muted }]}>STAY{stay.station ? ` · ${stay.station}` : ''}</Text>{stay.rest ? <Text style={[styles.flightNumber, { color: palette.gold }]}>REST {stay.rest}</Text> : null}</View>{stay.hotel ? <Text style={[styles.stayTitle, { color: palette.text }]}>{stay.hotel}</Text> : null}{stay.checkIn || stay.checkOut ? <Text style={[styles.meta, { color: palette.muted }]}>{stay.checkIn ?? '—'} → {stay.checkOut ?? '—'}</Text> : null}{stay.address ? <Text numberOfLines={2} style={[styles.stayMeta, { color: palette.muted }]}>{stay.address}</Text> : null}{stay.phone ? <Text numberOfLines={2} style={[styles.stayMeta, { color: palette.muted }]}>{stay.phone}</Text> : null}</View>}
+    {stay && <View style={[styles.stayCard, styles.depthSurface, { backgroundColor: palette.surface, borderColor: palette.line }]}><View style={styles.flightCardTop}><Text style={[styles.label, { color: palette.muted }]}>STAY{stay.station ? ` · ${stay.station}` : ''}</Text>{stay.rest ? <Text style={[styles.flightNumber, { color: palette.gold }]}>REST {stay.rest}</Text> : null}</View>{stay.hotel ? <Text style={[styles.stayTitle, { color: palette.text }]}>{stay.hotel}</Text> : null}{stay.checkIn || stay.checkOut ? <Text style={[styles.meta, { color: palette.muted }]}>{stay.checkIn ?? '—'} → {stay.checkOut ?? '—'}</Text> : null}{stay.address ? <Text numberOfLines={2} style={[styles.stayMeta, { color: palette.muted }]}>{stay.address}</Text> : null}{stay.phone ? <Text numberOfLines={2} style={[styles.stayMeta, { color: palette.muted }]}>{stay.phone}</Text> : null}</View>}
     <Text style={[styles.swipeHint, { color: palette.muted }]}>{onPrevious ? '‹ ' : ''}swipe flight{onNext ? ' ›' : ''} · swipe down to close</Text>
     <Text style={[styles.flyingWith, { color: palette.accent }]}>Flying with · {row.sector.crew.length}</Text>
   </View>;
@@ -517,13 +501,13 @@ function MoreScreenImpl({ rosters, palette, onRestoreBackup, onDeleteRoster, onE
     <ScrollView style={styles.grow} contentContainerStyle={styles.moreContent} showsVerticalScrollIndicator={false}>
       <View style={[styles.libraryCard, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}><Text style={[styles.cardTitle, { color: palette.text }]}>Rosters</Text>{rosters.length ? <FlatList data={rosters} keyExtractor={(item) => item.period.start} style={styles.libraryList} showsVerticalScrollIndicator={false} renderItem={renderRosterRow} /> : <Text style={[styles.meta, { color: palette.muted }]}>No rosters stored</Text>}</View>
 
-      {rosters.length > 0 && <Pressable onPress={() => setConfirmErase(true)} style={[styles.dangerButton, { backgroundColor: palette.danger + '1A', borderColor: palette.danger }]}><Text style={[styles.dangerText, { color: palette.danger }]}>⚠ Erase local roster data</Text></Pressable>}
+      {rosters.length > 0 && <Pressable onPress={() => setConfirmErase(true)} style={[styles.dangerButton, { backgroundColor: palette.danger + '16', borderColor: palette.danger }]}><Text style={[styles.dangerText, { color: palette.danger }]}>⚠ Erase local roster data</Text></Pressable>}
 
       <View style={[styles.infoCard, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}>
         <Text style={[styles.cardTitle, { color: palette.text }]}>Backup</Text>
         <Text style={[styles.meta, { color: palette.muted }]}>Save every stored roster to a file, or restore from one. Nothing leaves this device.</Text>
         <View style={styles.backupRow}>
-          <Pressable onPress={handleExport} disabled={!rosters.length} style={[styles.compactButton, styles.grow, { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft, opacity: rosters.length ? 1 : .5 }]}><Text style={[styles.compactText, { color: palette.accent }]}>Save backup</Text></Pressable>
+          <Pressable onPress={handleExport} disabled={!rosters.length} style={[styles.compactButton, styles.grow, { backgroundColor: palette.accentSoft, borderColor: palette.line, opacity: rosters.length ? 1 : .5 }]}><Text style={[styles.compactText, { color: palette.accent }]}>Save backup</Text></Pressable>
           <Pressable onPress={handleRestore} disabled={backupBusy} style={[styles.compactButton, styles.grow, { backgroundColor: palette.surface, borderColor: palette.line }]}>{backupBusy ? <ActivityIndicator size="small" /> : <Text style={[styles.compactText, { color: palette.text }]}>Restore backup</Text>}</Pressable>
         </View>
         {backupNotice ? <Text style={[styles.meta, { color: palette.muted }]}>{backupNotice}</Text> : null}
@@ -691,25 +675,27 @@ function forecastDayLabel(value: string): string {
   const weekday = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'][date.getUTCDay()];
   return `${weekday} ${day}`;
 }
-function CrewRow({ member, palette }: { member: CrewMember; palette: Palette }) { return <View style={[styles.crewRow, { borderBottomWidth: StyleSheet.hairlineWidth, borderColor: palette.line }]}><View style={[styles.avatar, { backgroundColor: palette.accentSoft }]}><Text style={[styles.avatarText, { color: palette.accent }]}>{member.name?.trim()?.[0]?.toUpperCase() ?? '•'}</Text></View><View style={styles.grow}><Text numberOfLines={1} style={[styles.crewName, { color: palette.text }]}>{member.name}</Text><Text style={[styles.meta, { color: palette.muted }]}>{member.position ?? member.role}</Text></View></View>; }
-function Summary({ title, value, detail, palette }: { title: string; value: string; detail: string; palette: Palette }) { return <View style={[styles.summary, styles.depthSurface, { backgroundColor: palette.surface, borderColor: palette.line }]}><Text style={[styles.label, { color: palette.muted }]}>{title}</Text><Text style={[styles.summaryValue, { color: palette.text }]}>{value}</Text><Text style={[styles.meta, { color: palette.muted }]}>{detail}</Text></View>; }
-function PrimaryButton({ title, onPress, loading, palette }: { title: string; onPress: () => void; loading: boolean; palette: Palette }) { return <Pressable onPress={onPress} disabled={loading} style={[styles.primaryButton, { backgroundColor: palette.accent }]}>{loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.actionText}>{title}</Text>}</Pressable>; }
+function CrewRow({ member, palette }: { member: CrewMember; palette: Palette }) { return <View style={[styles.crewRow, styles.depthSurface, { backgroundColor: palette.surface, borderColor: palette.line }]}><View style={[styles.avatar, { backgroundColor: palette.accentSoft }]}><Text style={[styles.avatarText, { color: palette.accent }]}>{member.name?.trim()?.[0]?.toUpperCase() ?? '•'}</Text></View><View style={styles.grow}><Text numberOfLines={1} style={[styles.crewName, { color: palette.text }]}>{member.name}</Text><Text style={[styles.meta, { color: palette.muted }]}>{member.position ?? member.role}</Text></View></View>; }
+function Summary({ title, value, detail, palette }: { title: string; value: string; detail: string; palette: Palette }) { const night = title.includes('NIGHT'); return <View style={[styles.summary, styles.depthSurface, { backgroundColor: palette.surface, borderColor: palette.line }]}><View style={[styles.summaryIconOrb, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}><Text style={[styles.summaryIcon, { color: palette.accent }]}>{night ? '☾' : '▮▮▮'}</Text></View><View style={styles.summaryText}><Text style={[styles.label, { color: palette.muted }]}>{title}</Text><Text style={[styles.summaryValue, { color: palette.text }]}>{value}</Text><Text numberOfLines={1} style={[styles.meta, { color: palette.muted }]}>{detail}</Text></View></View>; }
+function PrimaryButton({ title, onPress, loading, palette }: { title: string; onPress: () => void; loading: boolean; palette: Palette }) { return <Pressable onPress={onPress} disabled={loading} style={[styles.primaryButton, styles.depthSurface, { backgroundColor: palette.accent }]}>{loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.actionText}>{title}</Text>}</Pressable>; }
 function operatingCount(roster: ParsedAirAstanaRoster) { return roster.sectors.filter((sector) => !sector.deadhead).length; }
 
 const styles = StyleSheet.create({
-  safe:{flex:1}, app:{flex:1,width:'100%',maxWidth:620,alignSelf:'center',paddingHorizontal:16,paddingTop:10.58},
-  header:{height:72,flexDirection:'row',alignItems:'center',justifyContent:'space-between'}, brand:{fontSize:28,lineHeight:34,fontWeight:'700',letterSpacing:-.8},
-  modeButton:{width:66,height:40,borderRadius:16,alignItems:'center',justifyContent:'center'}, aimsGlyph:{fontSize:12,lineHeight:15,fontWeight:'800',letterSpacing:.2},
-  aimsStatus:{minHeight:66,borderWidth:1,borderRadius:20,padding:12,marginBottom:8,flexDirection:'row',alignItems:'center',gap:10}, aimsStatusIcon:{width:28,height:28,alignItems:'center',justifyContent:'center'}, aimsStatusGlyph:{fontSize:18,fontWeight:'800'}, aimsStatusTitle:{fontSize:14,lineHeight:18,fontWeight:'700'}, statusDismiss:{width:24,height:34,alignItems:'center',justifyContent:'center'}, statusDismissText:{fontSize:22,lineHeight:24},
-  viewport:{flex:1,minHeight:0}, tabPane:{position:'absolute',top:0,left:0,right:0,bottom:0}, tabPaneHidden:{opacity:0}, screen:{flex:1,paddingTop:8,gap:12}, grow:{flex:1,minWidth:0}, sectionTitle:{fontSize:28,lineHeight:34,fontWeight:'700',letterSpacing:-.8}, intro:{fontSize:15,lineHeight:22}, label:{fontSize:11,fontWeight:'700',letterSpacing:.9}, meta:{fontSize:13,lineHeight:18},
-  dutyHead:{flexDirection:'row',alignItems:'center',justifyContent:'space-between'}, heroCard:{borderWidth:1,borderRadius:22,padding:13}, heroRoute:{fontSize:27,lineHeight:32,fontWeight:'700',letterSpacing:-.7}, heroTopRow:{flexDirection:'row',alignItems:'flex-start',justifyContent:'space-between',gap:10}, heroRouteFlex:{flex:1}, flightBadgeRow:{flexDirection:'row',flexWrap:'wrap',gap:6,marginTop:8}, flightBadge:{borderRadius:10,paddingHorizontal:9,paddingVertical:4}, flightBadgeText:{fontSize:12,fontWeight:'800',letterSpacing:.3,...MONO_FONT},
-  countdownPill:{borderRadius:13,paddingHorizontal:10,paddingVertical:5,alignItems:'center'}, countdown:{fontSize:16,fontWeight:'800',fontVariant:['tabular-nums'],...MONO_FONT}, countdownLabel:{fontSize:9,fontWeight:'700',letterSpacing:.6,marginTop:1}, timeDivider:{height:StyleSheet.hairlineWidth,marginVertical:8}, timeRow:{flexDirection:'row',alignItems:'flex-start',gap:6}, timeCell:{flex:1,minWidth:0}, timeLabel:{fontSize:10,lineHeight:13,fontWeight:'700',letterSpacing:.3}, timeValue:{fontSize:18,lineHeight:22,fontWeight:'700',marginTop:2,fontVariant:['tabular-nums'],...MONO_FONT}, heroFoot:{fontSize:12,fontWeight:'600',marginTop:8}, weatherRow:{flexDirection:'row',alignItems:'center',gap:6,marginTop:8}, weatherIcon:{fontSize:16}, weatherTemp:{fontSize:14,fontWeight:'800',...MONO_FONT}, weatherMeta:{flex:1,fontSize:11.5,fontWeight:'600'},
-  summaryRow:{flexDirection:'row',gap:10}, summary:{flex:1,borderWidth:1,borderRadius:20,padding:14}, summaryValue:{fontSize:28,fontWeight:'700',marginTop:6,fontVariant:['tabular-nums'],...MONO_FONT}, upNext:{flex:1,minHeight:0,gap:2,...Platform.select({web:{maxHeight:'34vh' as any},default:{}})}, upNextList:{flex:1},
-  primaryButton:{height:50,borderRadius:16,alignItems:'center',justifyContent:'center'}, actionText:{color:'#fff',fontWeight:'700'}, titleRow:{flexDirection:'row',alignItems:'center',gap:8}, titleActions:{flexDirection:'row',gap:7}, compactButton:{height:38,minWidth:72,borderWidth:1,borderRadius:14,alignItems:'center',justifyContent:'center',paddingHorizontal:10}, compactText:{fontWeight:'700',fontSize:12}, monthNav:{height:40,flexDirection:'row',alignItems:'center',justifyContent:'space-between'}, monthNavText:{fontSize:12,fontWeight:'600'}, monthSwipeWrap:{flex:1,minHeight:0},
-  emptyCard:{borderWidth:1,borderRadius:20,padding:14}, innerWindow:{flex:1,minHeight:0,borderWidth:1,borderRadius:20,overflow:'hidden'}, listContent:{padding:8,gap:7,paddingBottom:18}, rosterCard:{borderWidth:1,borderRadius:16,padding:13}, rosterCardToday:{borderWidth:1.5}, flightCardTop:{flexDirection:'row',justifyContent:'space-between'}, flightNumber:{fontSize:11,fontWeight:'700'}, rosterRoute:{fontSize:20,fontWeight:'700',marginTop:4}, rosterEventTitle:{fontSize:18,lineHeight:22,fontWeight:'700',marginTop:4},
-  infoCard:{borderWidth:1,borderRadius:20,padding:14,gap:3}, cardTitle:{fontSize:17,lineHeight:22,fontWeight:'700'}, libraryCard:{borderWidth:1,borderRadius:20,padding:14,minHeight:88,maxHeight:190}, libraryList:{marginTop:5}, libraryRow:{minHeight:54,flexDirection:'row',alignItems:'center',gap:10,borderBottomWidth:StyleSheet.hairlineWidth}, libraryMonth:{fontSize:14,fontWeight:'700'}, deleteRosterButton:{minWidth:58,height:34,borderRadius:12,alignItems:'center',justifyContent:'center',paddingHorizontal:8}, deleteRosterText:{fontSize:11,fontWeight:'700'}, expiryDate:{fontSize:12,fontWeight:'700',fontVariant:['tabular-nums'],...MONO_FONT},
-  dangerButton:{height:48,borderWidth:1,borderRadius:15,alignItems:'center',justifyContent:'center'}, dangerText:{fontWeight:'700',fontSize:14}, backupRow:{flexDirection:'row',gap:8,marginTop:10}, expiryHeaderRow:{flexDirection:'row',alignItems:'center',justifyContent:'space-between'}, expiryChevron:{fontSize:20,fontWeight:'700'}, expirySheet:{width:'100%',maxWidth:620,maxHeight:'78%',alignSelf:'center',borderTopWidth:1,borderTopLeftRadius:28,borderTopRightRadius:28,paddingHorizontal:18,paddingBottom:12,overflow:'hidden'}, expirySheetList:{marginTop:10}, expirySheetListContent:{paddingBottom:12}, versionText:{fontSize:10,fontWeight:'600',letterSpacing:.2,opacity:.5,textAlign:'center',marginTop:2}, confirmDialog:{width:'88%',maxWidth:360,borderWidth:1,borderRadius:22,padding:18}, confirmActions:{flexDirection:'row',gap:10,marginTop:16}, stayPopup:{width:'88%',maxWidth:340,borderWidth:1,borderRadius:22,padding:18}, stayPopupRest:{fontSize:28,fontWeight:'800',marginTop:6,fontVariant:['tabular-nums'],...MONO_FONT}, stayForecastList:{marginTop:14,gap:2}, stayForecastRow:{flexDirection:'row',alignItems:'center',gap:6,paddingVertical:8,borderTopWidth:StyleSheet.hairlineWidth}, stayForecastDay:{width:34,fontSize:12,fontWeight:'700'}, stayForecastConditions:{flex:1,minWidth:0,flexDirection:'row',alignItems:'center',gap:6}, stayForecastDescription:{flex:1,minWidth:0,fontSize:12}, stayForecastIcon:{fontSize:18,flex:1}, stayForecastTemp:{fontSize:14,fontWeight:'700',fontVariant:['tabular-nums'],...MONO_FONT}, forecastStateRow:{flexDirection:'row',alignItems:'center',gap:8,marginTop:8}, forecastRetry:{marginTop:6,paddingVertical:4}, confirmCancel:{flex:1,height:44,borderWidth:1,borderRadius:13,alignItems:'center',justifyContent:'center'}, confirmErase:{flex:1,height:44,borderRadius:13,alignItems:'center',justifyContent:'center'}, moreContent:{gap:12,paddingBottom:24},
-  depthSurface:{shadowColor:'#000',shadowOffset:{width:0,height:10},shadowOpacity:.1,shadowRadius:24,elevation:5,...WEB_GLASS}, tabBar:{height:68,marginTop:8,marginBottom:4,borderWidth:1,borderRadius:22,flexDirection:'row',...WEB_TAB_GLASS}, tabSelection:{position:'absolute',left:4,top:4,bottom:4,borderRadius:18,shadowColor:'#000',shadowOffset:{width:0,height:5},shadowOpacity:.08,shadowRadius:12,elevation:2}, tabItem:{flex:1,zIndex:1,alignItems:'center',justifyContent:'center',gap:2}, tabIconWrap:{minWidth:35,height:27,borderRadius:14,alignItems:'center',justifyContent:'center'}, tabIcon:{textAlign:'center'}, tabText:{fontSize:11,fontWeight:'600'},
-  flightSheet:{width:'100%',maxWidth:620,maxHeight:'78%',alignSelf:'center',borderTopWidth:1,borderTopLeftRadius:28,borderTopRightRadius:28,paddingHorizontal:18,paddingBottom:12,overflow:'hidden'}, flightSheetContent:{minHeight:0,flexShrink:1}, sheetRoute:{fontSize:28,lineHeight:33,fontWeight:'700',marginTop:5}, swipeHint:{fontSize:10,marginTop:7}, flyingWith:{fontSize:11,fontWeight:'700',letterSpacing:.45,opacity:.82,marginTop:12,marginBottom:7}, crewScroll:{minHeight:0,flexShrink:1,flex:1,...Platform.select({web:{maxHeight:'calc(78vh - 46px)' as any},default:{}})}, crewList:{paddingBottom:12}, crewRow:{minHeight:50,flexDirection:'row',alignItems:'center'}, avatar:{width:34,height:34,borderRadius:17,alignItems:'center',justifyContent:'center',marginRight:11}, avatarText:{fontSize:12,fontWeight:'800'}, crewName:{fontSize:14,fontWeight:'600'},
-  flightFacts:{flexDirection:'row',gap:6,borderTopWidth:StyleSheet.hairlineWidth,borderBottomWidth:StyleSheet.hairlineWidth,paddingVertical:10,marginTop:10}, flightFact:{flex:1,minWidth:0}, flightFactLabel:{fontSize:9,lineHeight:12,fontWeight:'700',letterSpacing:.45}, flightFactValue:{fontSize:16,lineHeight:20,fontWeight:'700',fontVariant:['tabular-nums'],marginTop:2,...MONO_FONT}, stayCard:{borderWidth:1,borderRadius:16,padding:12,marginTop:12}, stayTitle:{fontSize:16,lineHeight:21,fontWeight:'700',marginTop:4}, stayMeta:{fontSize:11,lineHeight:15,marginTop:4},
+  safe:{flex:1}, app:{flex:1,width:'100%',maxWidth:620,alignSelf:'center',paddingHorizontal:16,paddingTop:8},
+  header:{height:78,flexDirection:'row',alignItems:'center',justifyContent:'space-between'}, brand:{fontSize:30,lineHeight:34,fontWeight:'800',letterSpacing:-1.1}, brandSubtitle:{fontSize:8.5,lineHeight:12,fontWeight:'700',letterSpacing:2.2,marginTop:2},
+  modeButton:{width:68,height:42,borderRadius:21,borderWidth:1,alignItems:'center',justifyContent:'center'}, aimsGlyph:{fontSize:12,lineHeight:15,fontWeight:'800',letterSpacing:.4},
+  aimsStatus:{minHeight:66,borderWidth:1,borderRadius:22,padding:12,marginBottom:8,flexDirection:'row',alignItems:'center',gap:10}, aimsStatusIcon:{width:28,height:28,alignItems:'center',justifyContent:'center'}, aimsStatusGlyph:{fontSize:18,fontWeight:'800'}, aimsStatusTitle:{fontSize:14,lineHeight:18,fontWeight:'700'}, statusDismiss:{width:24,height:34,alignItems:'center',justifyContent:'center'}, statusDismissText:{fontSize:22,lineHeight:24},
+  viewport:{flex:1,minHeight:0}, tabPane:{position:'absolute',top:0,left:0,right:0,bottom:0}, tabPaneHidden:{opacity:0}, screen:{flex:1,paddingTop:8,gap:12}, grow:{flex:1,minWidth:0}, sectionTitle:{fontSize:28,lineHeight:34,fontWeight:'750',letterSpacing:-.8}, intro:{fontSize:15,lineHeight:22}, label:{fontSize:10.5,fontWeight:'800',letterSpacing:1.05}, meta:{fontSize:13,lineHeight:18},
+  dutyHead:{flexDirection:'row',alignItems:'center',justifyContent:'space-between'}, heroCard:{borderWidth:1,borderRadius:32,padding:20,overflow:'hidden'}, heroRouteRow:{flexDirection:'row',alignItems:'center',gap:13}, planeOrb:{width:60,height:60,borderRadius:30,borderWidth:1,alignItems:'center',justifyContent:'center'}, planeGlyph:{fontSize:29,lineHeight:32,fontWeight:'800'}, heroRouteBlock:{flex:1,minWidth:0}, heroRoute:{fontSize:27,lineHeight:31,fontWeight:'800',letterSpacing:-.8},
+  flightBadgeRow:{flexDirection:'row',flexWrap:'wrap',gap:6,marginTop:7}, flightBadge:{height:32,borderWidth:1,borderRadius:16,paddingHorizontal:12,alignItems:'center',justifyContent:'center'}, flightBadgeText:{fontSize:12,fontWeight:'800',letterSpacing:.3,...MONO_FONT},
+  heroCountdownRow:{alignItems:'flex-end',marginTop:12}, countdownPill:{minWidth:150,borderWidth:1,borderRadius:22,paddingHorizontal:16,paddingVertical:8,alignItems:'center'}, countdown:{fontSize:19,fontWeight:'800',fontVariant:['tabular-nums'],...MONO_FONT}, countdownLabel:{fontSize:9,fontWeight:'800',letterSpacing:1.1,marginTop:1},
+  timeDivider:{height:StyleSheet.hairlineWidth,marginVertical:12}, timeRow:{flexDirection:'row',alignItems:'flex-start',gap:8}, timeCell:{flex:1,minWidth:0}, timeLabel:{fontSize:9.5,lineHeight:12,fontWeight:'800',letterSpacing:.45}, timeValue:{fontSize:18,lineHeight:22,fontWeight:'750',marginTop:3,fontVariant:['tabular-nums'],...MONO_FONT}, heroFooterDivider:{marginTop:13,marginBottom:9}, heroFooterRow:{flexDirection:'row',alignItems:'center',gap:10}, heroWeatherWrap:{flex:1,minWidth:0}, heroFoot:{fontSize:11.5,fontWeight:'700',textAlign:'right'}, weatherRow:{flexDirection:'row',alignItems:'center',gap:6,marginTop:0,minHeight:28}, weatherIcon:{fontSize:17}, weatherTemp:{fontSize:14,fontWeight:'800',...MONO_FONT}, weatherMeta:{flex:1,fontSize:11.5,fontWeight:'650'},
+  summaryRow:{flexDirection:'row',gap:12}, summary:{flex:1,minHeight:124,borderWidth:1,borderRadius:26,padding:16,alignItems:'flex-start'}, summaryIconOrb:{width:48,height:48,borderRadius:24,borderWidth:1,alignItems:'center',justifyContent:'center',marginBottom:10}, summaryIcon:{fontSize:18,fontWeight:'800',letterSpacing:-2}, summaryText:{flex:1,minWidth:0,width:'100%'}, summaryValue:{fontSize:28,fontWeight:'750',marginTop:5,fontVariant:['tabular-nums'],...MONO_FONT}, ytdMeta:{textAlign:'center',paddingHorizontal:4}, upNext:{flex:1,minHeight:0,gap:7,...Platform.select({web:{maxHeight:'34vh' as any},default:{}})}, upNextList:{flex:1}, crewCardList:{gap:7,paddingTop:2,paddingBottom:4},
+  primaryButton:{height:50,borderRadius:18,alignItems:'center',justifyContent:'center'}, actionText:{color:'#fff',fontWeight:'700'}, titleRow:{flexDirection:'row',alignItems:'center',gap:8}, titleActions:{flexDirection:'row',gap:7}, compactButton:{height:40,minWidth:74,borderWidth:1,borderRadius:16,alignItems:'center',justifyContent:'center',paddingHorizontal:11}, compactText:{fontWeight:'700',fontSize:12}, monthNav:{height:40,flexDirection:'row',alignItems:'center',justifyContent:'space-between'}, monthNavText:{fontSize:12,fontWeight:'600'}, monthSwipeWrap:{flex:1,minHeight:0},
+  emptyCard:{borderWidth:1,borderRadius:24,padding:16}, innerWindow:{flex:1,minHeight:0,borderWidth:1,borderRadius:26,overflow:'hidden'}, listContent:{padding:9,gap:8,paddingBottom:20}, rosterCard:{borderWidth:1,borderRadius:22,padding:14}, rosterCardToday:{borderWidth:1.5}, flightCardTop:{flexDirection:'row',justifyContent:'space-between'}, flightNumber:{fontSize:11,fontWeight:'700'}, rosterRoute:{fontSize:20,fontWeight:'750',marginTop:4}, rosterEventTitle:{fontSize:18,lineHeight:22,fontWeight:'700',marginTop:4},
+  infoCard:{borderWidth:1,borderRadius:24,padding:16,gap:4}, cardTitle:{fontSize:17,lineHeight:22,fontWeight:'750'}, libraryCard:{borderWidth:1,borderRadius:24,padding:16,minHeight:88,maxHeight:190}, libraryList:{marginTop:5}, libraryRow:{minHeight:56,flexDirection:'row',alignItems:'center',gap:10,borderBottomWidth:StyleSheet.hairlineWidth}, libraryMonth:{fontSize:14,fontWeight:'700'}, deleteRosterButton:{minWidth:58,height:34,borderRadius:14,alignItems:'center',justifyContent:'center',paddingHorizontal:8}, deleteRosterText:{fontSize:11,fontWeight:'700'}, expiryDate:{fontSize:12,fontWeight:'700',fontVariant:['tabular-nums'],...MONO_FONT},
+  dangerButton:{height:48,borderWidth:1,borderRadius:17,alignItems:'center',justifyContent:'center'}, dangerText:{fontWeight:'700',fontSize:14}, backupRow:{flexDirection:'row',gap:8,marginTop:10}, expiryHeaderRow:{flexDirection:'row',alignItems:'center',justifyContent:'space-between'}, expiryChevron:{fontSize:20,fontWeight:'700'}, expirySheet:{width:'100%',maxWidth:620,maxHeight:'78%',alignSelf:'center',borderTopWidth:1,borderTopLeftRadius:30,borderTopRightRadius:30,paddingHorizontal:18,paddingBottom:12,overflow:'hidden',...WEB_GLASS}, expirySheetList:{marginTop:10}, expirySheetListContent:{paddingBottom:12}, versionText:{fontSize:10,fontWeight:'600',letterSpacing:.2,opacity:.5,textAlign:'center',marginTop:2}, confirmDialog:{width:'88%',maxWidth:360,borderWidth:1,borderRadius:26,padding:18,...WEB_GLASS}, confirmActions:{flexDirection:'row',gap:10,marginTop:16}, stayPopup:{width:'88%',maxWidth:340,borderWidth:1,borderRadius:26,padding:18,...WEB_GLASS}, stayPopupRest:{fontSize:28,fontWeight:'800',marginTop:6,fontVariant:['tabular-nums'],...MONO_FONT}, stayForecastList:{marginTop:14,gap:2}, stayForecastRow:{flexDirection:'row',alignItems:'center',gap:6,paddingVertical:8,borderTopWidth:StyleSheet.hairlineWidth}, stayForecastDay:{width:34,fontSize:12,fontWeight:'700'}, stayForecastConditions:{flex:1,minWidth:0,flexDirection:'row',alignItems:'center',gap:6}, stayForecastDescription:{flex:1,minWidth:0,fontSize:12}, stayForecastIcon:{fontSize:18,flex:1}, stayForecastTemp:{fontSize:14,fontWeight:'700',fontVariant:['tabular-nums'],...MONO_FONT}, forecastStateRow:{flexDirection:'row',alignItems:'center',gap:8,marginTop:8}, forecastRetry:{marginTop:6,paddingVertical:4}, confirmCancel:{flex:1,height:44,borderWidth:1,borderRadius:14,alignItems:'center',justifyContent:'center'}, confirmErase:{flex:1,height:44,borderRadius:14,alignItems:'center',justifyContent:'center'}, moreContent:{gap:12,paddingBottom:26},
+  depthSurface:{shadowColor:'#0A2348',shadowOffset:{width:0,height:8},shadowOpacity:.10,shadowRadius:22,elevation:5,...WEB_GLASS}, tabBar:{height:96,marginTop:8,marginBottom:8,borderWidth:1,borderRadius:34,flexDirection:'row',padding:5,...WEB_TAB_GLASS}, tabSelection:{position:'absolute',left:5,top:5,bottom:5,borderRadius:29,shadowColor:'#0A2348',shadowOffset:{width:0,height:5},shadowOpacity:.09,shadowRadius:14,elevation:2}, tabItem:{flex:1,zIndex:1,alignItems:'center',justifyContent:'center',gap:4}, tabIconWrap:{minWidth:40,height:31,borderRadius:16,alignItems:'center',justifyContent:'center'}, tabIcon:{textAlign:'center'}, tabText:{fontSize:11.5,fontWeight:'700'},
+  flightSheet:{width:'100%',maxWidth:620,maxHeight:'78%',alignSelf:'center',borderTopWidth:1,borderTopLeftRadius:30,borderTopRightRadius:30,paddingHorizontal:18,paddingBottom:12,overflow:'hidden',...WEB_GLASS}, flightSheetContent:{minHeight:0,flexShrink:1}, sheetRoute:{fontSize:28,lineHeight:33,fontWeight:'750',marginTop:5}, swipeHint:{fontSize:10,marginTop:7}, flyingWith:{fontSize:11,fontWeight:'700',letterSpacing:.45,opacity:.82,marginTop:12,marginBottom:7}, crewScroll:{minHeight:0,flexShrink:1,flex:1,...Platform.select({web:{maxHeight:'calc(78vh - 46px)' as any},default:{}})}, crewList:{paddingBottom:12}, crewRow:{minHeight:64,flexDirection:'row',alignItems:'center',borderWidth:1,borderRadius:22,paddingHorizontal:14}, avatar:{width:42,height:42,borderRadius:21,alignItems:'center',justifyContent:'center',marginRight:12}, avatarText:{fontSize:13,fontWeight:'800'}, crewName:{fontSize:14,fontWeight:'650'},
+  flightFacts:{flexDirection:'row',gap:6,borderTopWidth:StyleSheet.hairlineWidth,borderBottomWidth:StyleSheet.hairlineWidth,paddingVertical:10,marginTop:10}, flightFact:{flex:1,minWidth:0}, flightFactLabel:{fontSize:9,lineHeight:12,fontWeight:'700',letterSpacing:.45}, flightFactValue:{fontSize:16,lineHeight:20,fontWeight:'700',fontVariant:['tabular-nums'],marginTop:2,...MONO_FONT}, stayCard:{borderWidth:1,borderRadius:20,padding:13,marginTop:12}, stayTitle:{fontSize:16,lineHeight:21,fontWeight:'700',marginTop:4}, stayMeta:{fontSize:11,lineHeight:15,marginTop:4},
 });
