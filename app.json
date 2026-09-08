@@ -12,8 +12,8 @@
       "output": "static",
       "name": "eScrew — Crew Schedule",
       "shortName": "eScrew",
-      "themeColor": "#2F80ED",
-      "backgroundColor": "#8EC5FF",
+      "themeColor": "#2D7DFF",
+      "backgroundColor": "#F6F7FA",
       "display": "standalone"
     },
     "plugins": ["expo-router"],
