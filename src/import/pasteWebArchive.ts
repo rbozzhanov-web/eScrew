@@ -43,17 +43,15 @@ export function openAimsWebArchiveFlow(): Promise<AimsWebArchiveResult | undefin
       width: '100%', border: '0', borderRadius: '14px', padding: '13px', fontSize: '15px', fontWeight: '800',
       background: '#2D7DFF', color: '#FFFFFF', marginBottom: '10px',
     });
-    // Both window.open() and a target="_blank" anchor explicitly ask iOS for a new
-    // browsing context, and a standalone home-screen PWA fulfills that with its own
-    // in-app popup instead of handing off to full Safari (confirmed on-device -- the
-    // target="_blank" version still popped up in-app). A same-window navigation to a
-    // cross-origin URL is the documented way to actually escape: iOS intercepts that
-    // and forwards it to Safari rather than loading it in place, since a standalone app
-    // navigating its own single window to a different site reads as leaving the app,
-    // not as opening something inside it.
+    // window.open() from a standalone home-screen PWA tends to spawn a small in-app popup
+    // window on iOS instead of handing off to full Safari -- which is exactly where you
+    // need to be to get the real Share Sheet (Options -> Web Archive) afterward. Clicking
+    // a real <a target="_blank"> element is treated more like a genuine user navigation
+    // and reliably escapes to Safari proper instead.
     openAims.onclick = () => {
       const link = document.createElement('a');
       link.href = 'https://aims.airastana.com/eCrew/CrewSchedule';
+      link.target = '_blank';
       link.rel = 'noopener noreferrer';
       document.body.append(link);
       link.click();
