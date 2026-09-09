@@ -10,7 +10,7 @@ import { formatMinutes, rosterMonthLabel, rosterToDuties } from '@/src/domain/ro
 import { stationLocalDateTimeMs } from '@/src/domain/stationTime';
 import type { CrewMember, Duty, Sector } from '@/src/domain/types';
 import { openAimsWebArchiveFlow } from '@/src/import/pasteWebArchive';
-import { pickAndParseRoster } from '@/src/import/pickRoster';
+import { pasteRosterFromClipboard, pickAndParseRoster } from '@/src/import/pickRoster';
 import type { ParsedAirAstanaRoster } from '@/src/import/parseAirAstanaRoster';
 import { exportBackup, restoreBackup } from '@/src/storage/backup';
 import { clearStoredRosters, loadStoredRosters, removeStoredRoster, upsertStoredRoster } from '@/src/storage/rosterStorage';
@@ -84,6 +84,7 @@ export default function MainScreen() {
   const [selectedFlight, setSelectedFlight] = useState<string>();
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState<string>();
+  const [pasteBannerVisible, setPasteBannerVisible] = useState(false);
   const [tabBarWidth, setTabBarWidth] = useState(0);
   const tabSelection = useRef(new Animated.Value(0)).current;
   const tabSwipeRef = useRef<SwipeSurfaceHandle>(null);
@@ -168,6 +169,46 @@ export default function MainScreen() {
       setImporting(false);
     }
   }, [importing]);
+
+  const importFromShortcutPaste = useCallback(async () => {
+    if (importing) return;
+    setPasteBannerVisible(false);
+    setImportError(undefined);
+    setImporting(true);
+    try {
+      const roster = await pasteRosterFromClipboard();
+      const next = upsertStoredRoster(roster);
+      setRosters(next);
+      setActiveMonth(roster.period.start);
+      setSelectedFlight(undefined);
+      setTab('Roster');
+    } catch (error) {
+      setImportError(error instanceof Error ? error.message : String(error));
+    } finally {
+      setImporting(false);
+    }
+  }, [importing]);
+
+  // Safari only allows reading the clipboard from a direct tap, so there is no way to
+  // silently check whether a Shortcut-pasted Web Archive is actually waiting before the
+  // user acts -- the best available signal is "the app just came back to the foreground",
+  // which is what happens right after running the Shortcut and switching back. That signal
+  // is imperfect (switching apps for any other reason looks identical), so the prompt is
+  // deliberately light: a small dismissible banner, not a blocking dialog, and it times out
+  // on its own if ignored rather than sitting there indefinitely.
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof document === 'undefined') return;
+    const onVisibilityChange = () => { if (document.visibilityState === 'visible') setPasteBannerVisible(true); };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', onVisibilityChange);
+  }, []);
+
+  useEffect(() => {
+    if (!pasteBannerVisible) return;
+    const timer = setTimeout(() => setPasteBannerVisible(false), 8000);
+    return () => clearTimeout(timer);
+  }, [pasteBannerVisible]);
+
   const restoreFromBackup = useCallback(async () => {
     const result = await restoreBackup();
     if (result.restored) {
@@ -226,6 +267,7 @@ export default function MainScreen() {
       </View>
 
       {importError && <ImportErrorBanner message={importError} palette={palette} onDismiss={() => setImportError(undefined)} />}
+      {!importError && !importing && pasteBannerVisible && <PasteReadyBanner palette={palette} onPaste={importFromShortcutPaste} onDismiss={() => setPasteBannerVisible(false)} />}
 
       <SwipeSurface ref={tabSwipeRef} style={styles.viewport} onSwipeLeft={tab === 'More' ? undefined : () => changeTab(1)} onSwipeRight={tab === 'Home' ? undefined : () => changeTab(-1)}>
         {/* All three tabs stay mounted permanently and are shown/hidden via opacity rather than
@@ -262,6 +304,17 @@ function ImportErrorBanner({ message, palette, onDismiss }: { message: string; p
     <View style={styles.aimsStatusIcon}><Text style={[styles.aimsStatusGlyph, { color: palette.danger }]}>!</Text></View>
     <View style={styles.grow}><Text style={[styles.aimsStatusTitle, { color: palette.text }]}>Could not import roster</Text><Text style={[styles.meta, { color: palette.muted }]}>{message}</Text></View>
     <Pressable onPress={onDismiss} accessibilityLabel="Dismiss import error" style={styles.statusDismiss}><Text style={[styles.statusDismissText, { color: palette.muted }]}>×</Text></Pressable>
+  </View>;
+}
+
+function PasteReadyBanner({ palette, onPaste, onDismiss }: { palette: Palette; onPaste: () => void; onDismiss: () => void }) {
+  return <View style={[styles.aimsStatus, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.accentLine }]}>
+    <View style={styles.aimsStatusIcon}><Text style={[styles.aimsStatusGlyph, { color: palette.accent }]}>⇩</Text></View>
+    <Pressable onPress={onPaste} style={styles.grow} accessibilityRole="button" accessibilityLabel="Paste Web Archive from Shortcut">
+      <Text style={[styles.aimsStatusTitle, { color: palette.text }]}>Paste from Shortcut?</Text>
+      <Text style={[styles.meta, { color: palette.muted }]}>Tap to import the Web Archive on your clipboard.</Text>
+    </Pressable>
+    <Pressable onPress={onDismiss} accessibilityLabel="Dismiss paste prompt" style={styles.statusDismiss}><Text style={[styles.statusDismissText, { color: palette.muted }]}>×</Text></Pressable>
   </View>;
 }
 
