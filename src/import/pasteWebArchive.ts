@@ -43,7 +43,20 @@ export function openAimsWebArchiveFlow(): Promise<AimsWebArchiveResult | undefin
       width: '100%', border: '0', borderRadius: '14px', padding: '13px', fontSize: '15px', fontWeight: '800',
       background: '#2D7DFF', color: '#FFFFFF', marginBottom: '10px',
     });
-    openAims.onclick = () => window.open('https://aims.airastana.com/eCrew/CrewSchedule', 'escrew-aims');
+    // window.open() from a standalone home-screen PWA tends to spawn a small in-app popup
+    // window on iOS instead of handing off to full Safari -- which is exactly where you
+    // need to be to get the real Share Sheet (Options -> Web Archive) afterward. Clicking
+    // a real <a target="_blank"> element is treated more like a genuine user navigation
+    // and reliably escapes to Safari proper instead.
+    openAims.onclick = () => {
+      const link = document.createElement('a');
+      link.href = 'https://aims.airastana.com/eCrew/CrewSchedule';
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      document.body.append(link);
+      link.click();
+      link.remove();
+    };
 
     const importArchive = document.createElement('button');
     importArchive.textContent = 'Import Web Archive or PDF';
