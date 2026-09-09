@@ -1,5 +1,5 @@
 import { Platform } from 'react-native';
-import { pickAndParseRoster } from './pickRoster';
+import { pasteRosterFromClipboard, pickAndParseRoster } from './pickRoster';
 import type { ParsedAirAstanaRoster } from './parseAirAstanaRoster';
 
 export type AimsWebArchiveResult = { roster: ParsedAirAstanaRoster };
@@ -53,6 +53,18 @@ export function openAimsWebArchiveFlow(): Promise<AimsWebArchiveResult | undefin
       background: dark ? '#131B2C' : '#F6F7FA', color: 'inherit', marginBottom: '8px',
     });
 
+    const helpShortcut = document.createElement('div');
+    helpShortcut.textContent = 'Set up once: a Shortcut puts the saved Web Archive on your clipboard instead, so nothing has to be saved to Files each time. See SHORTCUT_IMPORT.md.';
+    Object.assign(helpShortcut.style, { fontSize: '13px', lineHeight: '18px', opacity: '.6', marginBottom: '8px' });
+
+    const pasteShortcut = document.createElement('button');
+    pasteShortcut.textContent = 'Paste Web Archive from Shortcut';
+    Object.assign(pasteShortcut.style, {
+      width: '100%', border: `1px solid ${dark ? '#232D40' : '#E9EDF2'}`,
+      borderRadius: '14px', padding: '13px', fontSize: '15px', fontWeight: '800',
+      background: dark ? '#131B2C' : '#F6F7FA', color: 'inherit', marginBottom: '8px',
+    });
+
     const status = document.createElement('div');
     Object.assign(status.style, { minHeight: '20px', fontSize: '13px', lineHeight: '18px', opacity: '.72', marginTop: '4px' });
 
@@ -82,7 +94,18 @@ export function openAimsWebArchiveFlow(): Promise<AimsWebArchiveResult | undefin
       }
     };
 
-    card.append(title, help, helpPeriod, openAims, importArchive, status, cancel);
+    pasteShortcut.onclick = async () => {
+      status.textContent = 'Reading clipboard…';
+      try {
+        const roster = await pasteRosterFromClipboard();
+        cleanup();
+        resolve({ roster });
+      } catch (error) {
+        status.textContent = error instanceof Error ? error.message : String(error);
+      }
+    };
+
+    card.append(title, help, helpPeriod, openAims, importArchive, helpShortcut, pasteShortcut, status, cancel);
     overlay.append(card);
     document.body.append(overlay);
   });
