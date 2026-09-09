@@ -33,16 +33,31 @@ In **Shortcuts**, create a shortcut named **Import to eScrew**.
    the Base64 action — no spaces and no new line.
 5. Add **Copy to Clipboard**. Feed it the Text output and enable **Local
    Only**.
-6. Add **Show Notification** with: `Open eScrew, tap AIMS, then Paste Web
-   Archive from Shortcut.`
+6. Add **Show Notification** with: `Open eScrew — a Paste from Shortcut
+   banner is waiting.`
+7. *(Optional, experimental)* Add **Open URL** after the notification,
+   pointing at eScrew's URL (e.g.
+   `https://rbozzhanov-web.github.io/eScrew/`). Shortcuts' notification
+   itself can't be made to jump anywhere when tapped — this step instead
+   has the Shortcut open eScrew for you automatically, no tap needed at
+   all. The catch: this is likely to open a plain Safari tab rather than
+   switching to your already-installed Home Screen icon, since those can
+   be separate storage contexts on iOS — the paste banner and import will
+   still work fine there, but it may not feel like "the same app" until
+   you manually switch back to your Home Screen icon. Try it and see how
+   it actually behaves on your device; drop this step if it's more
+   confusing than helpful.
 
 ## Use it
 
 1. Open Crew Schedule in AIMS and wait for it to finish loading.
 2. **Share → Options → Web Archive**, then tap **Import to eScrew** instead
    of Save to Files.
-3. Open eScrew, tap the AIMS entry point, then **Paste Web Archive from
-   Shortcut**, and allow paste when iOS asks.
+3. eScrew notices when it comes back to the foreground and shows a small
+   **Paste from Shortcut?** banner on its own — tap it and allow paste when
+   iOS asks. If the banner doesn't appear (or was dismissed, or timed out),
+   tap the **AIMS** button, then **Paste Web Archive from Shortcut**, same
+   result either way.
 
 A real AIMS Web Archive runs several megabytes — almost all of it is the
 AIMS app's own JS/CSS/fonts, which eScrew's importer ignores entirely; the
