@@ -1,6 +1,744 @@
-YªçŠx-®éÜj×¢ëiºÚ+Š§j[h‘éÜ¢éíÛowñ:-jZ.¶›­–)Ş³V–×÷'B²ÖVÖòÂW6T6ÆÆ&6²ÂW6TVffV7BÂW6TÖVÖòÂW6U&VbÂW6U7FFRÒg&öÒw&V7Bs°¦–×÷'B²7F—f—G”–æF–6F÷"Âæ–ÖFVBÂfÆDÆ—7BÂÆFf÷&ÒÂ&W76&ÆRÂ67&öÆÅf–WrÂ7G–ÆU6†VWBÂFW‡BÂf–WrÂW6T6öÆ÷%66†VÖRÂW6Uv–æF÷tF–ÖVç6–öç2ÂG—RÆ–÷WD6†ævTWfVçBÂG—RÆ—7E&VæFW$—FVÒÒg&öÒw&V7BÖæF—fRs°¦–×÷'B²6fT&Vf–WrÒg&öÒw&V7BÖæF—fR×6fRÖ&VÖ6öçFW‡Bs°¦–×÷'B²”õ4F–ÆörÂ”õ56†VWBÒg&öÒrâô”õ4÷fW&Æ’s°¦–×÷'B²7v—U7W&f6RÂG—R7v—U7W&f6T†æFÆRÒg&öÒrâõ7v—U7W&f6Rs°¦–×÷'B²'V–ÆE&÷7FW%F–ÖVÆ–æRÂfÆ–v‡DW‡G&Â7F”f÷$†÷FVÄWfVçBÂ7F”f÷%6V7F÷"ÂG—R&÷7FW%F–ÖVÆ–æU&÷rÂG—R&÷7FW%v—F„æ÷&ÖÆ—¦VBÂG—R7F”–æfòÒg&öÒrâ÷&÷7FW$FFf–Wrs°¦–×÷'BG—R²æ÷&ÖÆ—¦VDW‡—'’Òg&öÒt÷7&2ö6÷&R÷&÷7FW$6öçG&7Bs°¦–×÷'B²W‡÷'E&÷7FW$6ÆVæF"Òg&öÒt÷7&2öFöÖ–âö6ÆVæF"s°¦–×÷'B²f÷&ÖDÖ–çWFW2Â&÷7FW$ÖöçF„Æ&VÂÂ&÷7FW%FôGWF–W2Òg&öÒt÷7&2öFöÖ–â÷&÷7FW%f–Wrs°¦–×÷'B²7FF–öäÆö6ÄFFUF–ÖT×2Òg&öÒt÷7&2öFöÖ–â÷7FF–öåF–ÖRs°¦–×÷'BG—R²7&WtÖVÖ&W"ÂGWG’Â6V7F÷"Òg&öÒt÷7&2öFöÖ–â÷G—W2s°¦–×÷'B²÷Vä–×5vV$&6†—fTfÆ÷rÒg&öÒt÷7&2ö–×÷'B÷7FUvV$&6†—fRs°¦–×÷'B²–6´æE'6U&÷7FW"Òg&öÒt÷7&2ö–×÷'B÷–6µ&÷7FW"s°¦–×÷'BG—R²'6VD—$7Fæ&÷7FW"Òg&öÒt÷7&2ö–×÷'B÷'6T—$7Fæ&÷7FW"s°¦–×÷'B²W‡÷'D&6·WÂ&W7F÷&T&6·WÒg&öÒt÷7&2÷7F÷&vRö&6·Ws°¦–×÷'B²6ÆV%7F÷&VE&÷7FW'2ÂÆöE7F÷&VE&÷7FW'2Â&VÖ÷fU7F÷&VE&÷7FW"ÂW6W'E7F÷&VE&÷7FW"Òg&öÒt÷7&2÷7F÷&vR÷&÷7FW%7F÷&vRs°¦–×÷'B²—'÷'D6ö÷&G2Òg&öÒt÷7&2÷vVF†W"ö—'÷'G2s°¦–×÷'B²&VfWF6…7FF–öåvVF†W"ÂW6T—'÷'Df÷&V67E7FFRÂW6T—'÷'EvVF†W%7FFRÒg&öÒt÷7&2÷vVF†W"÷vVF†W%6W'f–6Rs°¦–×÷'B²vVF†W$–6öâÂv–æDF—&V7F–öäÆ&VÂÒg&öÒt÷7&2÷vVF†W"÷vVF†W$6öFW2s° §G—RF"Òt†öÖRrÂu&÷7FW"rÂtÖ÷&Rs°¦6öç7BD%3¢F%µÒÒ²t†öÖRrÂu&÷7FW"rÂtÖ÷&RuÓ°¦6öç7BD%ô”4ôå3¢&V6÷&CÅF"Â²vÇ—ƒ¢7G&–æs²6—¦S¢çVÖ&W#²çVFvS¢çVÖ&W#²vV–v‡C¢ssrÂsƒrÓâÒ°¢†öÖS¢²vÇ—ƒ¢~(È"rÂ6—¦S¢#BÂçVFvS¢ÂvV–v‡C¢ssrÒÀ¢&÷7FW#¢²vÇ—ƒ¢~)ÈûˆârÂ6—¦S¢#"ÂçVFvS¢ÂvV–v‡C¢ssrÒÀ¢Ö÷&S¢²vÇ—ƒ¢~(
-.(
-.(
-"rÂ6—¦S¢‚ÂçVFvS¢Ó"ÂvV–v‡C¢ssrÒÀ§Ó°§G—RÆWGFRÒ²&6¶w&÷VæC§7G&–æs²7W&f6S§7G&–æs²7W&f6U7G&öæs§7G&–æs²FW‡C§7G&–æs²×WFVC§7G&–æs²Æ–æS§7G&–æs²66VçDÆ–æS§7G&–æs²66VçC§7G&–æs²66VçE6ögC§7G&–æs²vöÆC§7G&–æs²FævW#§7G&–æs²vVV¶VæC§7G&–ærÓ°§G—R&÷7FW$GWG’Ò²&÷7FW#¢'6VD—$7Fæ&÷7FW#²GWG“¢GWG’Ó°§G—Rfö7W4GWG’Ò&÷7FW$GWG’b²&W÷'D×3¢çVÖ&W#²&VÆV6T×3¢çVÖ&W"Ó°§G—RfÆ–v‡E&÷rÒ²GWG“¢GWG“²6V7F÷#¢6V7F÷"Ó°§G—R&÷7FW$fö7W4†æFÆRÒ²fö7W5FöF“¢‚’Óâfö–BÓ° ¦6öç7BÔôäõôdôåBÒÆFf÷&Òäõ2ÓÓÒwvV"p¢ò‡²föçDfÖ–Ç“¢wV’ÖÖöæ÷76RÂ%4bÖöæò"ÄÖVæÆòÆÖöæ÷76RrÒ2ç’¢¢VæFVf–æVC°¢òò&6¶G&÷Öf–ÇFW"—2&VBF‡&÷Vv‚5527W7FöÒ&÷W'G’‡&F†W"F†âÆ—FW&Â&ÇW"‚’’6ğ¢òò7v—U7W&f6R6â7W7VæB—BFö7VÖVçB×v–FRf÷"F†RGW&F–öâöbvR×GW&âG&ç6f÷&Ó¢vV$¶—@¢òò&R×6×ÆW2WfW'—F†–ær&V†–æB&ÇW'&VBVÆVÖVçBöâWfW'’g&ÖR—BÖ÷fW2Âv†–6‚—26†Vf÷"öæP¢òò6&B'WBFG2Wf7Bv—F‚F†—2Öç’vÆ727W&f6W2æ–ÖF–ær7&÷72F"7v—F6‚Böæ6Rà¦6öç7BtT%ôtÄ52ÒÆFf÷&Òäõ2ÓÓÒwvV"p¢ò‡²&6¶G&÷f–ÇFW#¢v&ÇW"ƒ#G‚’6GW&FRƒãB’rÂvV&¶—D&6¶G&÷f–ÇFW#¢v&ÇW"ƒ#G‚’6GW&FRƒãB’rÒ2ç’¢¢VæFVf–æVC°¦6öç7BtT%õD%ôtÄ52ÒÆFf÷&Òäõ2ÓÓÒwvV"p¢ò‡²&6¶G&÷f–ÇFW#¢v&ÇW"ƒ3'‚’6GW&FRƒãR’rÂvV&¶—D&6¶G&÷f–ÇFW#¢v&ÇW"ƒ3'‚’6GW&FRƒãR’rÒ2ç’¢¢VæFVf–æVC°¢ò¢ ¢¢ÆÂ6†F÷r¢&÷2×W7BÆ—fR–âF†R6ÖR7G–ÆRö&¦V7B(	B&V7BÖæF—fR×vV"FW&—fW26–ævÆP¢¢&÷…6†F÷rW"ö&¦V7BÂ6ò7Æ—GF–ær6†F÷t6öÆ÷"–çFò6W&FRö&¦V7B–âF†R7G–ÆR'&¢¢‡&F†W"F†âÖW&v–ær6†F÷r&÷W'F–W2¶W’Ö'’Ö¶W’’Ö¶W2F†RÆFW"ö&¦V7Bw2Ö—76–æp¢¢öfg6WB÷&F—W2ö÷6—G’6–ÆVçFÇ’¦W&ò÷WBF†R6†F÷r–ç7FVBöbÖW&v–ærv—F‚F†RV&Æ–W"öæRà¢¢ğ¦6öç7BFöF”vÆ÷rÒ‡ÆWGFS¢ÆWGFR’Óâ‡°¢6†F÷t6öÆ÷#¢ÆWGFRæ66VçBÂ6†F÷töfg6WC¢²v–GFƒ¢Â†V–v‡C¢‚ÒÂ6†F÷t÷6—G“¢ã3"Â6†F÷u&F—W3¢#ÂVÆWfF–öã¢‚ÂââåtT%ôtÄ52À§Ò“°¢òòÖF6†W27G–ÆW2æÆ—7D6öçFVçB‡FF–æs£‚Âv£r’(	BW6VB'’vWD—FVÔÆ–÷WBFò6ö×WFRà¢òòWF†÷&—FF—fR67&öÆÂöfg6WB&Vf÷&R&÷w2&R7GVÆÇ’ÖV7W&VBà¦6öç7BÄ•5EõDõõDD”ärÒƒ°¦6öç7BÄ•5Eõ$õuôtÒs°¦6öç7B$õuô„T”t…EôU5D”ÔDRÒ²fÆ–v‡C¢#BÂWfVçC¢ƒÒ26öç7C°¦gVæ7F–öâ†W&õF–çB‡ÆWGFS¢ÆWGFR’°¢&WGW&âÆFf÷&Òäõ2ÓÓÒwvV"p¢ò‡²&6¶w&÷VæD–ÖvS¢Æ–æV"Öw&F–VçBƒ3VFVrÂG·ÆWGFRæ66VçE6ögGÒRÂG·ÆWGFRç7W&f6U7G&öæwÒcR–Ò2ç’¢¢VæFVf–æVC°§Ğ ¦W‡÷'BFVfVÇBgVæ7F–öâÖ–å67&VVâ‚’°¢6öç7B66†VÖRÒW6T6öÆ÷%66†VÖR‚“°¢6öç7B²v–GF‚ÒÒW6Uv–æF÷tF–ÖVç6–öç2‚“°¢6öç7BFW6·F÷vV"ÒÆFf÷&Òäõ2ÓÓÒwvV"rbbv–GF‚ãÒscƒ°¢6öç7B¶‡–G&FVBÂ6WD‡–G&FVEÒÒW6U7FFR…ÆFf÷&Òäõ2ÓÒwvV"r“°¢W6TVffV7B‚‚’Óâ²–b‚‡–G&FVB’6WD‡–G&FVB‡G'VR“²ÒÂ¶‡–G&FVEÒ“°¢6öç7BF&²Ò‡–G&FVBbb66†VÖRÓÓÒvF&²s° ¢6öç7BÆWGFRÒW6TÖVÖóÅÆWGFSâ‚‚’ÓâF&²ò°¢&6¶w&÷VæC¢r3###rÂ7W&f6S¢w&v&ƒ’Ã#rÃCBÂãs"’rÂ7W&f6U7G&öæs¢w&v&ƒ#BÃ32ÃS2Âãƒb’rÂFW‡C¢r4cTctdrÂ×WFVC¢r3„#“TRrÂÆ–æS¢w&v&ƒ3’ÃC’ÃcRÂã‚’rÂ66VçDÆ–æS¢w&v&ƒsbÃCÃ#SRÂã3"’rÂ66VçC¢r3D3„DdbrÂ66VçE6ögC¢w&v&ƒsbÃCÃ#SRÂãb’rÂvöÆC¢r43”3s"rÂFævW#¢r4T#dcs’rÂvVV¶VæC¢r4Cƒ”cbrÀ¢Ò¢°¢&6¶w&÷VæC¢r4cdctdrÂ7W&f6S¢w&v&ƒ#SRÃ#SRÃ#SRÂãs"’rÂ7W&f6U7G&öæs¢w&v&ƒ#SRÃ#SRÃ#SRÂãƒb’rÂFW‡C¢r3cs$rÂ×WFVC¢r3cƒs#ƒrÂÆ–æS¢w&v&ƒRÃ#2ÃC"Âã’’rÂ66VçDÆ–æS¢w&v&ƒCRÃ#RÃ#SRÂã#‚’rÂ66VçC¢r3$CtDdbrÂ66VçE6ögC¢r4SDTDdbrÂvöÆC¢r4S„#DbrÂFævW#¢r4SSCƒDBrÂvVV¶VæC¢r3”#c4"rÀ¢ÒÂ¶F&µÒ“° ¢6öç7B·F"Â6WEF%ÒÒW6U7FFSÅF#â‚t†öÖRr“°¢6öç7B·&÷7FW'2Â6WE&÷7FW'5ÒÒW6U7FFSÅ'6VD—$7Fæ&÷7FW%µÓâ…µÒ“°¢6öç7B¶7F—fTÖöçF‚Â6WD7F—fTÖöçF…ÒÒW6U7FFSÇ7G&–æsâ‚“°¢6öç7B·6VÆV7FVDfÆ–v‡BÂ6WE6VÆV7FVDfÆ–v‡EÒÒW6U7FFSÇ7G&–æsâ‚“°¢6öç7B¶–×÷'F–ærÂ6WD–×÷'F–æuÒÒW6U7FFR†fÇ6R“°¢6öç7B¶–×÷'DW'&÷"Â6WD–×÷'DW'&÷%ÒÒW6U7FFSÇ7G&–æsâ‚“°¢6öç7B·F$&%v–GF‚Â6WEF$&%v–GF…ÒÒW6U7FFRƒ“°¢6öç7BF%6VÆV7F–öâÒW6U&Vb†æWræ–ÖFVBåfÇVRƒ’’æ7W'&VçC°¢6öç7BF%7v—U&VbÒW6U&VcÅ7v—U7W&f6T†æFÆSâ†çVÆÂ“°¢6öç7B&÷7FW$fö7W2ÒW6U&VcÅ&÷7FW$fö7W4†æFÆSâ‡²fö7W5FöF“¢‚’ÓâVæFVf–æVBÒ’æ7W'&VçC° ¢W6TVffV7B‚‚’Óâ°¢6öç7B7F÷&VBÒÆöE7F÷&VE&÷7FW'2‚“°¢6WE&÷7FW'2‡7F÷&VB“°¢6WD7F—fTÖöçF‚‡7F÷&VBæB‚Ó“òçW&–öBç7F'B“°¢ÒÂµÒ“° ¢W6TVffV7B‚‚’Óâ°¢æ–ÖFVBç7&–ær‡F%6VÆV7F–öâÂ°¢FõfÇVS¢D%2æ–æFW„öb‡F"’À¢7F–ffæW73¢3ƒÀ¢F×–æs¢3BÀ¢Ö73¢ãs"À¢W6TæF—fTG&—fW#¢G'VRÀ¢—4–çFW&7F–öã¢fÇ6RÀ¢Ò’ç7F'B‚“°¢ÒÂ·F"ÂF%6VÆV7F–öåÒ“° ¢6öç7B&÷7FW"Ò&÷7FW'2æf–æB‚†—FVÒ’Óâ—FVÒçW&–öBç7F'BÓÓÒ7F—fTÖöçF‚’óò&÷7FW'2æB‚Ó“°¢6öç7BGWF–W2ÒW6TÖVÖò‚‚’Óâ&÷7FW"ò&÷7FW%FôGWF–W2‡&÷7FW"’¢µÒÂ·&÷7FW%Ò“°¢6öç7B6VÆV7FVE6V7F÷"ÒGWF–W2æfÆDÖ‚†GWG’’ÓâGWG’ç6V7F÷'2’æf–æB‚‡6V7F÷"’Óâ6V7F÷"æ–BÓÓÒ6VÆV7FVDfÆ–v‡B“°¢6öç7BÆÄGWF–W2ÒW6TÖVÖóÅ&÷7FW$GWG•µÓâ‚‚’Óâ&÷7FW'2æfÆDÖ‚†—FVÒ’Óâ&÷7FW%FôGWF–W2†—FVÒ’æÖ‚†GWG’’Óâ‡²&÷7FW#¢—FVÒÂGWG’Ò’’’Â·&÷7FW'5Ò“°¢òòv&ÒF†R'&—fÂ×vVF†W"66†Rf÷"F†RæW‡BGWF–W2âWfW'’6V7F÷"W6W2—G2%$•dÂ7FF–öã°¢òò†öÖRÖ&6R'&—fÇ27F’öæRF’Âv†–ÆR÷WG7FF–öç2Ö’W‡æBF‡&÷Vv‚F†RæW‡BFW'GW&Rà¢W6TVffV7B‚‚’Óâ°¢6öç7Bæ÷rÒFFRææ÷r‚“°¢6öç7BW6öÖ–ærÒF–ÖVDGWF–W2†ÆÄGWF–W2’æf–ÇFW"‚†—FVÒ’Óâ—FVÒç&VÆV6T×2ãÒæ÷r’ç6Æ–6RƒÂb“°¢6öç7B6VVâÒæWr6WCÇ7G&–æsâ‚“°¢6öç7B&WVW7G3¢²6öFS¢7G&–æs²F—3¢çVÖ&W#²7F'DFFSó¢7G&–æs²W‡æDÆ–÷fW#ó¢&ööÆVâÕµÒÒµÓ°¢f÷"†6öç7B—FVÒöbW6öÖ–ær’°¢f÷"†6öç7B6V7F÷"öb—FVÒæGWG’ç6V7F÷'2’°¢6öç7B7F'DFFRÒ'&—fÄf÷&V67DFFR†—FVÒç&÷7FW"Â—FVÒæGWG’Â6V7F÷"“°¢6öç7BW‡æDÆ–÷fW"Ò—4†öÖT&6T—'÷'B‡6V7F÷"æ'&—fÂÂ—FVÒç&÷7FW"ç7V&¦V7Còæ&6R“°¢6öç7B&WVW7D¶W’ÒG·6V7F÷"æ'&—fÇÓ¢G·7F'DFFRóòwFöF’wÓ¢G¶W‡æDÆ–÷fW"òvÆ–÷fW"r¢vF’wÖ°¢–b‡6VVâæ†2‡&WVW7D¶W’’’6öçF–çVS°¢6VVâæFB‡&WVW7D¶W’“°¢&WVW7G2çW6‚‡²6öFS¢6V7F÷"æ'&—fÂÂF—3¢Â7F'DFFRÂW‡æDÆ–÷fW"Ò“°¢Ğ¢Ğ¢–b‡&WVW7G2æÆVæwF‚’&VfWF6…7FF–öåvVF†W"‡&WVW7G2“°¢ÒÂ¶ÆÄGWF–W5Ò“°¢6öç7BF%7FWÒF$&%v–GF‚òD%2æÆVæwFƒ°¢6öç7BF$–æF–6F÷%‚Òæ–ÖFVBæ×VÇF—Ç’‡F%6VÆV7F–öâÂF%7FW“° ¢6öç7B–×÷'E&÷7FW"ÒW6T6ÆÆ&6²†7–æ2‚’Óâ°¢6WD–×÷'DW'&÷"‡VæFVf–æVB“°¢6WD–×÷'F–ær‡G'VR“°¢G'’°¢6öç7B'6VBÒv—B–6´æE'6U&÷7FW"‚“°¢–b‚'6VB’&WGW&ã°¢6öç7BæW‡BÒW6W'E7F÷&VE&÷7FW"‡'6VB“°¢6WE&÷7FW'2†æW‡B“°¢6WD7F—fTÖöçF‚‡'6VBçW&–öBç7F'B“°¢6WE6VÆV7FVDfÆ–v‡B‡VæFVf–æVB“°¢6WEF"‚u&÷7FW"r“°¢Ò6F6‚†W'&÷"’°¢6WD–×÷'DW'&÷"†W'&÷"–ç7Fæ6VöbW'&÷"òW'&÷"æÖW76vR¢7G&–ær†W'&÷"’“°¢Òf–æÆÇ’°¢6WD–×÷'F–ær†fÇ6R“°¢Ğ¢ÒÂµÒ“° ¢6öç7B–×÷'Dg&öÔ–×2ÒW6T6ÆÆ&6²†7–æ2‚’Óâ°¢–b†–×÷'F–ær’&WGW&ã°¢6WD–×÷'DW'&÷"‡VæFVf–æVB“°¢6WD–×÷'F–ær‡G'VR“°¢G'’°¢6öç7B&W7VÇBÒv—B÷Vä–×5vV$&6†—fTfÆ÷r‚“°¢–b‚&W7VÇB’&WGW&ã°¢6öç7BæW‡BÒW6W'E7F÷&VE&÷7FW"‡&W7VÇBç&÷7FW"“°¢6WE&÷7FW'2†æW‡B“°¢6WD7F—fTÖöçF‚‡&W7VÇBç&÷7FW"çW&–öBç7F'B“°¢6WE6VÆV7FVDfÆ–v‡B‡VæFVf–æVB“°¢6WEF"‚u&÷7FW"r“°¢Ò6F6‚†W'&÷"’°¢6WD–×÷'DW'&÷"†W'&÷"–ç7Fæ6VöbW'&÷"òW'&÷"æÖW76vR¢7G&–ær†W'&÷"’“°¢Òf–æÆÇ’°¢6WD–×÷'F–ær†fÇ6R“°¢Ğ¢ÒÂ¶–×÷'F–æuÒ“° ¢6öç7B&W7F÷&Tg&öÔ&6·WÒW6T6ÆÆ&6²†7–æ2‚’Óâ°¢6öç7B&W7VÇBÒv—B&W7F÷&T&6·W‚“°¢–b‡&W7VÇBç&W7F÷&VB’°¢6öç7BæW‡BÒÆöE7F÷&VE&÷7FW'2‚“°¢6WE&÷7FW'2†æW‡B“°¢6WD7F—fTÖöçF‚†æW‡BæB‚Ó“òçW&–öBç7F'B“°¢Ğ¢&WGW&â&W7VÇC°¢ÒÂµÒ“° ¢6öç7BFVÆWFU&÷7FW"ÒW6T6ÆÆ&6²‚‡W&–öE7F'C¢7G&–ær’Óâ°¢6öç7BæW‡BÒ&VÖ÷fU7F÷&VE&÷7FW"‡W&–öE7F'B“°¢6WE&÷7FW'2†æW‡B“°¢6WE6VÆV7FVDfÆ–v‡B‡VæFVf–æVB“°¢6WD7F—fTÖöçF‚‚†7W'&VçB’Óâ7W'&VçBbb7W'&VçBÓÒW&–öE7F'BbbæW‡Bç6öÖR‚†—FVÒ’Óâ—FVÒçW&–öBç7F'BÓÓÒ7W'&VçB’ò7W'&VçB¢æW‡BæB‚Ó“òçW&–öBç7F'B“°¢ÒÂµÒ“°¢6öç7B6†ævTÖöçF‚ÒW6T6ÆÆ&6²‚†F—&V7F–öã¢ÓÂ’Óâ°¢–b‚&÷7FW"’&WGW&ã°¢6öç7B–æFW‚Ò&÷7FW'2æf–æD–æFW‚‚†—FVÒ’Óâ—FVÒçW&–öBç7F'BÓÓÒ&÷7FW"çW&–öBç7F'B“°¢6öç7BæW‡BÒ&÷7FW'5¶–æFW‚²F—&V7F–öåÓ°¢–b‚æW‡B’&WGW&ã°¢6WD7F—fTÖöçF‚†æW‡BçW&–öBç7F'B“°¢6WE6VÆV7FVDfÆ–v‡B‡VæFVf–æVB“°¢ÒÂ·&÷7FW"Â&÷7FW'5Ò“°¢6öç7B6†ævUF"ÒW6T6ÆÆ&6²‚†F—&V7F–öã¢ÓÂ’Óâ°¢6öç7BæW‡BÒD%5µD%2æ–æFW„öb‡F"’²F—&V7F–öåÓ°¢–b‚æW‡B’&WGW&ã°¢–b†æW‡BÓÓÒu&÷7FW"r’&÷7FW$fö7W2æfö7W5FöF’‚“°¢6WE6VÆV7FVDfÆ–v‡B‡VæFVf–æVB“°¢6WEF"†æW‡B“°¢ÒÂ·F"Â&÷7FW$fö7W5Ò“°¢6öç7BvõFõF"ÒW6T6ÆÆ&6²‚‡F&vWC¢F"’Óâ°¢–b‡F&vWBÓÓÒF"’&WGW&ã°¢6öç7BF—&V7F–öâÒD%2æ–æFW„öb‡F&vWB’âD%2æ–æFW„öb‡F"’òÓ¢°¢6WE6VÆV7FVDfÆ–v‡B‡VæFVf–æVB“°¢F%7v—U&Vbæ7W'&VçCòçÆ’†F—&V7F–öâÂ‚’Óâ°¢–b‡F&vWBÓÓÒu&÷7FW"r’&÷7FW$fö7W2æfö7W5FöF’‚“°¢6WEF"‡F&vWB“°¢Ò“°¢ÒÂ·F"Â&÷7FW$fö7W5Ò“°¢6öç7BW&6TÆÂÒW6T6ÆÆ&6²‚‚’Óâ°¢6ÆV%7F÷&VE&÷7FW'2‚“°¢6WE&÷7FW'2…µÒ“°¢6WD7F—fTÖöçF‚‡VæFVf–æVB“°¢6WE6VÆV7FVDfÆ–v‡B‡VæFVf–æVB“°¢6WEF"‚t†öÖRr“°¢ÒÂµÒ“° ¢&WGW&âÅ6fT&Vf–Wr7G–ÆS×·7G–ÆW2ç6fWÒVFvW3×¶FW6·F÷vV"ò²v&÷GFöÒuÒ¢²wF÷rÂv&÷GFöÒu×Óà¢Åf–Wr7G–ÆS×·7G–ÆW2æÓà¢Åf–Wr7G–ÆS×·7G–ÆW2æ†VFW'Óà¢ÅFW‡B7G–ÆS×µ·7G–ÆW2æ'&æBÂ²6öÆ÷#¢ÆWGFRçFW‡BÕ×ÓæU67&WsÂõFW‡Cà¢Å&W76&ÆRöå&W73×¶–×÷'Dg&öÔ–×7ÒF—6&ÆVC×¶–×÷'F–æwÒ7G–ÆS×µ·7G–ÆW2æÖöFT'WGFöâÂ7G–ÆW2æFWF…7W&f6RÂ²&6¶w&÷VæD6öÆ÷#¢–×÷'F–æròÆWGFRæ66VçE6ögB¢ÆWGFRç7W&f6RÕ×Ò66W76–&–Æ—G”Æ&VÃÒ$–×÷'Bg&öÒ”Õ2#à¢¶–×÷'F–æròÄ7F—f—G”–æF–6F÷"6—¦SÒ'6ÖÆÂ"6öÆ÷#×·ÆWGFRæ66VçGÒóâ¢ÅFW‡B7G–ÆS×µ·7G–ÆW2æ–×4vÇ—‚Â²6öÆ÷#¢ÆWGFRæ66VçBÕ×Óä”Õ3ÂõFW‡CçĞ¢Âõ&W76&ÆSà¢Âõf–Wsà ¢¶–×÷'DW'&÷"bbÄ–×÷'DW'&÷$&ææW"ÖW76vS×¶–×÷'DW'&÷'ÒÆWGFS×·ÆWGFWÒöäF—6Ö—73×²‚’Óâ6WD–×÷'DW'&÷"‡VæFVf–æVB—ÒóçĞ ¢Å7v—U7W&f6R&Vc×·F%7v—U&VgÒ7G–ÆS×·7G–ÆW2çf–Ww÷'GÒöå7v—TÆVgC×·F"ÓÓÒtÖ÷&RròVæFVf–æVB¢‚’Óâ6†ævUF"ƒ—Òöå7v—U&–v‡C×·F"ÓÓÒt†öÖRròVæFVf–æVB¢‚’Óâ6†ævUF"‚Ó—Óà¢²ò¢ÆÂF‡&VRF'27F’Ö÷VçFVBW&ÖæVçFÇ’æB&R6†÷vâö†–FFVâf–÷6—G’&F†W"F†à¢6öæF—F–öæÂ&VæFW&–ær(	B7v–ærF'2v÷VÆB÷F†W'v—6Rf÷&6RgVÆÂÖ÷VçBöbF†P¢FW7F–æF–öâ67&VVâ„fÆDÆ—7BÆ–÷WBÂWF2â’7–æ6‡&öæ÷W6Ç’BF†Ræ–ÖF–öâ†æFöfbÀ¢v†–6‚—2†Vg’Væ÷Vv‚Fòf—6–&Ç’7FÆÂF†R–âÖfÆ–v‡BvR×GW&â7&–ærâ¢÷Ğ¢Åf–Wr7G–ÆS×µ·7G–ÆW2çF%æRÂF"ÓÒt†öÖRrbb7G–ÆW2çF%æT†–FFVå×Òö–çFW$WfVçG3×·F"ÓÓÒt†öÖRròvWFòr¢væöæRwÓà¢Ä†öÖRÆÄGWF–W3×¶ÆÄGWF–W7ÒfÆÆ&6µ&÷7FW#×·&÷7FW'Ò&÷7FW'3×·&÷7FW'7ÒÆWGFS×·ÆWGFWÒöä–×÷'C×¶–×÷'E&÷7FW'Ò–×÷'F–æs×¶–×÷'F–æwÒóà¢Âõf–Wsà¢Åf–Wr7G–ÆS×µ·7G–ÆW2çF%æRÂF"ÓÒu&÷7FW"rbb7G–ÆW2çF%æT†–FFVå×Òö–çFW$WfVçG3×·F"ÓÓÒu&÷7FW"ròvWFòr¢væöæRwÓà¢Å&÷7FW%67&VVâ&÷7FW#×·&÷7FW'Ò&÷7FW'3×·&÷7FW'7ÒGWF–W3×¶GWF–W7Ò6VÆV7FVE6V7F÷#×·6VÆV7FVE6V7F÷'ÒÆWGFS×·ÆWGFWÒ–×÷'F–æs×¶–×÷'F–æwÒöä–×÷'C×¶–×÷'E&÷7FW'Òöå6VÆV7C×·6WE6VÆV7FVDfÆ–v‡GÒöäÖöçFƒ×¶6†ævTÖöçF‡Ò&÷7FW$fö7W3×·&÷7FW$fö7W7Òóà¢Âõf–Wsà¢Åf–Wr7G–ÆS×µ·7G–ÆW2çF%æRÂF"ÓÒtÖ÷&Rrbb7G–ÆW2çF%æT†–FFVå×Òö–çFW$WfVçG3×·F"ÓÓÒtÖ÷&RròvWFòr¢væöæRwÓà¢ÄÖ÷&U67&VVâ&÷7FW'3×·&÷7FW'7ÒÆWGFS×·ÆWGFWÒöå&W7F÷&T&6·W×·&W7F÷&Tg&öÔ&6·WÒöäFVÆWFU&÷7FW#×¶FVÆWFU&÷7FW'ÒöäW&6S×¶W&6TÆÇÒóà¢Âõf–Wsà¢Âõ7v—U7W&f6Sà ¢Åf–WröäÆ–÷WC×²†WfVçB’Óâ²6öç7BæW‡Ev–GF‚ÒWfVçBææF—fTWfVçBæÆ–÷WBçv–GFƒ²–b„ÖF‚æ'2†æW‡Ev–GF‚ÒF$&%v–GF‚’âãR’6WEF$&%v–GF‚†æW‡Ev–GF‚“²×Ò7G–ÆS×µ·7G–ÆW2æFWF…7W&f6RÂ7G–ÆW2çF$&"Â²&6¶w&÷VæD6öÆ÷#¢ÆWGFRç7W&f6RÂ&÷&FW$6öÆ÷#¢ÆWGFRæÆ–æRÕ×Óà¢·F$&%v–GF‚âbbÄæ–ÖFVBåf–Wrö–çFW$WfVçG3Ò&æöæR"7G–ÆS×µ·7G–ÆW2çF%6VÆV7F–öâÂ²v–GFƒ¢ÖF‚æÖ‚ƒÂF%7FWÒ‚’Â&6¶w&÷VæD6öÆ÷#¢ÆWGFRç7W&f6U7G&öærÂG&ç6f÷&Ó¢·²G&ç6ÆFUƒ¢F$–æF–6F÷%‚ÕÒÕ×ÒóçĞ¢µD%2æÖ‚†—FVÒ’Óâ°¢6öç7B7F—fRÒ—FVÒÓÓÒF#°¢&WGW&âÅ&W76&ÆR¶W“×¶—FV×Òöå&W73×²‚’ÓâvõFõF"†—FVÒ—Ò7G–ÆS×·7G–ÆW2çF$—FV×Ò66W76–&–Æ—G•&öÆSÒ'F""66W76–&–Æ—G•7FFS×·²6VÆV7FVC¢7F—fR×Óà¢Åf–Wr7G–ÆS×·7G–ÆW2çF$–6öåw&ÓãÅFW‡B7G–ÆS×µ·7G–ÆW2çF$–6öâÂ²6öÆ÷#¢7F—fRòÆWGFRæ66VçB¢ÆWGFRæ×WFVBÂföçE6—¦S¢D%ô”4ôå5¶—FVÕÒç6—¦RÂÆ–æT†V–v‡C¢D%ô”4ôå5¶—FVÕÒç6—¦R²2ÂÖ&v–åF÷¢D%ô”4ôå5¶—FVÕÒæçVFvRÂföçEvV–v‡C¢D%ô”4ôå5¶—FVÕÒçvV–v‡BÕ×ÓçµD%ô”4ôå5¶—FVÕÒævÇ—‡ÓÂõFW‡CãÂõf–Wsà¢ÅFW‡B7G–ÆS×µ·7G–ÆW2çF%FW‡BÂ²6öÆ÷#¢7F—fRòÆWGFRçFW‡B¢ÆWGFRæ×WFVBÕ×Óç¶—FV×ÓÂõFW‡Cà¢Âõ&W76&ÆSã°¢Ò—Ğ¢Âõf–Wsà¢Âõf–Wsà¢Âõ6fT&Vf–Wsã°§Ğ ¦gVæ7F–öâ–×÷'DW'&÷$&ææW"‡²ÖW76vRÂÆWGFRÂöäF—6Ö—72Ó¢²ÖW76vS¢7G&–æs²ÆWGFS¢ÆWGFS²öäF—6Ö—73¢‚’Óâfö–BÒ’°¢&WGW&âÅf–Wr7G–ÆS×µ·7G–ÆW2æ–×57FGW2Â7G–ÆW2æFWF…7W&f6RÂ²&6¶w&÷VæD6öÆ÷#¢ÆWGFRç7W&f6U7G&öærÂ&÷&FW$6öÆ÷#¢ÆWGFRæFævW"Õ×Óà¢Åf–Wr7G–ÆS×·7G–ÆW2æ–×57FGW4–6öçÓãÅFW‡B7G–ÆS×µ·7G–ÆW2æ–×57FGW4vÇ—‚Â²6öÆ÷#¢ÆWGFRæFævW"Õ×ÓâÂõFW‡CãÂõf–Wsà¢Åf–Wr7G–ÆS×·7G–ÆW2æw&÷wÓãÅFW‡B7G–ÆS×µ·7G–ÆW2æ–×57FGW5F—FÆRÂ²6öÆ÷#¢ÆWGFRçFW‡BÕ×Óä6÷VÆBæ÷B–×÷'B&÷7FW#ÂõFW‡CãÅFW‡B7G–ÆS×µ·7G–ÆW2æÖWFÂ²6öÍv÷-¢G§²ÚîÆ­y×E7F'DFFSó¢7G&–ærÒ’°¢6öç7B²vVF†W"Â7FGW3¢vVF†W%7FGW2ÒÒW6T—'÷'EvVF†W%7FFR†6öFR“°¢6öç7B¶f÷&V67D÷VâÂ6WDf÷&V67D÷VåÒÒW6U7FFR†fÇ6R“°¢6öç7BW‡æDÆ–÷fW"Ò—4†öÖT&6T—'÷'B†6öFRÂ†öÖT&6R“°¢6öç7B²f÷&V67BÂ7FGW3¢f÷&V67E7FGW2Â7F'DFFS¢&W6öÇfVDf÷&V67E7F'DFFRÂ&WG'’ÒÒW6T—'÷'Df÷&V67E7FFR†6öFRÂÂf÷&V67E7F'DFFRÂW‡æDÆ–÷fW"“°¢–b‚—'÷'D6ö÷&G2†6öFR’’&WGW&âçVÆÃ°¢6öç7B6öæF—F–öç2ÒvVF†W"òvVF†W$–6öâ‡vVF†W"çvVF†W$6öFRÂvVF†W"æ—4F’’¢VæFVf–æVC°¢6öç7BF—7Æ”FFRÒ&W6öÇfVDf÷&V67E7F'DFFRóòf÷&V67E7F'DFFS°¢6öç7BgWGW&UF&vWBÒ&ööÆVâ†F—7Æ”FFRbbF—7Æ”FFRâÆö6ÅFöF”—6ò‚’“°¢6öç7BF&vWDf÷&V67BÒF—7Æ”FFRòf÷&V67Còæf–æB‚†F’’ÓâF’æFFRÓÓÒF—7Æ”FFR’¢VæFVf–æVC°¢6öç7BF&vWD6öæF—F–öç2ÒF&vWDf÷&V67BòvVF†W$–6öâ‡F&vWDf÷&V67BçvVF†W$6öFRÂG'VR’¢VæFVf–æVC°¢&WGW&âÃà¢Å&W76&ÆRöå&W73×²†WfVçB’Óâ²WfVçBç7F÷&÷vF–öãòâ‚“²6WDf÷&V67D÷Vâ‡G'VR“²×Ò66W76–&–Æ—G•&öÆSÒ&'WGFöâ"66W76–&–Æ—G”Æ&VÃ×¶vVF†W"f÷&V67BBG¶6öFWÖÒ7G–ÆS×·7G–ÆW2çvVF†W%&÷wÓà¢¶gWGW&UF&vWBòÃà¢ÅFW‡B7G–ÆS×·7G–ÆW2çvVF†W$–6öçÓç·F&vWD6öæF—F–öç3òæ–6öâóò~)ÈûˆâwÓÂõFW‡Cà¢·F&vWDf÷&V67BbbÅFW‡B7G–ÆS×µ·7G–ÆW2çvVF†W%FV×Â²6öÆ÷#¢ÆWGFRçFW‡BÕ×Óç·F&vWDf÷&V67BçFV×Ö‡Ü+÷·F&vWDf÷&V67BçFV×Ö–çÜ+ÂõFW‡CçĞ¢ÅFW‡BçVÖ&W$ödÆ–æW3×³Ò7G–ÆS×µ·7G–ÆW2çvVF†W$ÖWFÂ²6öÆ÷#¢ÆWGFRæ×WFVBÕ×Óç¶6öFWÒ+r¶F—7Æ”FFRòf÷&V67DF”Æ&VÂ†F—7Æ”FFR’¢rw×·F&vWD6öæF—F–öç2ò+rG·F&vWD6öæF—F–öç2æÆ&VÇÖ¢f÷&V67E7FGW2ÓÓÒvÆöF–ærròr+rÆöF–ærf÷&V67Br¢f÷&V67E7FGW2ÓÓÒvöffÆ–æRròr+röffÆ–æRr¢r+rf÷&V67BVæf–Æ&ÆRwÓÂõFW‡Cà¢Âóâ¢Ãà¢ÅFW‡B7G–ÆS×·7G–ÆW2çvVF†W$–6öçÓç¶6öæF—F–öç3òæ–6öâóò~)ÈûˆâwÓÂõFW‡Cà¢·vVF†W"òÃà¢ÅFW‡B7G–ÆS×µ·7G–ÆW2çvVF†W%FV×Â²6öÆ÷#¢ÆWGFRçFW‡BÕ×Óç·vVF†W"çFV×Ü+ÂõFW‡Cà¢ÅFW‡BçVÖ&W$ödÆ–æW3×³Ò7G–ÆS×µ·7G–ÆW2çvVF†W$ÖWFÂ²6öÆ÷#¢ÆWGFRæ×WFVBÕ×Óç¶6öFWÒ+r¶6öæF—F–öç2æÆ&VÇÒ+r·v–æDF—&V7F–öäÆ&VÂ‡vVF†W"çv–æDFVr—Ò·vVF†W"çv–æE7VVGÖ·B+r·vVF†W"ç&W77W&WÖ…ÂõFW‡Cà¢Âóâ¢€¢ÅFW‡BçVÖ&W$ödÆ–æW3×³Ò7G–ÆS×µ·7G–ÆW2çvVF†W$ÖWFÂ²6öÆ÷#¢ÆWGFRæ×WFVBÕ×Óç¶6öFWÒ+r·vVF†W%7FGW2ÓÓÒvÆöF–ærròtÆöF–ærvVF†W"r¢vVF†W%7FGW2ÓÓÒvöffÆ–æRròtöffÆ–æRr¢uvVF†W"Væf–Æ&ÆRwÓÂõFW‡Cà¢—Ğ¢ÂóçĞ¢Âõ&W76&ÆSà¢Ä”õ4F–Æörf—6–&ÆS×¶f÷&V67D÷VçÒöä6Æ÷6S×²‚’Óâ6WDf÷&V67D÷Vâ†fÇ6R—Ò7G–ÆS×µ·7G–ÆW2ç7F•÷WÂ²&6¶w&÷VæD6öÆ÷#¢ÆWGFRç7W&f6U7G&öærÂ&÷&FW$6öÆ÷#¢ÆWGFRæÆ–æRÕ×Óà¢ÅFW‡B7G–ÆS×µ·7G–ÆW2æÆ&VÂÂ²6öÆ÷#¢ÆWGFRæ×WFVBÕ×Óädõ$T45B+r¶6öFW×¶F—7Æ”FFRò+re$ôÒG¶f÷&V67DF”Æ&VÂ†F—7Æ”FFR—Ö¢rwÓÂõFW‡Cà¢·7F“òç&W7BòÅFW‡B7G–ÆS×µ·7G–ÆW2ç7F•÷W&W7BÂ²6öÆ÷#¢ÆWGFRçFW‡BÕ×Óç·7F’ç&W7GÓÂõFW‡Câ¢çVÆÇĞ¢¶f÷&V67Bbbf÷&V67BæÆVæwF‚â ¢òÅf–Wr7G–ÆS×·7G–ÆW2ç7F”f÷&V67DÆ—7GÓà¢¶f÷&V67BæÖ‚†F’’Óâ°¢6öç7BF”6öæF—F–öç2ÒvVF†W$–6öâ†F’çvVF†W$6öFRÂG'VR“°¢&WGW&âÅf–Wr¶W“×¶F’æFFWÒ7G–ÆS×µ·7G–ÆW2ç7F”f÷&V67E&÷rÂ²&÷&FW$6öÆ÷#¢ÆWGFRæÆ–æRÕ×Óà¢ÅFW‡B7G–ÆS×µ·7G–ÆW2ç7F”f÷&V67DF’Â²6öÆ÷#¢ÆWGFRæ×WFVBÕ×Óç¶f÷&V67DF”Æ&VÂ†F’æFFR—ÓÂõFW‡Cà¢Åf–Wr7G–ÆS×·7G–ÆW2ç7F”f÷&V67D6öæF—F–öç7Óà¢ÅFW‡B7G–ÆS×µ·7G–ÆW2ç7F”f÷&V67D–6öâÂ²fÆWƒ¢Õ×Óç¶F”6öæF—F–öç2æ–6öçÓÂõFW‡Cà¢ÅFW‡BçVÖ&W$ödÆ–æW3×³Ò7G–ÆS×µ·7G–ÆW2æÖWFÂ7G–ÆW2ç7F”f÷&V67DFW67&—F–öâÂ²6öÆ÷#¢ÆWGFRæ×WFVBÕ×Óç¶F”6öæF—F–öç2æÆ&VÇÓÂõFW‡Cà¢Âõf–Wsà¢ÅFW‡B7G–ÆS×µ·7G–ÆW2ç7F”f÷&V67EFV×Â²6öÆ÷#¢ÆWGFRçFW‡BÕ×Óç¶F’çFV×Ö‡Ü+ò¶F’çFV×Ö–çÜ+ÂõFW‡Cà¢Âõf–Wsã°¢Ò—Ğ¢Âõf–Wsà¢¢f÷&V67E7FGW2ÓÓÒvÆöF–ærp¢òÅf–Wr7G–ÆS×·7G–ÆW2æf÷&V67E7FFU&÷wÓãÄ7F—f—G”–æF–6F÷"6—¦SÒ'6ÖÆÂ"óãÅFW‡B7G–ÆS×µ·7G–ÆW2æÖWFÂ²6öÆ÷#¢ÆWGFRæ×WFVBÕ×ÓäÆöF–ærf÷&V67N(
-cÂõFW‡CãÂõf–Wsà¢¢f÷&V67E7FGW2ÓÓÒvöffÆ–æRp¢òÅFW‡B7G–ÆS×µ·7G–ÆW2æÖWFÂ²6öÆ÷#¢ÆWGFRæ×WFVBÂÖ&v–åF÷¢bÕ×Óäf÷&V67BVæf–Æ&ÆRv†–ÆRöffÆ–æRãÂõFW‡Cà¢¢Å&W76&ÆRöå&W73×·&WG'—Ò66W76–&–Æ—G•&öÆSÒ&'WGFöâ"7G–ÆS×·7G–ÆW2æf÷&V67E&WG'—ÓãÅFW‡B7G–ÆS×µ·7G–ÆW2æÖWFÂ²6öÆ÷#¢ÆWGFRæ66VçBÕ×Óäf÷&V67BVæf–Æ&ÆRâFFò&WG'’ãÂõFW‡CãÂõ&W76&ÆSçĞ¢Âô”õ4F–Æösà¢Âóã°§Ğ¦gVæ7F–öâf÷&V67DF”Æ&VÂ‡fÇVS¢7G&–ær“¢7G&–ær°¢6öç7B·–V"ÂÖöçF‚ÂF•ÒÒfÇVRç7Æ—B‚rÒr’æÖ„çVÖ&W"“°¢6öç7BFFRÒæWrFFR„FFRåUD2‡–V"ÂÖöçF‚ÒÂF’’“°¢6öç7BvVV¶F’Ò²u5TârÂtÔôârÂuETRrÂutTBrÂuD…RrÂte$’rÂu4BuÕ¶FFRævWEUD4F’‚•Ó°¢&WGW&âG·vVV¶F—ÒG¶F—Ö°§Ğ¦gVæ7F–öâ7&Wu&÷r‡²ÖVÖ&W"ÂÆWGFRÓ¢²ÖVÖ&W#¢7&WtÖVÖ&W#²ÆWGFS¢ÆWGFRÒ’²&WGW&âÅf–Wr7G–ÆS×µ·7G–ÆW2æ7&Wu&÷rÂ²&÷&FW$&÷GFöÕv–GFƒ¢7G–ÆU6†VWBæ†—&Æ–æUv–GF‚Â&÷&FW$6öÆ÷#¢ÆWGFRæÆ–æRÕ×ÓãÅf–Wr7G–ÆS×µ·7G–ÆW2æfF"Â²&6¶w&÷VæD6öÆ÷#¢ÆWGFRæ66VçE6ögBÕ×ÓãÅFW‡B7G–ÆS×µ·7G–ÆW2æfF%FW‡BÂ²6öÆ÷#¢ÆWGFRæ66VçBÕ×Óç¶ÖVÖ&W"ææÖSòçG&–Ò‚“òå³ÓòçFõWW$66R‚’óò~(
-"wÓÂõFW‡CãÂõf–WsãÅf–Wr7G–ÆS×·7G–ÆW2æw&÷wÓãÅFW‡BçVÖ&W$ödÆ–æW3×³Ò7G–ÆS×µ·7G–ÆW2æ7&WtæÖRÂ²6öÆ÷#¢ÆWGFRçFW‡BÕ×Óç¶ÖVÖ&W"ææÖWÓÂõFW‡CãÅFW‡B7G–ÆS×µ·7G–ÆW2æÖWFÂ²6öÆ÷#¢ÆWGFRæ×WFVBÕ×Óç¶ÖVÖ&W"ç÷6—F–öâóòÖVÖ&W"ç&öÆWÓÂõFW‡CãÂõf–WsãÂõf–Wsã²Ğ¦gVæ7F–öâ7VÖÖ'’‡²F—FÆRÂfÇVRÂFWF–ÂÂÆWGFRÓ¢²F—FÆS¢7G&–æs²fÇVS¢7G&–æs²FWF–Ã¢7G&–æs²ÆWGFS¢ÆWGFRÒ’²&WGW&âÅf–Wr7G–ÆS×µ·7G–ÆW2ç7VÖÖ'’Â7G–ÆW2æFWF…7W&f6RÂ²&6¶w&÷VæD6öÆ÷#¢ÆWGFRç7W&f6RÂ&÷&FW$6öÆ÷#¢ÆWGFRæÆ–æRÕ×ÓãÅFW‡B7G–ÆS×µ·7G–ÆW2æÆ&VÂÂ²6öÆ÷#¢ÆWGFRæ×WFVBÕ×Óç·F—FÆWÓÂõFW‡CãÅFW‡B7G–ÆS×µ·7G–ÆW2ç7VÖÖ'•fÇVRÂ²6öÆ÷#¢ÆWGFRçFW‡BÕ×Óç·fÇVWÓÂõFW‡CãÅFW‡B7G–ÆS×µ·7G–ÆW2æÖWFÂ²6öÆ÷#¢ÆWGFRæ×WFVBÕ×Óç¶FWF–ÇÓÂõFW‡CãÂõf–Wsã²Ğ¦gVæ7F–öâ&–Ö'”'WGFöâ‡²F—FÆRÂöå&W72ÂÆöF–ærÂÆWGFRÓ¢²F—FÆS¢7G&–æs²öå&W73¢‚’Óâfö–C²ÆöF–æs¢&ööÆVã²ÆWGFS¢ÆWGFRÒ’²&WGW&âÅ&W76&ÆRöå&W73×¶öå&W77ÒF—6&ÆVC×¶ÆöF–æwÒ7G–ÆS×µ·7G–ÆW2ç&–Ö'”'WGFöâÂ²&6¶w&÷VæD6öÆ÷#¢ÆWGFRæ66VçBÕ×Óç¶ÆöF–æròÄ7F—f—G”–æF–6F÷"6öÆ÷#Ò"6ffb"óâ¢ÅFW‡B7G–ÆS×·7G–ÆW2æ7F–öåFW‡GÓç·F—FÆWÓÂõFW‡CçÓÂõ&W76&ÆSã²Ğ¦gVæ7F–öâ÷W&F–æt6÷VçB‡&÷7FW#¢'6VD—$7Fæ&÷7FW"’²&WGW&â&÷7FW"ç6V7F÷'2æf–ÇFW"‚‡6V7F÷"’Óâ6V7F÷"æFVF†VB’æÆVæwFƒ²Ğ ¦6öç7B7G–ÆW2Ò7G–ÆU6†VWBæ7&VFR‡°¢6fS§¶fÆWƒ£ÒÂ§¶fÆWƒ£Çv–GFƒ¢sRrÆÖ…v–GFƒ£c#ÆÆ–vå6VÆc¢v6VçFW"rÇFF–æt†÷&—¦öçFÃ£bÇFF–æuF÷£ãS‡ÒÀ¢†VFW#§¶†V–v‡C£s"ÆfÆW„F—&V7F–öã¢w&÷rrÆÆ–vä—FV×3¢v6VçFW"rÆ§W7F–g”6öçFVçC¢w76RÖ&WGvVVâwÒÂ'&æC§¶föçE6—¦S£#‚ÆÆ–æT†V–v‡C£3BÆföçEvV–v‡C¢ssrÆÆWGFW%76–æs¢Òã‡ÒÀ¢ÖöFT'WGFöã§·v–GFƒ£cbÆ†V–v‡C£CÆ&÷&FW%&F—W3£bÆÆ–vä—FV×3¢v6VçFW"rÆ§W7F–g”6öçFVçC¢v6VçFW"wÒÂ–×4vÇ—ƒ§¶föçE6—¦S£"ÆÆ–æT†V–v‡C£RÆföçEvV–v‡C¢sƒrÆÆWGFW%76–æs¢ã'ÒÀ¢–×57FGW3§¶Ö–ä†V–v‡C£cbÆ&÷&FW%v–GFƒ£Æ&÷&FW%&F—W3£#ÇFF–æs£"ÆÖ&v–ä&÷GFöÓ£‚ÆfÆW„F—&V7F–öã¢w&÷rrÆÆ–vä—FV×3¢v6VçFW"rÆv£ÒÂ–×57FGW4–6öã§·v–GFƒ£#‚Æ†V–v‡C£#‚ÆÆ–vä—FV×3¢v6VçFW"rÆ§W7F–g”6öçFVçC¢v6VçFW"wÒÂ–×57FGW4vÇ—ƒ§¶föçE6—¦S£‚ÆföçEvV–v‡C¢sƒwÒÂ–×57FGW5F—FÆS§¶föçE6—¦S£BÆÆ–æT†V–v‡C£‚ÆföçEvV–v‡C¢sswÒÂ7FGW4F—6Ö—73§·v–GFƒ£#BÆ†V–v‡C£3BÆÆ–vä—FV×3¢v6VçFW"rÆ§W7F–g”6öçFVçC¢v6VçFW"wÒÂ7FGW4F—6Ö—75FW‡C§¶föçE6—¦S£#"ÆÆ–æT†V–v‡C£#GÒÀ¢f–Ww÷'C§¶fÆWƒ£ÆÖ–ä†V–v‡C£ÒÂF%æS§·÷6—F–öã¢v'6öÇWFRrÇF÷£ÆÆVgC£Ç&–v‡C£Æ&÷GFöÓ£ÒÂF%æT†–FFVã§¶÷6—G“£ÒÂ67&VVã§¶fÆWƒ£ÇFF–æuF÷£‚Æv£'ÒÂw&÷s§¶fÆWƒ£ÆÖ–åv–GFƒ£ÒÂ6V7F–öåF—FÆS§¶föçE6—¦S£#‚ÆÆ–æT†V–v‡C£3BÆföçEvV–v‡C¢ssrÆÆWGFW%76–æs¢Òã‡ÒÂ–çG&ó§¶föçE6—¦S£RÆÆ–æT†V–v‡C£#'ÒÂÆ&VÃ§¶föçE6—¦S£ÆföçEvV–v‡C¢ssrÆÆWGFW%76–æs¢ã—ÒÂÖWF§¶föçE6—¦S£2ÆÆ–æT†V–v‡C£‡ÒÀ¢GWG”†VC§¶fÆW„F—&V7F–öã¢w&÷rrÆÆ–vä—FV×3¢v6VçFW"rÆ§W7F–g”6öçFVçC¢w76RÖ&WGvVVâwÒÂ†W&ô6&C§¶&÷&FW%v–GFƒ£Æ&÷&FW%&F—W3£#"ÇFF–æs£7ÒÂ†W&õ&÷WFS§¶föçE6—¦S£#rÆÆ–æT†V–v‡C£3"ÆföçEvV–v‡C¢ssrÆÆWGFW%76–æs¢ÒãwÒÂ†W&õF÷&÷s§¶fÆW„F—&V7F–öã¢w&÷rrÆÆ–vä—FV×3¢vfÆW‚×7F'BrÆ§W7F–g”6öçFVçC¢w76RÖ&WGvVVârÆv£ÒÂ†W&õ&÷WFTfÆWƒ§¶fÆWƒ£ÒÂfÆ–v‡D&FvU&÷s§¶fÆW„F—&V7F–öã¢w&÷rrÆfÆW…w&¢ww&rÆv£bÆÖ&v–åF÷£‡ÒÂfÆ–v‡D&FvS§¶&÷&FW%&F—W3£ÇFF–æt†÷&—¦öçFÃ£’ÇFF–æufW'F–6Ã£GÒÂfÆ–v‡D&FvUFW‡C§¶föçE6—¦S£"ÆföçEvV–v‡C¢sƒrÆÆWGFW%76–æs¢ã2ÂââäÔôäõôdôåGÒÀ¢6÷VçFF÷vå–ÆÃ§¶&÷&FW%&F—W3£2ÇFF–æt†÷&—¦öçFÃ£ÇFF–æufW'F–6Ã£RÆÆ–vä—FV×3¢v6VçFW"wÒÂ6÷VçFF÷vã§¶föçE6—¦S£bÆföçEvV–v‡C¢sƒrÆföçEf&–çC¥²wF'VÆ"ÖçV×2uÒÂââäÔôäõôdôåGÒÂ6÷VçFF÷väÆ&VÃ§¶föçE6—¦S£’ÆföçEvV–v‡C¢ssrÆÆWGFW%76–æs¢ãbÆÖ&v–åF÷£ÒÂF–ÖTF—f–FW#§¶†V–v‡C¥7G–ÆU6†VWBæ†—&Æ–æUv–GF‚ÆÖ&v–åfW'F–6Ã£‡ÒÂF–ÖU&÷s§¶fÆW„F—&V7F–öã¢w&÷rrÆÆ–vä—FV×3¢vfÆW‚×7F'BrÆv£gÒÂF–ÖT6VÆÃ§¶fÆWƒ£ÆÖ–åv–GFƒ£ÒÂF–ÖTÆ&VÃ§¶föçE6—¦S£ÆÆ–æT†V–v‡C£2ÆföçEvV–v‡C¢ssrÆÆWGFW%76–æs¢ã7ÒÂF–ÖUfÇVS§¶föçE6—¦S£‚ÆÆ–æT†V–v‡C£#"ÆföçEvV–v‡C¢ssrÆÖ&v–åF÷£"ÆföçEf&–çC¥²wF'VÆ"ÖçV×2uÒÂââäÔôäõôdôåGÒÂ†W&ôfö÷C§¶föçE6—¦S£"ÆföçEvV–v‡C¢scrÆÖ&v–åF÷£‡ÒÂvVF†W%&÷s§¶fÆW„F—&V7F–öã¢w&÷rrÆÆ–vä—FV×3¢v6VçFW"rÆv£bÆÖ&v–åF÷£‡ÒÂvVF†W$–6öã§¶föçE6—¦S£gÒÂvVF†W%FV×§¶föçE6—¦S£BÆföçEvV–v‡C¢sƒrÂââäÔôäõôdôåGÒÂvVF†W$ÖWF§¶fÆWƒ£ÆföçE6—¦S£ãRÆföçEvV–v‡C¢scwÒÀ¢7VÖÖ'•&÷s§¶fÆW„F—&V7F–öã¢w&÷rrÆv£ÒÂ7VÖÖ'“§¶fÆWƒ£Æ&÷&FW%v–GFƒ£Æ&÷&FW%&F—W3£#ÇFF–æs£GÒÂ7VÖÖ'•fÇVS§¶föçE6—¦S£#‚ÆföçEvV–v‡C¢ssrÆÖ&v–åF÷£bÆföçEf&–çC¥²wF'VÆ"ÖçV×2uÒÂââäÔôäõôdôåGÒÂWæW‡C§¶fÆWƒ£ÆÖ–ä†V–v‡C£Æv£"ÂââåÆFf÷&Òç6VÆV7B‡·vV#§¶Ö„†V–v‡C¢s3Gf‚r2ç—ÒÆFVfVÇC§·×Ò—ÒÂWæW‡DÆ—7C§¶fÆWƒ£ÒÀ¢&–Ö'”'WGFöã§¶†V–v‡C£SÆ&÷&FW%&F—W3£bÆÆ–vä—FV×3¢v6VçFW"rÆ§W7F–g”6öçFVçC¢v6VçFW"wÒÂ7F–öåFW‡C§¶6öÆ÷#¢r6ffbrÆföçEvV–v‡C¢sswÒÂF—FÆU&÷s§¶fÆW„F—&V7F–öã¢w&÷rrÆÆ–vä—FV×3¢v6VçFW"rÆv£‡ÒÂF—FÆT7F–öç3§¶fÆW„F—&V7F–öã¢w&÷rrÆv£wÒÂ6ö×7D'WGFöã§¶†V–v‡C£3‚ÆÖ–åv–GFƒ£s"Æ&÷&FW%v–GFƒ£Æ&÷&FW%&F—W3£BÆÆ–vä—FV×3¢v6VçFW"rÆ§W7F–g”6öçFVçC¢v6VçFW"rÇFF–æt†÷&—¦öçFÃ£ÒÂ6ö×7EFW‡C§¶föçEvV–v‡C¢ssrÆföçE6—¦S£'ÒÂÖöçF„æc§¶†V–v‡C£CÆfÆW„F—&V7F–öã¢w&÷rrÆÆ–vä—FV×3¢v6VçFW"rÆ§W7F–g”6öçFVçC¢w76RÖ&WGvVVâwÒÂÖöçF„æeFW‡C§¶föçE6—¦S£"ÆföçEvV–v‡C¢scwÒÂÖöçF…7v—Uw&§¶fÆWƒ£ÆÖ–ä†V–v‡C£ÒÀ¢V×G”6&C§¶&÷&FW%v–GFƒ£Æ&÷&FW%&F—W3£#ÇFF–æs£GÒÂ–ææW%v–æF÷s§¶fÆWƒ£ÆÖ–ä†V–v‡C£Æ&÷&FW%v–GFƒ£Æ&÷&FW%&F—W3£#Æ÷fW&fÆ÷s¢v†–FFVâwÒÂÆ—7D6öçFVçC§·FF–æs£‚Æv£rÇFF–æt&÷GFöÓ£‡ÒÂ&÷7FW$6&C§¶&÷&FW%v–GFƒ£Æ&÷&FW%&F—W3£bÇFF–æs£7ÒÂ&÷7FW$6&EFöF“§¶&÷&FW%v–GFƒ£ãWÒÂfÆ–v‡D6&EF÷§¶fÆW„F—&V7F–öã¢w&÷rrÆ§W7F–g”6öçFVçC¢w76RÖ&WGvVVâwÒÂfÆ–v‡DçVÖ&W#§¶föçE6—¦S£ÆföçEvV–v‡C¢sswÒÂ&÷7FW%&÷WFS§¶föçE6—¦S£#ÆföçEvV–v‡C¢ssrÆÖ&v–åF÷£GÒÂ&÷7FW$WfVçEF—FÆS§¶föçE6—¦S£‚ÆÆ–æT†V–v‡C£#"ÆföçEvV–v‡C¢ssrÆÖ&v–åF÷£GÒÀ¢–æfô6&C§¶&÷&FW%v–GFƒ£Æ&÷&FW%&F—W3£#ÇFF–æs£BÆv£7ÒÂ6&EF—FÆS§¶föçE6—¦S£rÆÆ–æT†V–v‡C£#"ÆföçEvV–v‡C¢sswÒÂÆ–'&'”6&C§¶&÷&FW%v–GFƒ£Æ&÷&FW%&F—W3£#ÇFF–æs£BÆÖ–ä†V–v‡C£ƒ‚ÆÖ„†V–v‡C£“ÒÂÆ–'&'”Æ—7C§¶Ö&v–åF÷£WÒÂÆ–'&'•&÷s§¶Ö–ä†V–v‡C£SBÆfÆW„F—&V7F–öã¢w&÷rrÆÆ–vä—FV×3¢v6VçFW"rÆv£Æ&÷&FW$&÷GFöÕv–GFƒ¥7G–ÆU6†VWBæ†—&Æ–æUv–GF‡ÒÂÆ–'&'”ÖöçFƒ§¶föçE6—¦S£BÆföçEvV–v‡C¢sswÒÂFVÆWFU&÷7FW$'WGFöã§¶Ö–åv–GFƒ£S‚Æ†V–v‡C£3BÆ&÷&FW%&F—W3£"ÆÆ–vä—FV×3¢v6VçFW"rÆ§W7F–g”6öçFVçC¢v6VçFW"rÇFF–æt†÷&—¦öçFÃ£‡ÒÂFVÆWFU&÷7FW%FW‡C§¶föçE6—¦S£ÆföçEvV–v‡C¢sswÒÂW‡—'”FFS§¶föçE6—¦S£"ÆföçEvV–v‡C¢ssrÆföçEf&–çC¥²wF'VÆ"ÖçV×2uÒÂââäÔôäõôdôåGÒÀ¢FævW$'WGFöã§¶†V–v‡C£C‚Æ&÷&FW%v–GFƒ£Æ&÷&FW%&F—W3£RÆÆ–vä—FV×3¢v6VçFW"rÆ§W7F–g”6öçFVçC¢v6VçFW"wÒÂFævW%FW‡C§¶föçEvV–v‡C¢ssrÆföçE6—¦S£GÒÂ&6·W&÷s§¶fÆW„F—&V7F–öã¢w&÷rrÆv£‚ÆÖ&v–åF÷£ÒÂW‡—'”†VFW%&÷s§¶fÆW„F—&V7F–öã¢w&÷rrÆÆ–vä—FV×3¢v6VçFW"rÆ§W7F–g”6öçFVçC¢w76RÖ&WGvVVâwÒÂW‡—'”6†Wg&öã§¶föçE6—¦S£#ÆföçEvV–v‡C¢sswÒÂW‡—'•6†VWC§·v–GFƒ¢sRrÆÖ…v–GFƒ£c#ÆÖ„†V–v‡C¢ss‚RrÆÆ–vå6VÆc¢v6VçFW"rÆ&÷&FW%F÷v–GFƒ£Æ&÷&FW%F÷ÆVgE&F—W3£#‚Æ&÷&FW%F÷&–v‡E&F—W3£#‚ÇFF–æt†÷&—¦öçFÃ£‚ÇFF–æt&÷GFöÓ£"Æ÷fW&fÆ÷s¢v†–FFVâwÒÂW‡—'•6†VWDÆ—7C§¶Ö&v–åF÷£ÒÂW‡—'•6†VWDÆ—7D6öçFVçC§·FF–æt&÷GFöÓ£'ÒÂfW'6–öåFW‡C§¶föçE6—¦S£ÆföçEvV–v‡C¢scrÆÆWGFW%76–æs¢ã"Æ÷6—G“¢ãRÇFW‡DÆ–vã¢v6VçFW"rÆÖ&v–åF÷£'ÒÂ6öæf—&ÔF–Æös§·v–GFƒ¢sƒ‚RrÆÖ…v–GFƒ£3cÆ&÷&FW%v–GFƒ£Æ&÷&FW%&F—W3£#"ÇFF–æs£‡ÒÂ6öæf—&Ô7F–öç3§¶fÆW„F—&V7F–öã¢w&÷rrÆv£ÆÖ&v–åF÷£gÒÂ7F•÷W§·v–GFƒ¢sƒ‚RrÆÖ…v–GFƒ£3CÆ&÷&FW%v–GFƒ£Æ&÷&FW%&F—W3£#"ÇFF–æs£‡ÒÂ7F•÷W&W7C§¶föçE6—¦S£#‚ÆföçEvV–v‡C¢sƒrÆÖ&v–åF÷£bÆföçEf&–çC¥²wF'VÆ"ÖçV×2uÒÂââäÔôäõôdôåGÒÂ7F”f÷&V67DÆ—7C§¶Ö&v–åF÷£BÆv£'ÒÂ7F”f÷&V67E&÷s§¶fÆW„F—&V7F–öã¢w&÷rrÆÆ–vä—FV×3¢v6VçFW"rÆv£bÇFF–æufW'F–6Ã£‚Æ&÷&FW%F÷v–GFƒ¥7G–ÆU6†VWBæ†—&Æ–æUv–GF‡ÒÂ7F”f÷&V67DF“§·v–GFƒ£3BÆföçE6—¦S£"ÆföçEvV–v‡C¢sswÒÂ7F”f÷&V67D6öæF—F–öç3§¶fÆWƒ£ÆÖ–åv–GFƒ£ÆfÆW„F—&V7F–öã¢w&÷rrÆÆ–vä—FV×3¢v6VçFW"rÆv£gÒÂ7F”f÷&V67DFW67&—F–öã§¶fÆWƒ£ÆÖ–åv–GFƒ£ÆföçE6—¦S£'ÒÂ7F”f÷&V67D–6öã§¶föçE6—¦S£‚ÆfÆWƒ£ÒÂ7F”f÷&V67EFV×§¶föçE6—¦S£BÆföçEvV–v‡C¢ssrÆföçEf&–çC¥²wF'VÆ"ÖçV×2uÒÂââäÔôäõôdôåGÒÂf÷&V67E7FFU&÷s§¶fÆW„F—&V7F–öã¢w&÷rrÆÆ–vä—FV×3¢v6VçFW"rÆv£‚ÆÖ&v–åF÷£‡ÒÂf÷&V67E&WG'“§¶Ö&v–åF÷£bÇFF–æufW'F–6Ã£GÒÂ6öæf—&Ô6æ6VÃ§¶fÆWƒ£Æ†V–v‡C£CBÆ&÷&FW%v–GFƒ£Æ&÷&FW%&F—W3£2ÆÆ–vä—FV×3¢v6VçFW"rÆ§W7F–g”6öçFVçC¢v6VçFW"wÒÂ6öæf—&ÔW&6S§¶fÆWƒ£Æ†V–v‡C£CBÆ&÷&FW%&F—W3£2ÆÆ–vä—FV×3¢v6VçFW"rÆ§W7F–g”6öçFVçC¢v6VçFW"wÒÂÖ÷&T6öçFVçC§¶v£"ÇFF–æt&÷GFöÓ£#GÒÀ¢FWF…7W&f6S§·6†F÷t6öÆ÷#¢r3rÇ6†F÷töfg6WC§·v–GFƒ£Æ†V–v‡C£ÒÇ6†F÷t÷6—G“¢ãÇ6†F÷u&F—W3£#BÆVÆWfF–öã£RÂââåtT%ôtÄ57ÒÂF$&#§¶†V–v‡C£c‚ÆÖ&v–åF÷£‚ÆÖ&v–ä&÷GFöÓ£BÆ&÷&FW%v–GFƒ£Æ&÷&FW%&F—W3£#"ÆfÆW„F—&V7F–öã¢w&÷rrÂââåtT%õD%ôtÄ57ÒÂF%6VÆV7F–öã§·÷6—F–öã¢v'6öÇWFRrÆÆVgC£BÇF÷£BÆ&÷GFöÓ£BÆ&÷&FW%&F—W3£‚Ç6†F÷t6öÆ÷#¢r3rÇ6†F÷töfg6WC§·v–GFƒ£Æ†V–v‡C£WÒÇ6†F÷t÷6—G“¢ã‚Ç6†F÷u&F—W3£"ÆVÆWfF–öã£'ÒÂF$—FVÓ§¶fÆWƒ£Ç¤–æFWƒ£ÆÆ–vä—FV×3¢v6VçFW"rÆ§W7F–g”6öçFVçC¢v6VçFW"rÆv£'ÒÂF$–6öåw&§¶Ö–åv–GFƒ£3RÆ†V–v‡C£#rÆ&÷&FW%&F—W3£BÆÆ–vä—FV×3¢v6VçFW"rÆ§W7F–g”6öçFVçC¢v6VçFW"wÒÂF$–6öã§·FW‡DÆ–vã¢v6VçFW"wÒÂF%FW‡C§¶föçE6—¦S£ÆföçEvV–v‡C¢scwÒÀ¢fÆ–v‡E6†VWC§·v–GFƒ¢sRrÆÖ…v–GFƒ£c#ÆÖ„†V–v‡C¢ss‚RrÆÆ–vå6VÆc¢v6VçFW"rÆ&÷&FW%F÷v–GFƒ£Æ&÷&FW%F÷ÆVgE&F—W3£#‚Æ&÷&FW%F÷&–v‡E&F—W3£#‚ÇFF–æt†÷&—¦öçFÃ£‚ÇFF–æt&÷GFöÓ£"Æ÷fW&fÆ÷s¢v†–FFVâwÒÂfÆ–v‡E6†VWD6öçFVçC§¶Ö–ä†V–v‡C£ÆfÆW…6‡&–æ³£ÒÂ6†VWE&÷WFS§¶föçE6—¦S£#‚ÆÆ–æT†V–v‡C£32ÆföçEvV–v‡C¢ssrÆÖ&v–åF÷£WÒÂ7v—T†–çC§¶föçE6—¦S£ÆÖ&v–åF÷£wÒÂfÇ––æuv—Fƒ§¶föçE6—¦S£ÆföçEvV–v‡C¢ssrÆÆWGFW%76–æs¢ãCRÆ÷6—G“¢ãƒ"ÆÖ&v–åF÷£"ÆÖ&v–ä&÷GFöÓ£wÒÂ7&Wu67&öÆÃ§¶Ö–ä†V–v‡C£ÆfÆW…6‡&–æ³£ÆfÆWƒ£ÂââåÆFf÷&Òç6VÆV7B‡·vV#§¶Ö„†V–v‡C¢v6Æ2ƒs‡f‚ÒCg‚’r2ç—ÒÆFVfVÇC§·×Ò—ÒÂ7&WtÆ—7C§·FF–æt&÷GFöÓ£'ÒÂ7&Wu&÷s§¶Ö–ä†V–v‡C£SÆfÆW„F—&V7F–öã¢w&÷rrÆÆ–vä—FV×3¢v6VçFW"wÒÂfF#§·v–GFƒ£3BÆ†V–v‡C£3BÆ&÷&FW%&F—W3£rÆÆ–vä—FV×3¢v6VçFW"rÆ§W7F–g”6öçFVçC¢v6VçFW"rÆÖ&v–å&–v‡C£ÒÂfF%FW‡C§¶föçE6—¦S£"ÆföçEvV–v‡C¢sƒwÒÂ7&WtæÖS§¶föçE6—¦S£BÆföçEvV–v‡C¢scwÒÀ¢fÆ–v‡Df7G3§¶fÆW„F—&V7F–öã¢w&÷rrÆv£bÆ&÷&FW%F÷v–GFƒ¥7G–ÆU6†VWBæ†—&Æ–æUv–GF‚Æ&÷&FW$&÷GFöÕv–GFƒ¥7G–ÆU6†VWBæ†—&Æ–æUv–GF‚ÇFF–æufW'F–6Ã£ÆÖ&v–åF÷£ÒÂfÆ–v‡Df7C§¶fÆWƒ£ÆÖ–åv–GFƒ£ÒÂfÆ–v‡Df7DÆ&VÃ§¶föçE6—¦S£’ÆÆ–æT†V–v‡C£"ÆföçEvV–v‡C¢ssrÆÆWGFW%76–æs¢ãCWÒÂfÆ–v‡Df7EfÇVS§¶föçE6—¦S£bÆÆ–æT†V–v‡C£#ÆföçEvV–v‡C¢ssrÆföçEf&–çC¥²wF'VÆ"ÖçV×2uÒÆÖ&v–åF÷£"ÂââäÔôäõôdôåGÒÂ7F”6&C§¶&÷&FW%v–GFƒ£Æ&÷&FW%&F—W3£bÇFF–æs£"ÆÖ&v–åF÷£'ÒÂ7F•F—FÆS§¶föçE6—¦S£bÆÆ–æT†V–v‡C£#ÆföçEvV–v‡C¢ssrÆÖ&v–åF÷£GÒÂ7F”ÖWF§¶föçE6—¦S£ÆÆ–æT†V–v‡C£RÆÖ&v–åF÷£GÒÀ§Ò“° 
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, Animated, FlatList, Platform, Pressable, ScrollView, StyleSheet, Text, View, useColorScheme, useWindowDimensions, type LayoutChangeEvent, type ListRenderItem } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { IOSDialog, IOSSheet } from './IOSOverlay';
+import { SwipeSurface, type SwipeSurfaceHandle } from './SwipeSurface';
+import { buildRosterTimeline, flightExtra, stayForHotelEvent, stayForSector, type RosterTimelineRow, type RosterWithNormalized, type StayInfo } from './rosterDataView';
+import type { NormalizedExpiry } from '@/src/core/rosterContract';
+import { exportRosterCalendar } from '@/src/domain/calendar';
+import { formatMinutes, rosterMonthLabel, rosterToDuties } from '@/src/domain/rosterView';
+import { stationLocalDateTimeMs } from '@/src/domain/stationTime';
+import type { CrewMember, Duty, Sector } from '@/src/domain/types';
+import { openAimsWebArchiveFlow } from '@/src/import/pasteWebArchive';
+import { pickAndParseRoster } from '@/src/import/pickRoster';
+import type { ParsedAirAstanaRoster } from '@/src/import/parseAirAstanaRoster';
+import { exportBackup, restoreBackup } from '@/src/storage/backup';
+import { clearStoredRosters, loadStoredRosters, removeStoredRoster, upsertStoredRoster } from '@/src/storage/rosterStorage';
+import { airportCoords } from '@/src/weather/airports';
+import { prefetchStationWeather, useAirportForecastState, useAirportWeatherState } from '@/src/weather/weatherService';
+import { weatherIcon, windDirectionLabel } from '@/src/weather/weatherCodes';
+
+type Tab = 'Home' | 'Roster' | 'More';
+const TABS: Tab[] = ['Home', 'Roster', 'More'];
+const TAB_ICONS: Record<Tab, { glyph: string; size: number; nudge: number; weight: '700' | '800' }> = {
+  Home: { glyph: 'âŒ‚', size: 24, nudge: 0, weight: '700' },
+  Roster: { glyph: 'âœˆï¸', size: 22, nudge: 0, weight: '700' },
+  More: { glyph: 'â€¢â€¢â€¢', size: 18, nudge: -2, weight: '700' },
+};
+type Palette = { background:string; surface:string; surfaceStrong:string; text:string; muted:string; line:string; accentLine:string; accent:string; accentSoft:string; gold:string; danger:string; weekend:string };
+type RosterDuty = { roster: ParsedAirAstanaRoster; duty: Duty };
+type FocusDuty = RosterDuty & { reportMs: number; releaseMs: number };
+type FlightRow = { duty: Duty; sector: Sector };
+type RosterFocusHandle = { focusToday: () => void };
+
+const MONO_FONT = Platform.OS === 'web'
+  ? ({ fontFamily: 'ui-monospace,"SF Mono",Menlo,monospace' } as any)
+  : undefined;
+// backdrop-filter is read through a CSS custom property (rather than a literal blur()) so
+// SwipeSurface can suspend it document-wide for the duration of a page-turn transform: WebKit
+// re-samples everything behind a blurred element on every frame it moves, which is cheap for one
+// card but adds up fast with this many glass surfaces animating across a tab switch at once.
+const WEB_GLASS = Platform.OS === 'web'
+  ? ({ backdropFilter: 'blur(24px) saturate(1.4)', WebkitBackdropFilter: 'blur(24px) saturate(1.4)' } as any)
+  : undefined;
+const WEB_TAB_GLASS = Platform.OS === 'web'
+  ? ({ backdropFilter: 'blur(32px) saturate(1.5)', WebkitBackdropFilter: 'blur(32px) saturate(1.5)' } as any)
+  : undefined;
+/**
+ * All shadow* props must live in the same style object â€” react-native-web derives a single
+ * boxShadow per object, so splitting shadowColor into a separate object in the style array
+ * (rather than merging shadow properties key-by-key) makes the later object's missing
+ * offset/radius/opacity silently zero out the shadow instead of merging with the earlier one.
+ */
+const todayGlow = (palette: Palette) => ({
+  shadowColor: palette.accent, shadowOffset: { width: 0, height: 8 }, shadowOpacity: .32, shadowRadius: 20, elevation: 8, ...WEB_GLASS,
+});
+// Matches styles.listContent (padding:8, gap:7) â€” used by getItemLayout to compute an
+// authoritative scroll offset before rows are actually measured.
+const LIST_TOP_PADDING = 8;
+const LIST_ROW_GAP = 7;
+const ROW_HEIGHT_ESTIMATE = { flight: 124, event: 80 } as const;
+function heroTint(palette: Palette) {
+  return Platform.OS === 'web'
+    ? ({ backgroundImage: `linear-gradient(135deg, ${palette.accentSoft} 0%, ${palette.surfaceStrong} 60%)` } as any)
+    : undefined;
+}
+
+export default function MainScreen() {
+  const scheme = useColorScheme();
+  const { width } = useWindowDimensions();
+  const desktopWeb = Platform.OS === 'web' && width >= 768;
+  const [hydrated, setHydrated] = useState(Platform.OS !== 'web');
+  useEffect(() => { if (!hydrated) setHydrated(true); }, [hydrated]);
+  const dark = hydrated && scheme === 'dark';
+
+  const palette = useMemo<Palette>(() => dark ? {
+    background:'#0B1220', surface:'rgba(19,27,44,.72)', surfaceStrong:'rgba(24,33,53,.86)', text:'#F5F7FA', muted:'#8B95A5', line:'rgba(139,149,165,.18)', accentLine:'rgba(76,141,255,.32)', accent:'#4C8DFF', accentSoft:'rgba(76,141,255,.16)', gold:'#C9AC72', danger:'#EB6F79', weekend:'#D89A66',
+  } : {
+    background:'#F6F7FA', surface:'rgba(255,255,255,.72)', surfaceStrong:'rgba(255,255,255,.86)', text:'#0F172A', muted:'#687280', line:'rgba(15,23,42,.09)', accentLine:'rgba(45,125,255,.28)', accent:'#2D7DFF', accentSoft:'#E4EDFF', gold:'#A58B4F', danger:'#E5484D', weekend:'#9B613B',
+  }, [dark]);
+
+  const [tab, setTab] = useState<Tab>('Home');
+  const [rosters, setRosters] = useState<ParsedAirAstanaRoster[]>([]);
+  const [activeMonth, setActiveMonth] = useState<string>();
+  const [selectedFlight, setSelectedFlight] = useState<string>();
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState<string>();
+  const [tabBarWidth, setTabBarWidth] = useState(0);
+  const tabSelection = useRef(new Animated.Value(0)).current;
+  const tabSwipeRef = useRef<SwipeSurfaceHandle>(null);
+  const rosterFocus = useRef<RosterFocusHandle>({ focusToday: () => undefined }).current;
+
+  useEffect(() => {
+    const stored = loadStoredRosters();
+    setRosters(stored);
+    setActiveMonth(stored.at(-1)?.period.start);
+  }, []);
+
+  useEffect(() => {
+    Animated.spring(tabSelection, {
+      toValue: TABS.indexOf(tab),
+      stiffness: 380,
+      damping: 34,
+      mass: 0.72,
+      useNativeDriver: true,
+      isInteraction: false,
+    }).start();
+  }, [tab, tabSelection]);
+
+  const roster = rosters.find((item) => item.period.start === activeMonth) ?? rosters.at(-1);
+  const duties = useMemo(() => roster ? rosterToDuties(roster) : [], [roster]);
+  const selectedSector = duties.flatMap((duty) => duty.sectors).find((sector) => sector.id === selectedFlight);
+  const allDuties = useMemo<RosterDuty[]>(() => rosters.flatMap((item) => rosterToDuties(item).map((duty) => ({ roster: item, duty }))), [rosters]);
+  // Warm the arrival-weather cache for the next duties. Every sector uses its ARRIVAL station;
+  // home-base arrivals stay one day, while outstations may expand through the next departure.
+  useEffect(() => {
+    const now = Date.now();
+    const upcoming = timedDuties(allDuties).filter((item) => item.releaseMs >= now).slice(0, 6);
+    const seen = new Set<string>();
+    const requests: { code: string; days: number; startDate?: string; expandLayover?: boolean }[] = [];
+    for (const item of upcoming) {
+      for (const sector of item.duty.sectors) {
+        const startDate = arrivalForecastDate(item.roster, item.duty, sector);
+        const expandLayover = !isHomeBaseAirport(sector.arrival, item.roster.subject?.base);
+        const requestKey = `${sector.arrival}:${startDate ?? 'today'}:${expandLayover ? 'layover' : 'day'}`;
+        if (seen.has(requestKey)) continue;
+        seen.add(requestKey);
+        requests.push({ code: sector.arrival, days: 1, startDate, expandLayover });
+      }
+    }
+    if (requests.length) prefetchStationWeather(requests);
+  }, [allDuties]);
+  const tabStep = tabBarWidth / TABS.length;
+  const tabIndicatorX = Animated.multiply(tabSelection, tabStep);
+
+  const importRoster = useCallback(async () => {
+    setImportError(undefined);
+    setImporting(true);
+    try {
+      const parsed = await pickAndParseRoster();
+      if (!parsed) return;
+      const next = upsertStoredRoster(parsed);
+      setRosters(next);
+      setActiveMonth(parsed.period.start);
+      setSelectedFlight(undefined);
+      setTab('Roster');
+    } catch (error) {
+      setImportError(error instanceof Error ? error.message : String(error));
+    } finally {
+      setImporting(false);
+    }
+  }, []);
+
+  const importFromAims = useCallback(async () => {
+    if (importing) return;
+    setImportError(undefined);
+    setImporting(true);
+    try {
+      const result = await openAimsWebArchiveFlow();
+      if (!result) return;
+      const next = upsertStoredRoster(result.roster);
+      setRosters(next);
+      setActiveMonth(result.roster.period.start);
+      setSelectedFlight(undefined);
+      setTab('Roster');
+    } catch (error) {
+      setImportError(error instanceof Error ? error.message : String(error));
+    } finally {
+      setImporting(false);
+    }
+  }, [importing]);
+
+  const restoreFromBackup = useCallback(async () => {
+    const result = await restoreBackup();
+    if (result.restored) {
+      const next = loadStoredRosters();
+      setRosters(next);
+      setActiveMonth(next.at(-1)?.period.start);
+    }
+    return result;
+  }, []);
+
+  const deleteRoster = useCallback((periodStart: string) => {
+    const next = removeStoredRoster(periodStart);
+    setRosters(next);
+    setSelectedFlight(undefined);
+    setActiveMonth((current) => current && current !== periodStart && next.some((item) => item.period.start === current) ? current : next.at(-1)?.period.start);
+  }, []);
+  const changeMonth = useCallback((direction: -1 | 1) => {
+    if (!roster) return;
+    const index = rosters.findIndex((item) => item.period.start === roster.period.start);
+    const next = rosters[index + direction];
+    if (!next) return;
+    setActiveMonth(next.period.start);
+    setSelectedFlight(undefined);
+  }, [roster, rosters]);
+  const changeTab = useCallback((direction: -1 | 1) => {
+    const next = TABS[TABS.indexOf(tab) + direction];
+    if (!next) return;
+    if (next === 'Roster') rosterFocus.focusToday();
+    setSelectedFlight(undefined);
+    setTab(next);
+  }, [tab, rosterFocus]);
+  const goToTab = useCallback((target: Tab) => {
+    if (target === tab) return;
+    const direction = TABS.indexOf(target) > TABS.indexOf(tab) ? -1 : 1;
+    setSelectedFlight(undefined);
+    tabSwipeRef.current?.play(direction, () => {
+      if (target === 'Roster') rosterFocus.focusToday();
+      setTab(target);
+    });
+  }, [tab, rosterFocus]);
+  const eraseAll = useCallback(() => {
+    clearStoredRosters();
+    setRosters([]);
+    setActiveMonth(undefined);
+    setSelectedFlight(undefined);
+    setTab('Home');
+  }, []);
+
+  return <SafeAreaView style={styles.safe} edges={desktopWeb ? ['bottom'] : ['top', 'bottom']}>
+    <View style={styles.app}>
+      <View style={styles.header}>
+        <Text style={[styles.brand, { color: palette.text }]}>eScrew</Text>
+        <Pressable onPress={importFromAims} disabled={importing} style={[styles.modeButton, styles.depthSurface, { backgroundColor: importing ? palette.accentSoft : palette.surface }]} accessibilityLabel="Import from AIMS">
+          {importing ? <ActivityIndicator size="small" color={palette.accent} /> : <Text style={[styles.aimsGlyph, { color: palette.accent }]}>AIMS</Text>}
+        </Pressable>
+      </View>
+
+      {importError && <ImportErrorBanner message={importError} palette={palette} onDismiss={() => setImportError(undefined)} />}
+
+      <SwipeSurface ref={tabSwipeRef} style={styles.viewport} onSwipeLeft={tab === 'More' ? undefined : () => changeTab(1)} onSwipeRight={tab === 'Home' ? undefined : () => changeTab(-1)}>
+        {/* All three tabs stay mounted permanently and are shown/hidden via opacity rather than
+            conditional rendering â€” swapping tabs would otherwise force a full mount of the
+            destination screen (FlatList layout, etc.) synchronously at the animation handoff,
+            which is heavy enough to visibly stall the in-flight page-turn spring. */}
+        <View style={[styles.tabPane, tab !== 'Home' && styles.tabPaneHidden]} pointerEvents={tab === 'Home' ? 'auto' : 'none'}>
+          <Home allDuties={allDuties} fallbackRoster={roster} rosters={rosters} palette={palette} onImport={importRoster} importing={importing} />
+        </View>
+        <View style={[styles.tabPane, tab !== 'Roster' && styles.tabPaneHidden]} pointerEvents={tab === 'Roster' ? 'auto' : 'none'}>
+          <RosterScreen roster={roster} rosters={rosters} duties={duties} selectedSector={selectedSector} palette={palette} importing={importing} onImport={importRoster} onSelect={setSelectedFlight} onMonth={changeMonth} rosterFocus={rosterFocus} />
+        </View>
+        <View style={[styles.tabPane, tab !== 'More' && styles.tabPaneHidden]} pointerEvents={tab === 'More' ? 'auto' : 'none'}>
+          <MoreScreen rosters={rosters} palette={palette} onRestoreBackup={restoreFromBackup} onDeleteRoster={deleteRoster} onErase={eraseAll} />
+        </View>
+      </SwipeSurface>
+
+      <View onLayout={(event) => { const nextWidth = event.nativeEvent.layout.width; if (Math.abs(nextWidth - tabBarWidth) > 0.5) setTabBarWidth(nextWidth); }} style={[styles.depthSurface, styles.tabBar, { backgroundColor: palette.surface, borderColor: palette.line }]}>
+        {tabBarWidth > 0 && <Animated.View pointerEvents="none" style={[styles.tabSelection, { width: Math.max(0, tabStep - 8), backgroundColor: palette.surfaceStrong, transform: [{ translateX: tabIndicatorX }] }]} />}
+        {TABS.map((item) => {
+          const active = item === tab;
+          return <Pressable key={item} onPress={() => goToTab(item)} style={styles.tabItem} accessibilityRole="tab" accessibilityState={{ selected: active }}>
+            <View style={styles.tabIconWrap}><Text style={[styles.tabIcon, { color: active ? palette.accent : palette.muted, fontSize: TAB_ICONS[item].size, lineHeight: TAB_ICONS[item].size + 3, marginTop: TAB_ICONS[item].nudge, fontWeight: TAB_ICONS[item].weight }]}>{TAB_ICONS[item].glyph}</Text></View>
+            <Text style={[styles.tabText, { color: active ? palette.text : palette.muted }]}>{item}</Text>
+          </Pressable>;
+        })}
+      </View>
+    </View>
+  </SafeAreaView>;
+}
+
+function ImportErrorBanner({ message, palette, onDismiss }: { message: string; palette: Palette; onDismiss: () => void }) {
+  return <View style={[styles.aimsStatus, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.danger }]}>
+    <View style={styles.aimsStatusIcon}><Text style={[styles.aimsStatusGlyph, { color: palette.danger }]}>!</Text></View>
+    <View style={styles.grow}><Text style={[styles.aimsStatusTitle, { color: palette.text }]}>Could not import roster</Text><Text style={[styles.meta, { color: palette.muted }]}>{message}</Text></View>
+    <Pressable onPress={onDismiss} accessibilityLabel="Dismiss import error" style={styles.statusDismiss}><Text style={[styles.statusDismissText, { color: palette.muted }]}>Ã—</Text></Pressable>
+  </View>;
+}
+
+function HomeImpl({ allDuties, fallbackRoster, rosters, palette, onImport, importing }: { allDuties: RosterDuty[]; fallbackRoster?: ParsedAirAstanaRoster; rosters: ParsedAirAstanaRoster[]; palette: Palette; onImport: () => void; importing: boolean }) {
+  const now = useNow();
+  const timeline = useMemo(() => timedDuties(allDuties), [allDuties]);
+  const focus = useMemo(() => pickFocusDuty(timeline, now), [timeline, now]);
+  const roster = focus?.roster ?? fallbackRoster;
+  const duty = focus?.duty;
+  const renderCrewRow: ListRenderItem<CrewMember> = useCallback(({ item }) => <CrewRow member={item} palette={palette} />, [palette]);
+
+  if (!roster || !duty) return <View style={styles.screen}>
+    <Text style={[styles.sectionTitle, { color: palette.text }]}>Your roster, simplified.</Text>
+    <Text style={[styles.intro, { color: palette.muted }]}>Tap AIMS above to import your crew schedule, or add a saved roster file below.</Text>
+    <PrimaryButton title="Import file" onPress={onImport} loading={importing} palette={palette} />
+  </View>;
+
+  const first = duty.sectors[0];
+  const last = duty.sectors[duty.sectors.length - 1];
+  const stay = stayForSector(roster, last);
+  const forecastStartDate = arrivalForecastDate(roster, duty, last);
+  const reportMs = focus?.reportMs;
+  const releaseMs = focus?.releaseMs;
+  const isUpcoming = reportMs !== undefined && reportMs > now;
+  const isActive = reportMs !== undefined && releaseMs !== undefined && reportMs <= now && releaseMs >= now;
+  const countdown = reportMs === undefined ? undefined : isUpcoming ? formatCountdown(reportMs - now) : isActive ? formatCountdown(now - reportMs) : undefined;
+  const spanMinutes = reportMs !== undefined && releaseMs !== undefined ? Math.round((releaseMs - reportMs) / 60000) : undefined;
+  const dutyMinutes = spanMinutes !== undefined && spanMinutes > 0 ? spanMinutes : undefined;
+  const block = roster.totals.blockMinutes;
+  const night = roster.totals.nightMinutes;
+  const nightShare = block && night !== undefined ? Math.round((night / block) * 100) : undefined;
+  const crew = crewOnDuty(duty);
+  const year = roster.period.start.slice(0, 4);
+  const yearRosters = rosters.filter((item) => item.period.start.startsWith(`${year}-`));
+  const ytdBlock = yearRosters.reduce((sum, item) => sum + (item.totals.blockMinutes ?? 0), 0);
+  const ytdNight = yearRosters.reduce((sum, item) => sum + (item.totals.nightMinutes ?? 0), 0);
+
+  return <View style={styles.screen}>
+    <View style={styles.dutyHead}><Text style={[styles.label, { color: isActive ? palette.accent : palette.muted }]}>{isUpcoming ? 'NEXT DUTY' : isActive ? 'ON DUTY NOW' : 'LATEST DUTY'}</Text><Text style={[styles.label, { color: palette.muted }]}>{duty.dateLabel}</Text></View>
+    <View style={[styles.heroCard, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.accentLine }, heroTint(palette)]}>
+      <View style={styles.heroTopRow}>
+        <Text numberOfLines={2} style={[styles.heroRoute, styles.heroRouteFlex, { color: palette.text }]}>{routeChain(duty)}</Text>
+        {countdown && <View style={[styles.countdownPill, { backgroundColor: palette.accentSoft }]}><Text style={[styles.countdown, { color: palette.accent }]}>{countdown}</Text><Text style={[styles.countdownLabel, { color: palette.accent }]}>{isUpcoming ? 'TO REPORT' : 'ON DUTY'}</Text></View>}
+      </View>
+      <View style={styles.flightBadgeRow}>{duty.sectors.map((sector) => <View key={sector.id} style={[styles.flightBadge, { backgroundColor: palette.accentSoft }]}><Text style={[styles.flightBadgeText, { color: palette.accent }]}>{sector.flightNumber}</Text></View>)}</View>
+      <View style={[styles.timeDivider, { backgroundColor: palette.line }]} />
+      <View style={styles.timeRow}><TimeCell label="REPORT" value={duty.reportTime} palette={palette} /><TimeCell label={`DEP Â· ${first.departure}`} value={first.departureTime} palette={palette} /><TimeCell label={`ARR Â· ${last.arrival}`} value={last.arrivalTime} palette={palette} /><TimeCell label="RELEASE" value={duty.releaseTime} palette={palette} /></View>
+      <Text style={[styles.heroFoot, { color: palette.muted }]}>{dutyMinutes !== undefined ? `Duty ${formatMinutes(dutyMinutes)} Â· ` : ''}{duty.sectors.length} sector{duty.sectors.length === 1 ? '' : 's'}</Text>
+      <WeatherChip code={last.arrival} homeBase={roster.subject?.base} palette={palette} stay={stay} forecastStartDate={forecastStartDate} />
+    </View>
+    <Text style={[styles.label, { color: palette.muted }]}>{rosterMonthLabel(roster)}</Text>
+    <View style={styles.summaryRow}><Summary title="BLOCK HOURS" value={formatMinutes(block)} detail={`${operatingCount(roster)} sectors flown`} palette={palette} /><Summary title="NIGHT HOURS" value={formatMinutes(night)} detail={nightShare === undefined ? 'reported by the roster' : `${nightShare}% of block time`} palette={palette} /></View>
+    {yearRosters.length > 1 && <Text style={[styles.meta, { color: palette.muted }]}>{year} to date Â· {formatMinutes(ytdBlock)} block Â· {formatMinutes(ytdNight)} night Â· {yearRosters.length} months imported</Text>}
+    <View style={styles.upNext}>
+      <Text style={[styles.label, { color: palette.muted }]}>CREW ON THIS FLIGHT Â· {crew.length}</Text>
+      {crew.length > 0
+        ? <FlatList data={crew} keyExtractor={(item) => item.id} showsVerticalScrollIndicator={false} style={styles.upNextList} renderItem={renderCrewRow} />
+        : <Text style={[styles.meta, { color: palette.muted, marginTop: 4 }]}>Crew is not listed for this flight in the imported roster.</Text>}
+    </View>
+  </View>;
+}
+const Home = memo(HomeImpl);
+
+function RosterScreenImpl({ roster, rosters, duties, selectedSector, palette, importing, onImport, onSelect, onMonth, rosterFocus }: { roster?: ParsedAirAstanaRoster; rosters: ParsedAirAstanaRoster[]; duties: Duty[]; selectedSector?: Sector; palette: Palette; importing: boolean; onImport: () => void; onSelect: (id?: string) => void; onMonth: (direction: -1 | 1) => void; rosterFocus: RosterFocusHandle }) {
+  const [calendarState, setCalendarState] = useState<'idle'|'working'|'done'|'error'>('idle');
+  const index = roster ? rosters.findIndex((item) => item.period.start === roster.period.start) : -1;
+  const flights = useMemo<FlightRow[]>(() => duties.flatMap((duty) => duty.sectors.map((sector) => ({ duty, sector }))), [duties]);
+  const timeline = useMemo<RosterTimelineRow[]>(() => buildRosterTimeline(roster, duties), [roster, duties]);
+  const selectedIndex = selectedSector ? flights.findIndex(({ sector }) => sector.id === selectedSector.id) : -1;
+  const selectedRow = selectedIndex >= 0 ? flights[selectedIndex] : undefined;
+  const monthSwipeRef = useRef<SwipeSurfaceHandle>(null);
+  const listRef = useRef<FlatList<RosterTimelineRow>>(null);
+  const rowHeights = useRef(new Map<string, number>()).current;
+  const offsetsCache = useRef<{ timeline: RosterTimelineRow[]; offsets: number[] } | null>(null);
+  const today = localTodayIso();
+  const todayIndex = useMemo(() => {
+    let idx = timeline.findIndex((row) => row.sortKey.slice(0, 10) === today);
+    if (idx === -1) idx = timeline.findIndex((row) => row.sortKey.slice(0, 10) > today);
+    return idx;
+  }, [timeline, today]);
+  // Without this, scrollToIndex/initialScrollIndex have to guess an offset (via
+  // averageItemLength), render near it, measure, and correct â€” a multi-step process that
+  // reliably lands a few rows short of the target instead of putting it at the top. Caching
+  // each row's real measured height (falling back to a per-kind estimate before it's been
+  // measured) gives FlatList an authoritative offset up front, so it can jump there in one
+  // step, and accuracy only improves as more rows get measured.
+  const heightFor = useCallback((row: RosterTimelineRow | undefined) => {
+    if (!row) return ROW_HEIGHT_ESTIMATE.flight;
+    return rowHeights.get(row.key) ?? ROW_HEIGHT_ESTIMATE[row.kind];
+  }, [rowHeights]);
+  // Offsets are cached per `timeline` array and only rebuilt (once, O(n)) when a row's height
+  // actually changes â€” otherwise every one of FlatList's frequent getItemLayout calls would
+  // redo the prefix-sum loop from scratch.
+  const buildOffsets = useCallback(() => {
+    const offsets: number[] = [];
+    let offset = LIST_TOP_PADDING;
+    for (const row of timeline) { offsets.push(offset); offset += heightFor(row) + LIST_ROW_GAP; }
+    offsetsCache.current = { timeline, offsets };
+    return offsets;
+  }, [timeline, heightFor]);
+  const getItemLayout = useCallback((data: ArrayLike<RosterTimelineRow> | null | undefined, index: number) => {
+    const cached = offsetsCache.current;
+    const offsets = cached && cached.timeline === timeline ? cached.offsets : buildOffsets();
+    return { length: heightFor(data?.[index]), offset: offsets[index] ?? 0, index };
+  }, [timeline, heightFor, buildOffsets]);
+  const measureRow = useCallback((key: string, height: number) => {
+    if (rowHeights.get(key) === height) return;
+    rowHeights.set(key, height);
+    offsetsCache.current = null;
+  }, [rowHeights]);
+  // Measured heights are keyed by row (not by month), so switching months would otherwise
+  // keep accumulating entries for every row ever seen across the whole session.
+  useEffect(() => {
+    rowHeights.clear();
+    offsetsCache.current = null;
+  }, [roster?.period.start, rowHeights]);
+  const focusToday = useCallback(() => {
+    if (todayIndex < 0) return;
+    listRef.current?.scrollToIndex({ index: todayIndex, animated: false, viewPosition: 0 });
+  }, [todayIndex]);
+  // A fresh renderItem closure on every render (the previous inline-in-JSX form) defeats
+  // FlatList's ability to skip re-rendering unchanged rows, since it can't tell the function
+  // is "the same" renderer across renders â€” costly with a large roster. Stabilized here so it
+  // only changes when something a row actually depends on changes.
+  const renderTimelineRow: ListRenderItem<RosterTimelineRow> = useCallback(({ item }) => {
+    const onLayout = (event: LayoutChangeEvent) => measureRow(item.key, event.nativeEvent.layout.height);
+    if (item.kind === 'flight') return <FlightRosterCard roster={roster} duty={item.duty} sector={item.sector} selected={selectedSector?.id === item.sector.id} isToday={item.sortKey.slice(0, 10) === today} palette={palette} onPress={() => onSelect(item.sector.id)} onLayout={onLayout} />;
+    return item.badge === 'HOTEL'
+      ? <HotelRosterCard roster={roster} item={item} isToday={item.sortKey.slice(0, 10) === today} palette={palette} onLayout={onLayout} />
+      : <RosterEventCard item={item} isToday={item.sortKey.slice(0, 10) === today} palette={palette} onLayout={onLayout} />;
+  }, [roster, selectedSector, today, palette, onSelect, measureRow]);
+  useEffect(() => {
+    rosterFocus.focusToday = focusToday;
+  }, [focusToday, rosterFocus]);
+  useEffect(() => setCalendarState('idle'), [roster?.period.start]);
+  const exportCalendar = async () => { if (!roster || calendarState === 'working') return; setCalendarState('working'); try { await exportRosterCalendar(roster); setCalendarState('done'); } catch (e) { setCalendarState(e instanceof Error && /cancel/i.test(e.message) ? 'idle' : 'error'); } };
+  const goToMonth = (direction: -1 | 1) => {
+    if ((direction === -1 && index <= 0) || (direction === 1 && index >= rosters.length - 1)) return;
+    monthSwipeRef.current?.play(direction === 1 ? -1 : 1, () => onMonth(direction));
+  };
+
+  return <View style={styles.screen}>
+    <View style={styles.titleRow}><View style={styles.grow}><Text style={[styles.sectionTitle, { color: palette.text }]}>{roster ? rosterMonthLabel(roster) : 'Roster'}</Text><Text style={[styles.meta, { color: palette.muted }]}>{roster?.subject ? `${roster.subject.base ?? 'â€”'} Â· ${roster.subject.rank ?? 'crew'}` : 'Personal schedule'}</Text></View><View style={styles.titleActions}>{roster && <Pressable onPress={exportCalendar} style={[styles.compactButton, { backgroundColor: palette.surface, borderColor: palette.line }]}>{calendarState === 'working' ? <ActivityIndicator size="small" /> : <Text style={[styles.compactText, { color: palette.text }]}>{calendarState === 'done' ? 'Added' : calendarState === 'error' ? 'Retry' : 'Calendar'}</Text>}</Pressable>}<Pressable onPress={onImport} disabled={importing} style={[styles.compactButton, { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft }]}>{importing ? <ActivityIndicator size="small" /> : <Text style={[styles.compactText, { color: palette.accent }]}>{roster ? 'Add file' : 'Import file'}</Text>}</Pressable></View></View>
+    {roster && rosters.length > 1 && <View style={styles.monthNav}><Pressable disabled={index <= 0} onPress={() => goToMonth(-1)}><Text style={[styles.monthNavText, { color: index <= 0 ? palette.line : palette.text }]}>â€¹ Previous</Text></Pressable><Text style={[styles.meta, { color: palette.muted }]}>{index + 1} / {rosters.length}</Text><Pressable disabled={index >= rosters.length - 1} onPress={() => goToMonth(1)}><Text style={[styles.monthNavText, { color: index >= rosters.length - 1 ? palette.line : palette.text }]}>Next â€º</Text></Pressable></View>}
+    {!roster ? <View style={[styles.emptyCard, styles.depthSurface, { backgroundColor: palette.surface, borderColor: palette.line }]}><Text style={[styles.meta, { color: palette.muted }]}>Tap AIMS above, or import a saved roster file to begin.</Text></View> : <SwipeSurface ref={monthSwipeRef} style={styles.monthSwipeWrap} onSwipeRight={index > 0 ? () => onMonth(-1) : undefined} onSwipeLeft={index < rosters.length - 1 ? () => onMonth(1) : undefined} threshold={38}><View style={[styles.innerWindow, styles.depthSurface, { backgroundColor: palette.surface, borderColor: palette.line }]}><FlatList
+      ref={listRef}
+      data={timeline}
+      keyExtractor={(item) => item.key}
+      contentContainerStyle={styles.listContent}
+      showsVerticalScrollIndicator={false}
+      initialScrollIndex={todayIndex > 0 ? todayIndex : undefined}
+      getItemLayout={getItemLayout}
+      onScrollToIndexFailed={(info) => {
+        listRef.current?.scrollToOffset({ offset: info.averageItemLength * info.index, animated: false });
+        requestAnimationFrame(() => listRef.current?.scrollToIndex({ index: info.index, animated: false }));
+      }}
+      renderItem={renderTimelineRow}
+    /></View></SwipeSurface>}
+    {selectedRow && <FlightDetail row={selectedRow} roster={roster} palette={palette} onClose={() => onSelect(undefined)} onPrevious={selectedIndex > 0 ? () => onSelect(flights[selectedIndex - 1].sector.id) : undefined} onNext={selectedIndex < flights.length - 1 ? () => onSelect(flights[selectedIndex + 1].sector.id) : undefined} />}
+  </View>;
+}
+const RosterScreen = memo(RosterScreenImpl);
+
+function FlightRosterCard({ roster, duty, sector, selected, isToday, palette, onPress, onLayout }: { roster?: RosterWithNormalized; duty: Duty; sector: Sector; selected: boolean; isToday: boolean; palette: Palette; onPress: () => void; onLayout: (event: LayoutChangeEvent) => void }) {
+  // A duty's sectors can span a day boundary (an overnight leg followed by one departing
+  // the next calendar day) -- duty.date is only ever the report/first-sector date, so a
+  // later sector needs its own date here, the same one flightExtra already resolves for
+  // weather/forecast below, or its card would show the wrong day for anything past the
+  // first sector of a multi-day duty.
+  const extra = flightExtra(roster, sector);
+  const dateMeta = rosterDateMeta(duty, extra?.date);
+  const stay = stayForSector(roster, sector);
+  const forecastStartDate = arrivalForecastDate(roster, duty, sector);
+  return <Pressable onPress={onPress} onLayout={onLayout} style={[styles.rosterCard, isToday && styles.rosterCardToday, { backgroundColor: selected || isToday ? palette.accentSoft : palette.surfaceStrong, borderColor: isToday ? palette.accent : palette.line, ...(isToday ? todayGlow(palette) : null) }]}>
+    <View style={styles.flightCardTop}><Text style={[styles.label, { color: isToday ? palette.accent : dateMeta.weekend ? palette.weekend : palette.muted }]}>{dateMeta.label}{isToday ? ' Â· TODAY' : ''}</Text><Text style={[styles.flightNumber, { color: palette.muted }]}>{sector.flightNumber}{sector.deadhead ? ' Â· DHC' : ''}</Text></View>
+    <Text style={[styles.rosterRoute, { color: palette.text }]}>{sector.departure} â†’ {sector.arrival}</Text>
+    <Text style={[styles.meta, { color: palette.muted }]}>{sector.departureTime} â€“ {sector.arrivalTime} Â· Report {duty.reportTime}</Text>
+    <WeatherChip code={sector.arrival} homeBase={roster?.subject?.base} palette={palette} stay={stay} forecastStartDate={forecastStartDate} />
+  </Pressable>;
+}
+
+function RosterEventCard({ item, isToday, palette, onLayout }: { item: Extract<RosterTimelineRow, { kind: 'event' }>; isToday: boolean; palette: Palette; onLayout: (event: LayoutChangeEvent) => void }) {
+  const dateMeta = eventDateMeta(item.date);
+  const detail = [item.detail, item.station].filter(Boolean).join(' Â· ');
+  return <View onLayout={onLayout} style={[styles.rosterCard, isToday && styles.rosterCardToday, { backgroundColor: isToday ? palette.accentSoft : palette.surfaceStrong, borderColor: isToday ? palette.accent : palette.line, ...(isToday ? todayGlow(palette) : null) }]}>
+    <View style={styles.flightCardTop}><Text style={[styles.label, { color: isToday ? palette.accent : dateMeta.weekend ? palette.weekend : palette.muted }]}>{dateMeta.label}{isToday ? ' Â· TODAY' : ''}</Text><Text style={[styles.flightNumber, { color: palette.muted }]}>{item.badge}</Text></View>
+    <Text numberOfLines={2} style={[styles.rosterEventTitle, { color: palette.text }]}>{item.title}</Text>
+    {detail ? <Text style={[styles.meta, { color: palette.muted }]}>{detail}</Text> : null}
+  </View>;
+}
+
+function HotelRosterCard({ roster, item, isToday, palette, onLayout }: { roster?: RosterWithNormalized; item: Extract<RosterTimelineRow, { kind: 'event' }>; isToday: boolean; palette: Palette; onLayout: (event: LayoutChangeEvent) => void }) {
+  const [open, setOpen] = useState(false);
+  const dateMeta = eventDateMeta(item.date);
+  const detail = [item.detail, item.station].filter(Boolean).join(' Â· ');
+  const stay = stayForHotelEvent(roster, item.supplement);
+  const station = stay?.station ?? item.station;
+  return <>
+    <Pressable onPress={() => setOpen(true)} onLayout={onLayout} style={[styles.rosterCard, isToday && styles.rosterCardToday, { backgroundColor: isToday ? palette.accentSoft : palette.surfaceStrong, borderColor: isToday ? palette.accent : palette.line, ...(isToday ? todayGlow(palette) : null) }]}>
+      <View style={styles.flightCardTop}><Text style={[styles.label, { color: isToday ? palette.accent : dateMeta.weekend ? palette.weekend : palette.muted }]}>{dateMeta.label}{isToday ? ' Â· TODAY' : ''}</Text><Text style={[styles.flightNumber, { color: palette.muted }]}>{item.badge}</Text></View>
+      <Text numberOfLines={2} style={[styles.rosterEventTitle, { color: palette.text }]}>{item.title}</Text>
+      {detail ? <Text style={[styles.meta, { color: palette.muted }]}>{detail}</Text> : null}
+    </Pressable>
+    <IOSDialog visible={open} onClose={() => setOpen(false)} style={[styles.stayPopup, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}>
+      <View style={styles.flightCardTop}><Text style={[styles.label, { color: palette.muted }]}>HOTEL{station ? ` Â· ${station}` : ''}</Text>{stay?.rest ? <Text style={[styles.flightNumber, { color: palette.gold }]}>REST {stay.rest}</Text> : null}</View>
+      <Text style={[styles.stayTitle, { color: palette.text }]}>{stay?.hotel ?? item.title}</Text>
+      {stay?.checkIn || stay?.checkOut ? <Text style={[styles.meta, { color: palette.muted }]}>{stay?.checkIn ?? 'â€”'} â†’ {stay?.checkOut ?? 'â€”'}</Text> : null}
+      {stay?.address ? <Text numberOfLines={2} style={[styles.stayMeta, { color: palette.muted }]}>{stay.address}</Text> : null}
+      {stay?.phone ? <Text numberOfLines={2} style={[styles.stayMeta, { color: palette.muted }]}>{stay.phone}</Text> : null}
+    </IOSDialog>
+  </>;
+}
+
+function FlightDetail({ row, roster, palette, onClose, onPrevious, onNext }: { row: FlightRow; roster?: RosterWithNormalized; palette: Palette; onClose: () => void; onPrevious?: () => void; onNext?: () => void }) {
+  const extra = flightExtra(roster, row.sector);
+  const stay = stayForSector(roster, row.sector);
+  const forecastStartDate = arrivalForecastDate(roster, row.duty, row.sector);
+  const status = [row.sector.deadhead ? 'DHC' : undefined, extra?.actualTimes ? 'Actual times' : undefined, extra?.aircraftType].filter(Boolean).join(' Â· ');
+  const [headerHeight, setHeaderHeight] = useState(0);
+  const renderCrewMember: ListRenderItem<CrewMember> = useCallback(({ item }) => <View style={styles.crewRow}><View style={[styles.avatar, { backgroundColor: palette.accentSoft }]}><Text style={[styles.avatarText, { color: palette.accent }]}>{item.name[0]}</Text></View><View style={styles.grow}><Text style={[styles.crewName, { color: palette.text }]}>{item.name}</Text><Text style={[styles.meta, { color: palette.muted }]}>{item.position ?? item.role}</Text></View></View>, [palette]);
+  const scrollHeader = <View>
+    <Text style={[styles.swipeHint, { color: palette.muted }]}>{onPrevious ? 'â€¹ ' : ''}swipe flight{onNext ? ' â€º' : ''} Â· swipe down to close</Text>
+    <Text style={[styles.flyingWith, { color: palette.accent }]}>Flying with Â· {row.sector.crew.length}</Text>
+  </View>;
+  return <IOSSheet visible onClose={onClose} handleColor={palette.line} style={[styles.flightSheet, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}><SwipeSurface style={styles.flightSheetContent} onSwipeLeft={onNext} onSwipeRight={onPrevious} threshold={44}>
+    <View onLayout={(event) => setHeaderHeight(event.nativeEvent.layout.height)}>
+      <Text style={[styles.label, { color: palette.muted }]}>{rosterDateMeta(row.duty, extra?.date).label} Â· {row.sector.flightNumber}{row.sector.deadhead ? ' Â· DHC' : ''}</Text>
+      <Text style={[styles.sheetRoute, { color: palette.text }]}>{row.sector.departure} â†’ {row.sector.arrival}</Text>
+      {status ? <Text style={[styles.meta, { color: palette.muted }]}>{status}</Text> : null}
+      <WeatherChip code={row.sector.arrival} homeBase={roster?.subject?.base} palette={palette} stay={stay} forecastStartDate={forecastStartDate} />
+      <View style={[styles.flightFacts, { borderColor: palette.line }]}><FlightFact label="REPORT" value={row.duty.reportTime} palette={palette} /><FlightFact label="DEP" value={row.sector.departureTime} palette={palette} /><FlightFact label="ARR" value={row.sector.arrivalTime} palette={palette} /><FlightFact label="RELEASE" value={row.duty.releaseTime} palette={palette} /></View>
+    </View>
+    <FlatList
+      data={row.sector.crew}
+      keyExtractor={(member) => member.id}
+      style={[styles.crewScroll, Platform.OS === 'web' ? ({ maxHeight: `calc(78vh - ${headerHeight + 90}px)` } as any) : undefined]}
+      contentContainerStyle={styles.crewList}
+      showsVerticalScrollIndicator={false}
+      ListHeaderComponent={scrollHeader}
+      ListEmptyComponent={<Text style={[styles.meta, { color: palette.muted, marginTop: 12 }]}>Crew is not listed for this flight in the imported report.</Text>}
+      renderItem={renderCrewMember}
+    />
+  </SwipeSurface></IOSSheet>;
+}
+
+function FlightFact({ label, value, palette }: { label: string; value: string; palette: Palette }) {
+  return <View style={styles.flightFact}><Text style={[styles.flightFactLabel, { color: palette.muted }]}>{label}</Text><Text style={[styles.flightFactValue, { color: palette.text }]}>{value}</Text></View>;
+}
+
+function MoreScreenImpl({ rosters, palette, onRestoreBackup, onDeleteRoster, onErase }: { rosters: RosterWithNormalized[]; palette: Palette; onRestoreBackup: () => Promise<{ restored: number }>; onDeleteRoster: (periodStart: string) => void; onErase: () => void }) {
+  const expiries = rosters.at(-1)?.normalized?.expiries ?? [];
+  const sortedExpiries = useMemo(() => [...expiries].sort((a, b) => (a.date ?? '').localeCompare(b.date ?? '')), [expiries]);
+  const [expiriesOpen, setExpiriesOpen] = useState(false);
+  const [confirmErase, setConfirmErase] = useState(false);
+  const [backupBusy, setBackupBusy] = useState(false);
+  const [backupNotice, setBackupNotice] = useState<string>();
+
+  const handleExport = () => {
+    try { exportBackup(); setBackupNotice('Backup saved.'); }
+    catch (error) { setBackupNotice(error instanceof Error ? error.message : String(error)); }
+  };
+  const handleRestore = async () => {
+    setBackupBusy(true);
+    setBackupNotice(undefined);
+    try {
+      const { restored } = await onRestoreBackup();
+      if (restored) setBackupNotice(`Restored ${restored} roster${restored === 1 ? '' : 's'}.`);
+    } catch (error) {
+      setBackupNotice(error instanceof Error ? error.message : String(error));
+    } finally {
+      setBackupBusy(false);
+    }
+  };
+  const backupThenClose = () => { handleExport(); setConfirmErase(false); };
+  const confirmAndErase = () => { setConfirmErase(false); onErase(); };
+  const renderRosterRow: ListRenderItem<RosterWithNormalized> = useCallback(({ item }) => <View style={[styles.libraryRow, { borderColor: palette.line }]}><View style={styles.grow}><Text style={[styles.libraryMonth, { color: palette.text }]}>{rosterMonthLabel(item)}</Text><Text style={[styles.meta, { color: palette.muted }]}>{item.subject?.base ?? 'Roster'} Â· stored locally</Text></View><Pressable onPress={() => onDeleteRoster(item.period.start)} style={[styles.deleteRosterButton, { backgroundColor: palette.accentSoft }]}><Text style={[styles.deleteRosterText, { color: palette.danger }]}>Delete</Text></Pressable></View>, [palette, onDeleteRoster]);
+  const renderExpiryRow: ListRenderItem<NormalizedExpiry> = useCallback(({ item }) => <ExpiryRow expiry={item} palette={palette} />, [palette]);
+
+  return <View style={styles.screen}>
+    <Text style={[styles.sectionTitle, { color: palette.text }]}>More</Text>
+    <ScrollView style={styles.grow} contentContainerStyle={styles.moreContent} showsVerticalScrollIndicator={false}>
+      <View style={[styles.libraryCard, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}><Text style={[styles.cardTitle, { color: palette.text }]}>Rosters</Text>{rosters.length ? <FlatList data={rosters} keyExtractor={(item) => item.period.start} style={styles.libraryList} showsVerticalScrollIndicator={false} renderItem={renderRosterRow} /> : <Text style={[styles.meta, { color: palette.muted }]}>No rosters stored</Text>}</View>
+
+      {rosters.length > 0 && <Pressable onPress={() => setConfirmErase(true)} style={[styles.dangerButton, { backgroundColor: palette.danger + '1A', borderColor: palette.danger }]}><Text style={[styles.dangerText, { color: palette.danger }]}>âš  Erase local roster data</Text></Pressable>}
+
+      <View style={[styles.infoCard, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}>
+        <Text style={[styles.cardTitle, { color: palette.text }]}>Backup</Text>
+        <Text style={[styles.meta, { color: palette.muted }]}>Save every stored roster to a file, or restore from one. Nothing leaves this device.</Text>
+        <View style={styles.backupRow}>
+          <Pressable onPress={handleExport} disabled={!rosters.length} style={[styles.compactButton, styles.grow, { backgroundColor: palette.accentSoft, borderColor: palette.accentSoft, opacity: rosters.length ? 1 : .5 }]}><Text style={[styles.compactText, { color: palette.accent }]}>Save backup</Text></Pressable>
+          <Pressable onPress={handleRestore} disabled={backupBusy} style={[styles.compactButton, styles.grow, { backgroundColor: palette.surface, borderColor: palette.line }]}>{backupBusy ? <ActivityIndicator size="small" /> : <Text style={[styles.compactText, { color: palette.text }]}>Restore backup</Text>}</Pressable>
+        </View>
+        {backupNotice ? <Text style={[styles.meta, { color: palette.muted }]}>{backupNotice}</Text> : null}
+      </View>
+
+      <View style={[styles.libraryCard, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}>
+        <Pressable onPress={() => setExpiriesOpen(true)} style={styles.expiryHeaderRow} accessibilityRole="button">
+          <Text style={[styles.cardTitle, { color: palette.text }]}>Expiry Dates{sortedExpiries.length ? ` Â· ${sortedExpiries.length}` : ''}</Text>
+          <Text style={[styles.expiryChevron, { color: palette.muted }]}>â€º</Text>
+        </Pressable>
+        {sortedExpiries.length === 0 && <Text style={[styles.meta, { color: palette.muted, marginTop: 8 }]}>No expiry data in the imported roster.</Text>}
+      </View>
+
+      <View style={[styles.infoCard, styles.depthSurface, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}><Text style={[styles.cardTitle, { color: palette.text }]}>Privacy</Text><Text style={[styles.meta, { color: palette.muted }]}>Roster PDFs are parsed locally. AIMS sends roster data only; credentials and session data are not stored by eScrew. Weather sends only an airport code to Open-Meteo â€” no roster or crew data.</Text></View>
+
+      <VersionFooter palette={palette} />
+    </ScrollView>
+
+    <IOSDialog visible={confirmErase} onClose={() => setConfirmErase(false)} style={[styles.confirmDialog, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}>
+      <Text style={[styles.cardTitle, { color: palette.text }]}>Erase all local roster data?</Text>
+      <Text style={[styles.meta, { color: palette.muted, marginTop: 6 }]}>This removes every imported roster and expiry record from this device. This cannot be undone â€” back up first if you want to keep a copy.</Text>
+      <View style={styles.confirmActions}>
+        <Pressable onPress={backupThenClose} style={[styles.confirmCancel, { backgroundColor: palette.surface, borderColor: palette.line }]}><Text style={[styles.compactText, { color: palette.text }]}>Backup</Text></Pressable>
+        <Pressable onPress={confirmAndErase} style={[styles.confirmErase, { backgroundColor: palette.danger }]}><Text style={[styles.compactText, { color: '#fff' }]}>Erase</Text></Pressable>
+      </View>
+    </IOSDialog>
+
+    <IOSSheet visible={expiriesOpen} onClose={() => setExpiriesOpen(false)} handleColor={palette.line} style={[styles.expirySheet, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}>
+      <Text style={[styles.cardTitle, { color: palette.text }]}>Expiry Dates{sortedExpiries.length ? ` Â· ${sortedExpiries.length}` : ''}</Text>
+      <FlatList
+        data={sortedExpiries}
+        keyExtractor={(item, index) => `${item.code}-${index}`}
+        style={[styles.expirySheetList, Platform.OS === 'web' ? ({ maxHeight: 'calc(78vh - 60px)' } as any) : undefined]}
+        contentContainerStyle={styles.expirySheetListContent}
+        showsVerticalScrollIndicator={false}
+        ListEmptyComponent={<Text style={[styles.meta, { color: palette.muted, marginTop: 8 }]}>No expiry data in the imported roster.</Text>}
+        renderItem={renderExpiryRow}
+      />
+    </IOSSheet>
+  </View>;
+}
+const MoreScreen = memo(MoreScreenImpl);
+
+function VersionFooter({ palette }: { palette: Palette }) {
+  const version = process.env.EXPO_PUBLIC_ESCREW_VERSION;
+  const builtAt = process.env.EXPO_PUBLIC_ESCREW_BUILT_AT ? formatBuiltAt(process.env.EXPO_PUBLIC_ESCREW_BUILT_AT) : undefined;
+  if (!version || version === 'unknown') return null;
+  return <Text style={[styles.versionText, { color: palette.muted }]}>PR {version}{builtAt ? ` Â· ${builtAt}` : ''}</Text>;
+}
+
+function formatBuiltAt(iso: string): string | undefined {
+  const date = new Date(iso);
+  if (!Number.isFinite(date.getTime())) return undefined;
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const pad = (value: number) => String(value).padStart(2, '0');
+  return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}, ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function ExpiryRow({ expiry, palette }: { expiry: NormalizedExpiry; palette: Palette }) {
+  const status = expiryStatus(expiry.date);
+  const color = status === 'expired' ? palette.danger : status === 'soon' ? palette.gold : palette.text;
+  return <View style={[styles.libraryRow, { borderColor: palette.line }]}>
+    <View style={styles.grow}>
+      <Text style={[styles.libraryMonth, { color: palette.text }]}>{expiry.code}</Text>
+      {expiry.description ? <Text numberOfLines={1} style={[styles.meta, { color: palette.muted }]}>{expiry.description}</Text> : null}
+    </View>
+    <Text style={[styles.expiryDate, { color }]}>{formatExpiryDate(expiry.date)}</Text>
+  </View>;
+}
+
+function expiryStatus(date?: string): 'expired' | 'soon' | 'ok' | undefined {
+  if (!date) return undefined;
+  const target = new Date(`${date}T00:00:00Z`).getTime();
+  if (!Number.isFinite(target)) return undefined;
+  const days = (target - Date.now()) / 86400000;
+  return days < 0 ? 'expired' : days <= 60 ? 'soon' : 'ok';
+}
+
+function formatExpiryDate(date?: string): string {
+  if (!date) return 'â€”';
+  const [year, month, day] = date.split('-').map(Number);
+  const parsed = new Date(Date.UTC(year, (month ?? 1) - 1, day ?? 1));
+  if (!Number.isFinite(parsed.getTime())) return date;
+  const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  return `${String(parsed.getUTCDate()).padStart(2, '0')} ${months[parsed.getUTCMonth()]} ${parsed.getUTCFullYear()}`;
+}
+
+function useNow(): number { const [now, setNow] = useState(() => Date.now()); useEffect(() => { const timer = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(timer); }, []); return now; }
+function timedDuties(items: RosterDuty[]): FocusDuty[] { return items.flatMap((item) => { const duty = item.duty; if (!duty.date || !duty.sectors.length) return []; const first = duty.sectors[0], last = duty.sectors[duty.sectors.length - 1]; const reportMs = stationLocalDateTimeMs(first.departure, duty.reportDate ?? duty.date, duty.reportTime); const releaseMs = stationLocalDateTimeMs(last.arrival, duty.releaseDate ?? duty.date, duty.releaseTime); return reportMs === undefined || releaseMs === undefined ? [] : [{ ...item, reportMs, releaseMs }]; }).sort((a, b) => a.reportMs - b.reportMs); }
+function pickFocusDuty(timed: FocusDuty[], now: number): FocusDuty | undefined { return timed.filter((item) => item.reportMs <= now && item.releaseMs >= now).sort((a, b) => b.reportMs - a.reportMs)[0] ?? timed.find((item) => item.reportMs > now) ?? timed[timed.length - 1]; }
+function crewOnDuty(duty: Duty): CrewMember[] { const seen = new Set<string>(); return duty.sectors.flatMap((sector) => sector.crew).filter((member) => { const key = member.id || `${member.name}|${member.position ?? member.role}`; if (seen.has(key)) return false; seen.add(key); return true; }); }
+function formatCountdown(milliseconds: number): string { const total = Math.max(0, Math.floor(milliseconds / 1000)); const days = Math.floor(total / 86400), hours = Math.floor((total % 86400) / 3600), minutes = Math.floor((total % 3600) / 60), seconds = total % 60; const clock = `${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`; return days > 0 ? `${days}d ${clock}` : clock; }
+function rosterDateMeta(duty: Duty, sectorDate?: string): { label: string; weekend: boolean } { const date = sectorDate ?? duty.date; if (!date) return { label: duty.dateLabel, weekend: false }; return eventDateMeta(date); }
+function localTodayIso(): string { const now = new Date(); return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`; }
+function eventDateMeta(value: string): { label: string; weekend: boolean } { const [year, month, day] = value.split('-').map(Number); const date = new Date(Date.UTC(year, month - 1, day)); if (!Number.isFinite(date.getTime()) || date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return { label: value, weekend: false }; const weekdayIndex = date.getUTCDay(); const weekday = ['SUN','MON','TUE','WED','THU','FRI','SAT'][weekdayIndex]; const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC']; return { label: `${String(day).padStart(2, '0')} ${months[month - 1]} Â· ${weekday}`, weekend: weekdayIndex === 0 || weekdayIndex === 6 }; }
+function routeChain(duty: Duty): string { return [duty.sectors[0]?.departure, ...duty.sectors.map((sector) => sector.arrival)].filter(Boolean).join(' â†’ '); }
+function isHomeBaseAirport(code: string, homeBase?: string): boolean { return Boolean(homeBase && code.trim().toUpperCase() === homeBase.trim().toUpperCase()); }
+function clockMinutes(value: string | undefined): number | undefined { const match = /^(\d{1,2}):(\d{2})$/.exec(value ?? ''); if (!match) return undefined; const hours = Number(match[1]); const minutes = Number(match[2]); return hours < 24 && minutes < 60 ? hours * 60 + minutes : undefined; }
+function addIsoDays(value: string, offset: number): string { const [year, month, day] = value.split('-').map(Number); const date = new Date(Date.UTC(year, month - 1, day + offset)); return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(date.getUTCDate()).padStart(2, '0')}`; }
+function arrivalForecastDate(roster: RosterWithNormalized | undefined, duty: Duty, sector: Sector): string | undefined {
+  const extra = flightExtra(roster, sector);
+  if (extra?.arrivalDate) return extra.arrivalDate;
+  const departureDate = extra?.date ?? duty.date;
+  if (!departureDate) return duty.releaseDate;
+  const departure = clockMinutes(sector.departureTime);
+  const arrival = clockMinutes(sector.arrivalTime);
+  return departure !== undefined && arrival !== undefined && arrival < departure ? addIsoDays(departureDate, 1) : departureDate;
+}
+function TimeCell({ label, value, palette }: { label: string; value: string; palette: Palette }) { return <View style={styles.timeCell}><Text numberOfLines={1} style={[styles.timeLabel, { color: palette.muted }]}>{label}</Text><Text style={[styles.timeValue, { color: palette.text }]}>{value}</Text></View>; }
+function WeatherChip({ code, homeBase, palette, stay, forecastStartDate }: { code: string; homeBase?: string; palette: Palette; stay?: StayInfo; forecastStartDate?: string }) {
+  const { weather, status: weatherStatus } = useAirportWeatherState(code);
+  const [forecastOpen, setForecastOpen] = useState(false);
+  const expandLayover = !isHomeBaseAirport(code, homeBase);
+  const { forecast, status: forecastStatus, startDate: resolvedForecastStartDate, retry } = useAirportForecastState(code, 1, forecastStartDate, expandLayover);
+  if (!airportCoords(code)) return null;
+  const conditions = weather ? weatherIcon(weather.weatherCode, weather.isDay) : undefined;
+  const displayDate = resolvedForecastStartDate ?? forecastStartDate;
+  const futureTarget = Boolean(displayDate && displayDate > localTodayIso());
+  const targetForecast = displayDate ? forecast?.find((day) => day.date === displayDate) : undefined;
+  const targetConditions = targetForecast ? weatherIcon(targetForecast.weatherCode, true) : undefined;
+  return <>
+    <Pressable onPress={(event) => { event.stopPropagation?.(); setForecastOpen(true); }} accessibilityRole="button" accessibilityLabel={`Weather forecast at ${code}`} style={styles.weatherRow}>
+      {futureTarget ? <>
+        <Text style={styles.weatherIcon}>{targetConditions?.icon ?? 'âœˆï¸'}</Text>
+        {targetForecast && <Text style={[styles.weatherTemp, { color: palette.text }]}>{targetForecast.tempMax}Â°/{targetForecast.tempMin}Â°</Text>}
+        <Text numberOfLines={1} style={[styles.weatherMeta, { color: palette.muted }]}>{code} Â· {displayDate ? forecastDayLabel(displayDate) : ''}{targetConditions ? ` Â· ${targetConditions.label}` : forecastStatus === 'loading' ? ' Â· Loading forecast' : forecastStatus === 'offline' ? ' Â· Offline' : ' Â· Forecast unavailable'}</Text>
+      </> : <>
+        <Text style={styles.weatherIcon}>{conditions?.icon ?? 'âœˆï¸'}</Text>
+        {weather ? <>
+          <Text style={[styles.weatherTemp, { color: palette.text }]}>{weather.temp}Â°</Text>
+          <Text numberOfLines={1} style={[styles.weatherMeta, { color: palette.muted }]}>{code} Â· {conditions!.label} Â· {windDirectionLabel(weather.windDeg)} {weather.windSpeed}kt Â· {weather.pressure}hPa</Text>
+        </> : (
+          <Text numberOfLines={1} style={[styles.weatherMeta, { color: palette.muted }]}>{code} Â· {weatherStatus === 'loading' ? 'Loading weather' : weatherStatus === 'offline' ? 'Offline' : 'Weather unavailable'}</Text>
+        )}
+      </>}
+    </Pressable>
+    <IOSDialog visible={forecastOpen} onClose={() => setForecastOpen(false)} style={[styles.stayPopup, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}>
+      <Text style={[styles.label, { color: palette.muted }]}>FORECAST Â· {code}{displayDate ? ` Â· FROM ${forecastDayLabel(displayDate)}` : ''}</Text>
+      {stay?.rest ? <Text style={[styles.stayPopupRest, { color: palette.text }]}>{stay.rest}</Text> : null}
+      {forecast && forecast.length > 0
+        ? <View style={styles.stayForecastList}>
+            {forecast.map((day) => {
+              const dayConditions = weatherIcon(day.weatherCode, true);
+              return <View key={day.date} style={[styles.stayForecastRow, { borderColor: palette.line }]}>
+                <Text style={[styles.stayForecastDay, { color: palette.muted }]}>{forecastDayLabel(day.date)}</Text>
+                <View style={styles.stayForecastConditions}>
+                  <Text style={[styles.stayForecastIcon, { flex: 0 }]}>{dayConditions.icon}</Text>
+                  <Text numberOfLines={1} style={[styles.meta, styles.stayForecastDescription, { color: palette.muted }]}>{dayConditions.label}</Text>
+                </View>
+                <Text style={[styles.stayForecastTemp, { color: palette.text }]}>{day.tempMax}Â° / {day.tempMin}Â°</Text>
+              </View>;
+            })}
+          </View>
+        : forecastStatus === 'loading'
+          ? <View style={styles.forecastStateRow}><ActivityIndicator size="small" /><Text style={[styles.meta, { color: palette.muted }]}>Loading forecastâ€¦</Text></View>
+          : forecastStatus === 'offline'
+            ? <Text style={[styles.meta, { color: palette.muted, marginTop: 6 }]}>Forecast unavailable while offline.</Text>
+            : <Pressable onPress={retry} accessibilityRole="button" style={styles.forecastRetry}><Text style={[styles.meta, { color: palette.accent }]}>Forecast unavailable. Tap to retry.</Text></Pressable>}
+    </IOSDialog>
+  </>;
+}
+function forecastDayLabel(value: string): string {
+  const [year, month, day] = value.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  const weekday = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'][date.getUTCDay()];
+  return `${weekday} ${day}`;
+}
+function CrewRow({ member, palette }: { member: CrewMember; palette: Palette }) { return <View style={[styles.crewRow, { borderBottomWidth: StyleSheet.hairlineWidth, borderColor: palette.line }]}><View style={[styles.avatar, { backgroundColor: palette.accentSoft }]}><Text style={[styles.avatarText, { color: palette.accent }]}>{member.name?.trim()?.[0]?.toUpperCase() ?? 'â€¢'}</Text></View><View style={styles.grow}><Text numberOfLines={1} style={[styles.crewName, { color: palette.text }]}>{member.name}</Text><Text style={[styles.meta, { color: palette.muted }]}>{member.position ?? member.role}</Text></View></View>; }
+function Summary({ title, value, detail, palette }: { title: string; value: string; detail: string; palette: Palette }) { return <View style={[styles.summary, styles.depthSurface, { backgroundColor: palette.surface, borderColor: palette.line }]}><Text style={[styles.label, { color: palette.muted }]}>{title}</Text><Text style={[styles.summaryValue, { color: palette.text }]}>{value}</Text><Text style={[styles.meta, { color: palette.muted }]}>{detail}</Text></View>; }
+function PrimaryButton({ title, onPress, loading, palette }: { title: string; onPress: () => void; loading: boolean; palette: Palette }) { return <Pressable onPress={onPress} disabled={loading} style={[styles.primaryButton, { backgroundColor: palette.accent }]}>{loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.actionText}>{title}</Text>}</Pressable>; }
+function operatingCount(roster: ParsedAirAstanaRoster) { return roster.sectors.filter((sector) => !sector.deadhead).length; }
+
+const styles = StyleSheet.create({
+  safe:{flex:1}, app:{flex:1,width:'100%',maxWidth:620,alignSelf:'center',paddingHorizontal:16,paddingTop:10.58},
+  header:{height:72,flexDirection:'row',alignItems:'center',justifyContent:'space-between'}, brand:{fontSize:28,lineHeight:34,fontWeight:'700',letterSpacing:-.8},
+  modeButton:{width:66,height:40,borderRadius:16,alignItems:'center',justifyContent:'center'}, aimsGlyph:{fontSize:12,lineHeight:15,fontWeight:'800',letterSpacing:.2},
+  aimsStatus:{minHeight:66,borderWidth:1,borderRadius:20,padding:12,marginBottom:8,flexDirection:'row',alignItems:'center',gap:10}, aimsStatusIcon:{width:28,height:28,alignItems:'center',justifyContent:'center'}, aimsStatusGlyph:{fontSize:18,fontWeight:'800'}, aimsStatusTitle:{fontSize:14,lineHeight:18,fontWeight:'700'}, statusDismiss:{width:24,height:34,alignItems:'center',justifyContent:'center'}, statusDismissText:{fontSize:22,lineHeight:24},
+  viewport:{flex:1,minHeight:0}, tabPane:{position:'absolute',top:0,left:0,right:0,bottom:0}, tabPaneHidden:{opacity:0}, screen:{flex:1,paddingTop:8,gap:12}, grow:{flex:1,minWidth:0}, sectionTitle:{fontSize:28,lineHeight:34,fontWeight:'700',letterSpacing:-.8}, intro:{fontSize:15,lineHeight:22}, label:{fontSize:11,fontWeight:'700',letterSpacing:.9}, meta:{fontSize:13,lineHeight:18},
+  dutyHead:{flexDirection:'row',alignItems:'center',justifyContent:'space-between'}, heroCard:{borderWidth:1,borderRadius:22,padding:13}, heroRoute:{fontSize:27,lineHeight:32,fontWeight:'700',letterSpacing:-.7}, heroTopRow:{flexDirection:'row',alignItems:'flex-start',justifyContent:'space-between',gap:10}, heroRouteFlex:{flex:1}, flightBadgeRow:{flexDirection:'row',flexWrap:'wrap',gap:6,marginTop:8}, flightBadge:{borderRadius:10,paddingHorizontal:9,paddingVertical:4}, flightBadgeText:{fontSize:12,fontWeight:'800',letterSpacing:.3,...MONO_FONT},
+  countdownPill:{borderRadius:13,paddingHorizontal:10,paddingVertical:5,alignItems:'center'}, countdown:{fontSize:16,fontWeight:'800',fontVariant:['tabular-nums'],...MONO_FONT}, countdownLabel:{fontSize:9,fontWeight:'700',letterSpacing:.6,marginTop:1}, timeDivider:{height:StyleSheet.hairlineWidth,marginVertical:8}, timeRow:{flexDirection:'row',alignItems:'flex-start',gap:6}, timeCell:{flex:1,minWidth:0}, timeLabel:{fontSize:10,lineHeight:13,fontWeight:'700',letterSpacing:.3}, timeValue:{fontSize:18,lineHeight:22,fontWeight:'700',marginTop:2,fontVariant:['tabular-nums'],...MONO_FONT}, heroFoot:{fontSize:12,fontWeight:'600',marginTop:8}, weatherRow:{flexDirection:'row',alignItems:'center',gap:6,marginTop:8}, weatherIcon:{fontSize:16}, weatherTemp:{fontSize:14,fontWeight:'800',...MONO_FONT}, weatherMeta:{flex:1,fontSize:11.5,fontWeight:'600'},
+  summaryRow:{flexDirection:'row',gap:10}, summary:{flex:1,borderWidth:1,borderRadius:20,padding:14}, summaryValue:{fontSize:28,fontWeight:'700',marginTop:6,fontVariant:['tabular-nums'],...MONO_FONT}, upNext:{flex:1,minHeight:0,gap:2,...Platform.select({web:{maxHeight:'34vh' as any},default:{}})}, upNextList:{flex:1},
+  primaryButton:{height:50,borderRadius:16,alignItems:'center',justifyContent:'center'}, actionText:{color:'#fff',fontWeight:'700'}, titleRow:{flexDirection:'row',alignItems:'center',gap:8}, titleActions:{flexDirection:'row',gap:7}, compactButton:{height:38,minWidth:72,borderWidth:1,borderRadius:14,alignItems:'center',justifyContent:'center',paddingHorizontal:10}, compactText:{fontWeight:'700',fontSize:12}, monthNav:{height:40,flexDirection:'row',alignItems:'center',justifyContent:'space-between'}, monthNavText:{fontSize:12,fontWeight:'600'}, monthSwipeWrap:{flex:1,minHeight:0},
+  emptyCard:{borderWidth:1,borderRadius:20,padding:14}, innerWindow:{flex:1,minHeight:0,borderWidth:1,borderRadius:20,overflow:'hidden'}, listContent:{padding:8,gap:7,paddingBottom:18}, rosterCard:{borderWidth:1,borderRadius:16,padding:13}, rosterCardToday:{borderWidth:1.5}, flightCardTop:{flexDirection:'row',justifyContent:'space-between'}, flightNumber:{fontSize:11,fontWeight:'700'}, rosterRoute:{fontSize:20,fontWeight:'700',marginTop:4}, rosterEventTitle:{fontSize:18,lineHeight:22,fontWeight:'700',marginTop:4},
+  infoCard:{borderWidth:1,borderRadius:20,padding:14,gap:3}, cardTitle:{fontSize:17,lineHeight:22,fontWeight:'700'}, libraryCard:{borderWidth:1,borderRadius:20,padding:14,minHeight:88,maxHeight:190}, libraryList:{marginTop:5}, libraryRow:{minHeight:54,flexDirection:'row',alignItems:'center',gap:10,borderBottomWidth:StyleSheet.hairlineWidth}, libraryMonth:{fontSize:14,fontWeight:'700'}, deleteRosterButton:{minWidth:58,height:34,borderRadius:12,alignItems:'center',justifyContent:'center',paddingHorizontal:8}, deleteRosterText:{fontSize:11,fontWeight:'700'}, expiryDate:{fontSize:12,fontWeight:'700',fontVariant:['tabular-nums'],...MONO_FONT},
+  dangerButton:{height:48,borderWidth:1,borderRadius:15,alignItems:'center',justifyContent:'center'}, dangerText:{fontWeight:'700',fontSize:14}, backupRow:{flexDirection:'row',gap:8,marginTop:10}, expiryHeaderRow:{flexDirection:'row',alignItems:'center',justifyContent:'space-between'}, expiryChevron:{fontSize:20,fontWeight:'700'}, expirySheet:{width:'100%',maxWidth:620,maxHeight:'78%',alignSelf:'center',borderTopWidth:1,borderTopLeftRadius:28,borderTopRightRadius:28,paddingHorizontal:18,paddingBottom:12,overflow:'hidden'}, expirySheetList:{marginTop:10}, expirySheetListContent:{paddingBottom:12}, versionText:{fontSize:10,fontWeight:'600',letterSpacing:.2,opacity:.5,textAlign:'center',marginTop:2}, confirmDialog:{width:'88%',maxWidth:360,borderWidth:1,borderRadius:22,padding:18}, confirmActions:{flexDirection:'row',gap:10,marginTop:16}, stayPopup:{width:'88%',maxWidth:340,borderWidth:1,borderRadius:22,padding:18}, stayPopupRest:{fontSize:28,fontWeight:'800',marginTop:6,fontVariant:['tabular-nums'],...MONO_FONT}, stayForecastList:{marginTop:14,gap:2}, stayForecastRow:{flexDirection:'row',alignItems:'center',gap:6,paddingVertical:8,borderTopWidth:StyleSheet.hairlineWidth}, stayForecastDay:{width:34,fontSize:12,fontWeight:'700'}, stayForecastConditions:{flex:1,minWidth:0,flexDirection:'row',alignItems:'center',gap:6}, stayForecastDescription:{flex:1,minWidth:0,fontSize:12}, stayForecastIcon:{fontSize:18,flex:1}, stayForecastTemp:{fontSize:14,fontWeight:'700',fontVariant:['tabular-nums'],...MONO_FONT}, forecastStateRow:{flexDirection:'row',alignItems:'center',gap:8,marginTop:8}, forecastRetry:{marginTop:6,paddingVertical:4}, confirmCancel:{flex:1,height:44,borderWidth:1,borderRadius:13,alignItems:'center',justifyContent:'center'}, confirmErase:{flex:1,height:44,borderRadius:13,alignItems:'center',justifyContent:'center'}, moreContent:{gap:12,paddingBottom:24},
+  depthSurface:{shadowColor:'#000',shadowOffset:{width:0,height:10},shadowOpacity:.1,shadowRadius:24,elevation:5,...WEB_GLASS}, tabBar:{height:68,marginTop:8,marginBottom:4,borderWidth:1,borderRadius:22,flexDirection:'row',...WEB_TAB_GLASS}, tabSelection:{position:'absolute',left:4,top:4,bottom:4,borderRadius:18,shadowColor:'#000',shadowOffset:{width:0,height:5},shadowOpacity:.08,shadowRadius:12,elevation:2}, tabItem:{flex:1,zIndex:1,alignItems:'center',justifyContent:'center',gap:2}, tabIconWrap:{minWidth:35,height:27,borderRadius:14,alignItems:'center',justifyContent:'center'}, tabIcon:{textAlign:'center'}, tabText:{fontSize:11,fontWeight:'600'},
+  flightSheet:{width:'100%',maxWidth:620,maxHeight:'78%',alignSelf:'center',borderTopWidth:1,borderTopLeftRadius:28,borderTopRightRadius:28,paddingHorizontal:18,paddingBottom:12,overflow:'hidden'}, flightSheetContent:{minHeight:0,flexShrink:1}, sheetRoute:{fontSize:28,lineHeight:33,fontWeight:'700',marginTop:5}, swipeHint:{fontSize:10,marginTop:7}, flyingWith:{fontSize:11,fontWeight:'700',letterSpacing:.45,opacity:.82,marginTop:12,marginBottom:7}, crewScroll:{minHeight:0,flexShrink:1,flex:1,...Platform.select({web:{maxHeight:'calc(78vh - 46px)' as any},default:{}})}, crewList:{paddingBottom:12}, crewRow:{minHeight:50,flexDirection:'row',alignItems:'center'}, avatar:{width:34,height:34,borderRadius:17,alignItems:'center',justifyContent:'center',marginRight:11}, avatarText:{fontSize:12,fontWeight:'800'}, crewName:{fontSize:14,fontWeight:'600'},
+  flightFacts:{flexDirection:'row',gap:6,borderTopWidth:StyleSheet.hairlineWidth,borderBottomWidth:StyleSheet.hairlineWidth,paddingVertical:10,marginTop:10}, flightFact:{flex:1,minWidth:0}, flightFactLabel:{fontSize:9,lineHeight:12,fontWeight:'700',letterSpacing:.45}, flightFactValue:{fontSize:16,lineHeight:20,fontWeight:'700',fontVariant:['tabular-nums'],marginTop:2,...MONO_FONT}, stayCard:{borderWidth:1,borderRadius:16,padding:12,marginTop:12}, stayTitle:{fontSize:16,lineHeight:21,fontWeight:'700',marginTop:4}, stayMeta:{fontSize:11,lineHeight:15,marginTop:4},
+});
