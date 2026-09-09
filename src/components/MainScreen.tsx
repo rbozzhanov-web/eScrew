@@ -426,7 +426,13 @@ function RosterScreenImpl({ roster, rosters, duties, selectedSector, palette, im
 const RosterScreen = memo(RosterScreenImpl);
 
 function FlightRosterCard({ roster, duty, sector, selected, isToday, palette, onPress, onLayout }: { roster?: RosterWithNormalized; duty: Duty; sector: Sector; selected: boolean; isToday: boolean; palette: Palette; onPress: () => void; onLayout: (event: LayoutChangeEvent) => void }) {
-  const dateMeta = rosterDateMeta(duty);
+  // A duty's sectors can span a day boundary (an overnight leg followed by one departing
+  // the next calendar day) -- duty.date is only ever the report/first-sector date, so a
+  // later sector needs its own date here, the same one flightExtra already resolves for
+  // weather/forecast below, or its card would show the wrong day for anything past the
+  // first sector of a multi-day duty.
+  const extra = flightExtra(roster, sector);
+  const dateMeta = rosterDateMeta(duty, extra?.date);
   const stay = stayForSector(roster, sector);
   const forecastStartDate = arrivalForecastDate(roster, duty, sector);
   return <Pressable onPress={onPress} onLayout={onLayout} style={[styles.rosterCard, isToday && styles.rosterCardToday, { backgroundColor: selected || isToday ? palette.accentSoft : palette.surfaceStrong, borderColor: isToday ? palette.accent : palette.line, ...(isToday ? todayGlow(palette) : null) }]}>
@@ -461,7 +467,7 @@ function FlightDetail({ row, roster, palette, onClose, onPrevious, onNext }: { r
   </View>;
   return <IOSSheet visible onClose={onClose} handleColor={palette.line} style={[styles.flightSheet, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}><SwipeSurface style={styles.flightSheetContent} onSwipeLeft={onNext} onSwipeRight={onPrevious} threshold={44}>
     <View onLayout={(event) => setHeaderHeight(event.nativeEvent.layout.height)}>
-      <Text style={[styles.label, { color: palette.muted }]}>{row.duty.dateLabel} · {row.sector.flightNumber}{row.sector.deadhead ? ' · DHC' : ''}</Text>
+      <Text style={[styles.label, { color: palette.muted }]}>{rosterDateMeta(row.duty, extra?.date).label} · {row.sector.flightNumber}{row.sector.deadhead ? ' · DHC' : ''}</Text>
       <Text style={[styles.sheetRoute, { color: palette.text }]}>{row.sector.departure} → {row.sector.arrival}</Text>
       {status ? <Text style={[styles.meta, { color: palette.muted }]}>{status}</Text> : null}
       <WeatherChip code={row.sector.arrival} homeBase={roster?.subject?.base} palette={palette} stay={stay} forecastStartDate={forecastStartDate} />
@@ -617,7 +623,7 @@ function timedDuties(items: RosterDuty[]): FocusDuty[] { return items.flatMap((i
 function pickFocusDuty(timed: FocusDuty[], now: number): FocusDuty | undefined { return timed.filter((item) => item.reportMs <= now && item.releaseMs >= now).sort((a, b) => b.reportMs - a.reportMs)[0] ?? timed.find((item) => item.reportMs > now) ?? timed[timed.length - 1]; }
 function crewOnDuty(duty: Duty): CrewMember[] { const seen = new Set<string>(); return duty.sectors.flatMap((sector) => sector.crew).filter((member) => { const key = member.id || `${member.name}|${member.position ?? member.role}`; if (seen.has(key)) return false; seen.add(key); return true; }); }
 function formatCountdown(milliseconds: number): string { const total = Math.max(0, Math.floor(milliseconds / 1000)); const days = Math.floor(total / 86400), hours = Math.floor((total % 86400) / 3600), minutes = Math.floor((total % 3600) / 60), seconds = total % 60; const clock = `${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`; return days > 0 ? `${days}d ${clock}` : clock; }
-function rosterDateMeta(duty: Duty): { label: string; weekend: boolean } { if (!duty.date) return { label: duty.dateLabel, weekend: false }; return eventDateMeta(duty.date); }
+function rosterDateMeta(duty: Duty, sectorDate?: string): { label: string; weekend: boolean } { const date = sectorDate ?? duty.date; if (!date) return { label: duty.dateLabel, weekend: false }; return eventDateMeta(date); }
 function localTodayIso(): string { const now = new Date(); return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`; }
 function eventDateMeta(value: string): { label: string; weekend: boolean } { const [year, month, day] = value.split('-').map(Number); const date = new Date(Date.UTC(year, month - 1, day)); if (!Number.isFinite(date.getTime()) || date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return { label: value, weekend: false }; const weekdayIndex = date.getUTCDay(); const weekday = ['SUN','MON','TUE','WED','THU','FRI','SAT'][weekdayIndex]; const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC']; return { label: `${String(day).padStart(2, '0')} ${months[month - 1]} · ${weekday}`, weekend: weekdayIndex === 0 || weekdayIndex === 6 }; }
 function routeChain(duty: Duty): string { return [duty.sectors[0]?.departure, ...duty.sectors.map((sector) => sector.arrival)].filter(Boolean).join(' → '); }
