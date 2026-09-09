@@ -217,7 +217,7 @@ export default function MainScreen() {
     setTab('Home');
   }, []);
 
-  return <SafeAreaView style={styles.safe} edges={desktopWeb ? ['bottom'] : ['top', 'bottom']}>
+  return <SafeAreaView style={[styles.safe, { backgroundColor: palette.background }]} edges={desktopWeb ? ['bottom'] : ['top', 'bottom']}>
     <View style={styles.app}>
       <View style={styles.header}>
         <Text style={[styles.brand, { color: palette.text }]}>eScrew</Text>
