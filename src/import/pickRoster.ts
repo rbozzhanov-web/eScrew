@@ -13,6 +13,39 @@ export async function pickAndParseRoster():Promise<ParsedAirAstanaRoster|undefin
   return parseRosterData(data,asset.name??'');
 }
 
+const SHORTCUT_PASTE_PREFIX='ESCREW-WEBARCHIVE-v1:';
+
+/**
+ * Companion to pickAndParseRoster for the "Paste Web Archive from Shortcut" flow
+ * (see SHORTCUT_IMPORT.md): a one-time iOS Shortcut base64-encodes a saved AIMS
+ * Web Archive from Safari's own Share Sheet and puts it on the device-only
+ * clipboard behind a magic prefix, so a roster can be imported without ever
+ * saving a file to Files. Feeds the same parseRosterData the file picker uses,
+ * so parsing behavior — and every format it accepts — is identical either way.
+ */
+export async function pasteRosterFromClipboard():Promise<ParsedAirAstanaRoster>{
+  if(Platform.OS!=='web'||typeof navigator==='undefined'||!navigator.clipboard?.readText)
+    throw new Error('Paste from Shortcut is available in the web app.');
+  let text:string;
+  try{text=await navigator.clipboard.readText()}
+  catch{throw new Error('Could not read the clipboard. Allow paste when iOS asks, then try again.')}
+  if(!text.startsWith(SHORTCUT_PASTE_PREFIX))
+    throw new Error('Clipboard does not contain a Web Archive from the Shortcut. Run the Shortcut on a saved AIMS page first.');
+  let data:ArrayBuffer;
+  try{data=base64ToArrayBuffer(text.slice(SHORTCUT_PASTE_PREFIX.length).trim())}
+  catch{throw new Error('The pasted Web Archive is corrupted. Run the Shortcut again and retry.')}
+  const roster=await parseRosterData(data,'shortcut.webarchive');
+  try{await navigator.clipboard.writeText('')}catch{/* best-effort only, not worth failing the import over */}
+  return roster;
+}
+
+function base64ToArrayBuffer(base64:string):ArrayBuffer{
+  const binary=atob(base64);
+  const bytes=new Uint8Array(binary.length);
+  for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
+  return bytes.buffer;
+}
+
 export async function parseRosterData(data:ArrayBuffer,name=''):Promise<ParsedAirAstanaRoster>{
   const header=new TextDecoder('ascii').decode(data.slice(0,8));
   if(header.startsWith('%PDF-'))return parseAirAstanaRoster(await extractPdfPagesWeb(data));
