@@ -3,7 +3,7 @@ import { ActivityIndicator, Animated, FlatList, Platform, Pressable, ScrollView,
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IOSDialog, IOSSheet } from './IOSOverlay';
 import { SwipeSurface, type SwipeSurfaceHandle } from './SwipeSurface';
-import { buildRosterTimeline, flightExtra, stayForSector, type RosterTimelineRow, type RosterWithNormalized, type StayInfo } from './rosterDataView';
+import { buildRosterTimeline, flightExtra, stayForHotelEvent, stayForSector, type RosterTimelineRow, type RosterWithNormalized, type StayInfo } from './rosterDataView';
 import type { NormalizedExpiry } from '@/src/core/rosterContract';
 import { exportRosterCalendar } from '@/src/domain/calendar';
 import { formatMinutes, rosterMonthLabel, rosterToDuties } from '@/src/domain/rosterView';
@@ -389,8 +389,9 @@ function RosterScreenImpl({ roster, rosters, duties, selectedSector, palette, im
   // only changes when something a row actually depends on changes.
   const renderTimelineRow: ListRenderItem<RosterTimelineRow> = useCallback(({ item }) => {
     const onLayout = (event: LayoutChangeEvent) => measureRow(item.key, event.nativeEvent.layout.height);
-    return item.kind === 'flight'
-      ? <FlightRosterCard roster={roster} duty={item.duty} sector={item.sector} selected={selectedSector?.id === item.sector.id} isToday={item.sortKey.slice(0, 10) === today} palette={palette} onPress={() => onSelect(item.sector.id)} onLayout={onLayout} />
+    if (item.kind === 'flight') return <FlightRosterCard roster={roster} duty={item.duty} sector={item.sector} selected={selectedSector?.id === item.sector.id} isToday={item.sortKey.slice(0, 10) === today} palette={palette} onPress={() => onSelect(item.sector.id)} onLayout={onLayout} />;
+    return item.badge === 'HOTEL'
+      ? <HotelRosterCard roster={roster} item={item} isToday={item.sortKey.slice(0, 10) === today} palette={palette} onLayout={onLayout} />
       : <RosterEventCard item={item} isToday={item.sortKey.slice(0, 10) === today} palette={palette} onLayout={onLayout} />;
   }, [roster, selectedSector, today, palette, onSelect, measureRow]);
   useEffect(() => {
@@ -453,6 +454,28 @@ function RosterEventCard({ item, isToday, palette, onLayout }: { item: Extract<R
   </View>;
 }
 
+function HotelRosterCard({ roster, item, isToday, palette, onLayout }: { roster?: RosterWithNormalized; item: Extract<RosterTimelineRow, { kind: 'event' }>; isToday: boolean; palette: Palette; onLayout: (event: LayoutChangeEvent) => void }) {
+  const [open, setOpen] = useState(false);
+  const dateMeta = eventDateMeta(item.date);
+  const detail = [item.detail, item.station].filter(Boolean).join(' · ');
+  const stay = stayForHotelEvent(roster, item.supplement);
+  const station = stay?.station ?? item.station;
+  return <>
+    <Pressable onPress={() => setOpen(true)} onLayout={onLayout} style={[styles.rosterCard, isToday && styles.rosterCardToday, { backgroundColor: isToday ? palette.accentSoft : palette.surfaceStrong, borderColor: isToday ? palette.accent : palette.line, ...(isToday ? todayGlow(palette) : null) }]}>
+      <View style={styles.flightCardTop}><Text style={[styles.label, { color: isToday ? palette.accent : dateMeta.weekend ? palette.weekend : palette.muted }]}>{dateMeta.label}{isToday ? ' · TODAY' : ''}</Text><Text style={[styles.flightNumber, { color: palette.muted }]}>{item.badge}</Text></View>
+      <Text numberOfLines={2} style={[styles.rosterEventTitle, { color: palette.text }]}>{item.title}</Text>
+      {detail ? <Text style={[styles.meta, { color: palette.muted }]}>{detail}</Text> : null}
+    </Pressable>
+    <IOSDialog visible={open} onClose={() => setOpen(false)} style={[styles.stayPopup, { backgroundColor: palette.surfaceStrong, borderColor: palette.line }]}>
+      <View style={styles.flightCardTop}><Text style={[styles.label, { color: palette.muted }]}>HOTEL{station ? ` · ${station}` : ''}</Text>{stay?.rest ? <Text style={[styles.flightNumber, { color: palette.gold }]}>REST {stay.rest}</Text> : null}</View>
+      <Text style={[styles.stayTitle, { color: palette.text }]}>{stay?.hotel ?? item.title}</Text>
+      {stay?.checkIn || stay?.checkOut ? <Text style={[styles.meta, { color: palette.muted }]}>{stay?.checkIn ?? '—'} → {stay?.checkOut ?? '—'}</Text> : null}
+      {stay?.address ? <Text numberOfLines={2} style={[styles.stayMeta, { color: palette.muted }]}>{stay.address}</Text> : null}
+      {stay?.phone ? <Text numberOfLines={2} style={[styles.stayMeta, { color: palette.muted }]}>{stay.phone}</Text> : null}
+    </IOSDialog>
+  </>;
+}
+
 function FlightDetail({ row, roster, palette, onClose, onPrevious, onNext }: { row: FlightRow; roster?: RosterWithNormalized; palette: Palette; onClose: () => void; onPrevious?: () => void; onNext?: () => void }) {
   const extra = flightExtra(roster, row.sector);
   const stay = stayForSector(roster, row.sector);
@@ -461,7 +484,6 @@ function FlightDetail({ row, roster, palette, onClose, onPrevious, onNext }: { r
   const [headerHeight, setHeaderHeight] = useState(0);
   const renderCrewMember: ListRenderItem<CrewMember> = useCallback(({ item }) => <View style={styles.crewRow}><View style={[styles.avatar, { backgroundColor: palette.accentSoft }]}><Text style={[styles.avatarText, { color: palette.accent }]}>{item.name[0]}</Text></View><View style={styles.grow}><Text style={[styles.crewName, { color: palette.text }]}>{item.name}</Text><Text style={[styles.meta, { color: palette.muted }]}>{item.position ?? item.role}</Text></View></View>, [palette]);
   const scrollHeader = <View>
-    {stay && <View style={[styles.stayCard, { backgroundColor: palette.surface, borderColor: palette.line }]}><View style={styles.flightCardTop}><Text style={[styles.label, { color: palette.muted }]}>STAY{stay.station ? ` · ${stay.station}` : ''}</Text>{stay.rest ? <Text style={[styles.flightNumber, { color: palette.gold }]}>REST {stay.rest}</Text> : null}</View>{stay.hotel ? <Text style={[styles.stayTitle, { color: palette.text }]}>{stay.hotel}</Text> : null}{stay.checkIn || stay.checkOut ? <Text style={[styles.meta, { color: palette.muted }]}>{stay.checkIn ?? '—'} → {stay.checkOut ?? '—'}</Text> : null}{stay.address ? <Text numberOfLines={2} style={[styles.stayMeta, { color: palette.muted }]}>{stay.address}</Text> : null}{stay.phone ? <Text numberOfLines={2} style={[styles.stayMeta, { color: palette.muted }]}>{stay.phone}</Text> : null}</View>}
     <Text style={[styles.swipeHint, { color: palette.muted }]}>{onPrevious ? '‹ ' : ''}swipe flight{onNext ? ' ›' : ''} · swipe down to close</Text>
     <Text style={[styles.flyingWith, { color: palette.accent }]}>Flying with · {row.sector.crew.length}</Text>
   </View>;

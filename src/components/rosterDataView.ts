@@ -82,7 +82,19 @@ export function stayForSector(roster: RosterWithNormalized | undefined, sector: 
   const station = sector.arrival.toUpperCase();
   const flightDate = sectorDate(roster?.normalized, sector);
   const dated = supplements.find((item) => item.category === 'hotel' && item.date === flightDate && field(item, 'location')?.toUpperCase() === station);
-  const directory = supplements.find((item) => item.category === 'hotel' && !item.date && field(item, 'port')?.toUpperCase() === station);
+  return buildStayInfo(supplements, dated, station);
+}
+
+/** Same lookup as stayForSector, but starting from the hotel supplement itself -- used by the
+ * hotel's own roster-carousel card, which isn't tied to any one sector. */
+export function stayForHotelEvent(roster: RosterWithNormalized | undefined, supplement: NormalizedSupplement): StayInfo | undefined {
+  const supplements = roster?.normalized?.supplements ?? [];
+  const station = field(supplement, 'location')?.toUpperCase();
+  return buildStayInfo(supplements, supplement, station);
+}
+
+function buildStayInfo(supplements: NormalizedSupplement[], dated: NormalizedSupplement | undefined, station: string | undefined): StayInfo | undefined {
+  const directory = station ? supplements.find((item) => item.category === 'hotel' && !item.date && field(item, 'port')?.toUpperCase() === station) : undefined;
   if (!dated && !directory) return undefined;
 
   const rawText = dated ? field(dated, 'text') : undefined;
